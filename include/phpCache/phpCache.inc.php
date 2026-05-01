@@ -455,7 +455,7 @@ if (!defined('CACHE_DIR')) {
 		if ($start==1) {
 			cache_debug("Running GC on $dir");
 			if (!function_exists("getcwd")) {
-				$cwd=substr(`pwd`, 0, -1);
+				$cwd=substr(shell_exec('pwd'), 0, -1);
 			} else {
 				$cwd=getcwd();
 			}

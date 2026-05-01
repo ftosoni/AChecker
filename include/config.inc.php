@@ -29,7 +29,7 @@ define('DB_PORT',                      '3306');
 define('DB_NAME',                      'achecker');
 
 /* Database type: mysql or sqlite */
-define('DB_TYPE',                      'mysql');
+define('DB_TYPE',                      'sqlite');
 
 /* Path to SQLite database file (only used if DB_TYPE is 'sqlite') */
 define('SQLITE_PATH',                  dirname(__FILE__) . '/../database/achecker.db');
