@@ -47,18 +47,19 @@ For more about using AChecker, see the instructional videos on [YouTube](http://
 
 ---
 
-## 🚀 Deployment (Toolforge)
+## 🚀 Deployment (Toolforge - Recommended: SQLite)
 
-Follow these steps to deploy the application on Wikimedia Toolforge.
+Using SQLite is the easiest way to deploy AChecker on Toolforge as it requires zero server-side database configuration.
 
-### 1. Initialize Database
-Before uploading files, you must create your tool's private database to generate your credentials:
-1.  Go to **[toolsadmin.wikimedia.org](https://toolsadmin.wikimedia.org/tools/id/accessibility-checker/databases)**.
-2.  Log in and click **"Create Database"**.
-3.  Wait 1-2 minutes for the system to generate your `~/.my.cnf` file.
+### 1. Create SQLite Database (Local)
+Run the migration script on your local machine to convert your MySQL data into a portable file:
+```bash
+php convert_to_sqlite.php
+```
+This creates `database/achecker.db`.
 
-### 2. Deploy Code via Git
-Instead of using `scp`, it is recommended to clone the repository directly on the Toolforge bastion:
+### 2. Deploy to Toolforge
+Log into Toolforge and clone the repository:
 
 ```bash
 # Log into Toolforge
@@ -67,44 +68,30 @@ ssh your-username@login.toolforge.org
 # Become the tool
 become accessibility-checker
 
-# Navigate to your home directory
+# Clone the repo
 cd ~
-
-# Clone the repo into a temporary folder
 git clone https://github.com/ftosoni/AChecker.git temp_repo
-
-# Move files to public_html (ensure public_html is empty first)
 rm -rf public_html/*
 cp -r temp_repo/* public_html/
 rm -rf temp_repo
 ```
 
-### 3. Import Database Dump
-Upload your local SQL dump and import it into the new Toolforge database:
-
+### 3. Upload the Database File
+Upload the generated `.db` file to your tool's project directory:
 ```bash
 # From your local machine
-scp achecker_dump.sql your-username@login.toolforge.org:/data/project/accessibility-checker/
-
-# On Toolforge (as the tool user)
-# Find your DB name via: mysql --defaults-file=$HOME/.my.cnf -e "SHOW DATABASES;"
-mysql --defaults-file=$HOME/.my.cnf sXXXXX__achecker < /data/project/accessibility-checker/achecker_dump.sql
+scp -r ./database your-username@login.toolforge.org:/data/project/accessibility-checker/
 ```
 
 ### 4. Configure Application
-Update `include/config.inc.php` on the server with your Toolforge database details:
-- **DB Host**: `tools.db.svc.wikimedia.cloud`
-- **DB User**: (Found in `~/.my.cnf`)
-- **DB Pass**: (Found in `~/.my.cnf`)
-- **DB Name**: `sXXXXX__achecker`
+Edit `public_html/include/config.inc.php` on Toolforge:
+1. Set `DB_TYPE` to `'sqlite'`.
+2. Ensure `SQLITE_PATH` points to `/data/project/accessibility-checker/database/achecker.db`.
 
 ### 5. Start Webservice
-Start the PHP 7.4 webservice:
-
 ```bash
 toolforge webservice php7.4 start
 ```
-
 Your tool will be available at `https://accessibility-checker.toolforge.org/`.
 
 
