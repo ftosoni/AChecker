@@ -544,15 +544,15 @@ class BasicChecks {
 		// 1. The element $e is contained by a "label" element
 		// 2. The element $e has a "title" attribute
 		// 3. The element $e has a "aria-label" attribute
-		if ($e->parent()->tag == "label" || isset($e->attr["title"]) || isset($e->attr["aria-label"])) return true;
+		if ((is_object($e->parent()) && $e->parent()->tag == "label") || (is_array($e->attr) && (isset($e->attr["title"]) || isset($e->attr["aria-label"])))) return true;
 
 		// 3. The element $e has an "id" attribute value that matches the "for" attribute value of a "label" element
-		$input_id = $e->attr["id"];
+		$input_id = (is_array($e->attr) && isset($e->attr["id"])) ? (string)$e->attr["id"] : '';
 
 		if ($input_id == "") return false;  // attribute "id" must exist
 
 		foreach ($content_dom->find("label") as $e_label)
-		  if (strtolower(trim($e_label->attr["for"])) == strtolower(trim($e->attr["id"])))
+		  if (strtolower(trim(is_array($e_label->attr) && isset($e_label->attr["for"]) ? (string)$e_label->attr["for"] : '')) == strtolower(trim($input_id)))
 		    return true;
 
 	  return false;
@@ -905,13 +905,13 @@ class BasicChecks {
 		$best = null;
 
 		//id
-		if (isset ( $e->attr ["id"] )) {
-			$id = BasicChecks::GetElementStyleId ( $e, $e->attr ["id"] . ":" . $link_sel, $p );
+		if (is_array($e->attr) && isset ( $e->attr ["id"] )) {
+			$id = BasicChecks::GetElementStyleId ( $e, (string)$e->attr ["id"] . ":" . $link_sel, $p );
 			$best = BasicChecks::getPriorityInfo ( $best, $id );
 		}
 		//classe
-		if (isset ( $e->attr ["class"] )) {
-			$class = BasicChecks::GetElementStyleClass ( $e, $e->attr ["class"] . ":" . $link_sel, $p );
+		if (is_array($e->attr) && isset ( $e->attr ["class"] )) {
+			$class = BasicChecks::GetElementStyleClass ( $e, (string)$e->attr ["class"] . ":" . $link_sel, $p );
 			$best = BasicChecks::getPriorityInfo ( $best, $class );
 		}
 		//tag
@@ -2176,8 +2176,8 @@ class BasicChecks {
 		//se non trovo nessun foreground, controllo se è definito nel body, se no gli assegno il nero
 		//NOTA: va aggiunto il controllo su link, alink, ...
 		if ($foreground == "" || $foreground == null) {
-			if (($e->tag == "body" || $e->tag == "html") && isset ( $e->attr ["text"] ))
-				$foreground = $e->attr ["text"];
+			if (($e->tag == "body" || $e->tag == "html") && is_array($e->attr) && isset ( $e->attr ["text"] ))
+				$foreground = (string)$e->attr ["text"];
 			else
 				$foreground = "#000000";
 		}
@@ -2634,7 +2634,7 @@ class BasicChecks {
 
 		foreach($ids as $one_id) {
 			foreach($th as $one_th) {
-				if (isset ( $one_th->attr ['id'] ) && $one_th->attr ['id'] == $one_id) {
+				if (is_array($one_th->attr) && isset ( $one_th->attr ['id'] ) && (string)$one_th->attr ['id'] == $one_id) {
 					$num ++;
 					break;
 				}
@@ -2661,7 +2661,7 @@ class BasicChecks {
 
 			return $e->prev_sibling ();
 		/*
-			if(isset($e->attr["scope"]) && $e->attr["scope"]=="row")
+			if(is_array($e->attr) && isset($e->attr["scope"]) && (string)$e->attr["scope"]=="row")
 				return $e;
 			else
 				return null;
@@ -2712,7 +2712,10 @@ class BasicChecks {
 	}
 
 	public static function rec_check_15005($e) {
-		if ($e->tag == 'script' || $e->tag == 'object' || $e->tag == 'applet' || isset ( $e->attr ['onload'] ) || isset ( $e->attr ['onunload'] ) || isset ( $e->attr ['onclick'] ) || isset ( $e->attr ['ondblclick'] ) || isset ( $e->attr ['onmousedown'] ) || isset ( $e->attr ['onmouseup'] ) || isset ( $e->attr ['onmouseover'] ) || isset ( $e->attr ['onmousemove'] ) || isset ( $e->attr ['onmouse'] ) || isset ( $e->attr ['onblur'] ) || isset ( $e->attr ['onkeypress'] ) || isset ( $e->attr ['onkeydown'] ) || isset ( $e->attr ['onkeyup'] ) || isset ( $e->attr ['onsubmit'] ) || isset ( $e->attr ['onreset'] ) || isset ( $e->attr ['onselect'] ) || isset ( $e->attr ['onchange'] ))
+		if ($e->tag == 'script' || $e->tag == 'object' || $e->tag == 'applet' || 
+(is_array($e->attr) && (
+isset ( $e->attr ['onload'] ) || isset ( $e->attr ['onunload'] ) || isset ( $e->attr ['onclick'] ) || isset ( $e->attr ['ondblclick'] ) || isset ( $e->attr ['onmousedown'] ) || isset ( $e->attr ['onmouseup'] ) || isset ( $e->attr ['onmouseover'] ) || isset ( $e->attr ['onmousemove'] ) || isset ( $e->attr ['onmouse'] ) || isset ( $e->attr ['onblur'] ) || isset ( $e->attr ['onkeypress'] ) || isset ( $e->attr ['onkeydown'] ) || isset ( $e->attr ['onkeyup'] ) || isset ( $e->attr ['onsubmit'] ) || isset ( $e->attr ['onreset'] ) || isset ( $e->attr ['onselect'] ) || isset ( $e->attr ['onchange'] )
+)))
 			return false;
 
 		else
@@ -2798,7 +2801,7 @@ class BasicChecks {
 		$vettore_stili_interni = $dom->find ( 'style' );
 		$cssint = "";
 		foreach($vettore_stili_interni as $one) {
-			if (! isset ( $one->attr ["media"] ) || $one->attr ["media"] == "all" || $one->attr ["media"] == "screen") {
+			if (is_array($one->attr) && (! isset ( $one->attr ["media"] ) || (string)$one->attr ["media"] == "all" || (string)$one->attr ["media"] == "screen")) {
 				$cssint = $cssint . $one->innertext;
 				$cssint = trim ( $cssint );
 				while ( substr ( $cssint, 0, 7 ) == "@import" ) {
@@ -2970,8 +2973,8 @@ class BasicChecks {
 			$app = $e->parent ();
 			while ( $app->tag != "body" && $app->tag != "html" && $app->tag != null )
 				$app = $app->parent ();
-			if ($app != null && isset ( $app->attr [$bodyAttribute] ))
-				$foreground = $app->attr [$bodyAttribute];
+			if ($app != null && is_array($app->attr) && isset ( $app->attr [$bodyAttribute] ))
+				$foreground = (string)$app->attr [$bodyAttribute];
 
 		}
 		if ($foreground == "undetermined")
@@ -3045,8 +3048,8 @@ class BasicChecks {
 			$app = $e->parent ();
 			while ( $app->tag != "body" && $app->tag != "html" && $app->tag != null )
 				$app = $app->parent ();
-			if ($app != null && isset ( $app->attr [$bodyAttribute] ))
-				$foreground = $app->attr [$bodyAttribute];
+			if ($app != null && is_array($app->attr) && isset ( $app->attr [$bodyAttribute] ))
+				$foreground = (string)$app->attr [$bodyAttribute];
 
 		}
 		if ($foreground == "undetermined")
