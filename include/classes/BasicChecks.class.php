@@ -2775,7 +2775,7 @@ class BasicChecks {
 							$indirizzo = $uri2 . "/" . $indirizzo;
 					}
 
-					$cssint = @file_get_contents ( $indirizzo ) . "\n" . $cssint;
+					$cssint = Utility::getURLContents ( $indirizzo ) . "\n" . $cssint;
 					//echo($indirizzo);
 				}
 			}
@@ -2787,7 +2787,7 @@ class BasicChecks {
 	public static function prepare_css_arrays($array_css_esterni, $ci) {
 
 		for($b = 0; $b < (is_array($array_css_esterni) ? count ( $array_css_esterni ) : 0); $b ++) {
-			$css_content = @file_get_contents ( $array_css_esterni [$b] );
+			$css_content = Utility::getURLContents ( $array_css_esterni [$b] );
 			BasicChecks::GetCSSDom ( $css_content, $b );
 		}
 
