@@ -40,11 +40,12 @@ class BasicFunctions {
 		if (!empty(is_array($global_e->attr) && isset($global_e->attr["title"]) ? $global_e->attr["title"] : '') && !empty(is_array($global_e->attr) && isset($global_e->attr["aria-label"]) ? $global_e->attr["aria-label"] : '')) return true;
 
 		// 2. The element $global_e is contained by a "label" element
-		if ($global_e->parent()->tag == "label")
+		$parent = $global_e->parent();
+		if ($parent && $parent->tag == "label")
 		{
 			$pattern = "/(.*)". preg_quote($global_e->outertext, '/') ."/";
-			preg_match($pattern, $global_e->parent->innertext, $matches);
-			if (strlen(trim($matches[1])) > 0) return true;
+			preg_match($pattern, $parent->innertext, $matches);
+			if (isset($matches[1]) && strlen(trim($matches[1])) > 0) return true;
 		}
 
 		// 3. The element $global_e has an "id" attribute value that matches the "for" attribute value of a "label" element
@@ -122,14 +123,12 @@ class BasicFunctions {
 	/**
 	* return html tag of the first child
 	*/
-	public static function getFirstChildTag()
-	{
-		global $global_e;
-
 		$children = $global_e->children();
 
-		return $children[0]->tag;
-	}
+		if (isset($children[0])) {
+			return $children[0]->tag;
+		}
+		return '';
 
 	/**
 	* return the width of the image. return false if the image is not accessible or at failure
@@ -259,6 +258,7 @@ class BasicFunctions {
 	{
 		global $global_e;
 
+		$value = '';
 		foreach ($global_e->children() as $child)
 			if ($child->tag == $tag) $value = strtolower(trim(is_array($child->attr) && isset($child->attr[$attr]) ? (string)$child->attr[$attr] : ''));
 
@@ -273,6 +273,7 @@ class BasicFunctions {
 	{
 		global $global_e;
 
+		$value = '';
 		foreach ($global_e->children() as $child)
 			if ($child->tag == $tag) $value = strtolower(trim($child->plaintext));
 
@@ -415,7 +416,7 @@ class BasicFunctions {
 
 		foreach($global_e->children() as $child)
 			if ($child->tag == $tag) $num++;
-			else $num += BasicChecks::getNumOfTagRecursiveInChildren($child, $tag);
+			else $num += BasicFunctions::getNumOfTagRecursiveInChildren($child, $tag);
 
 		return $num;
 	}
@@ -427,7 +428,8 @@ class BasicFunctions {
 	{
 		global $global_e;
 
-		return $global_e->parent()->tag;
+		$parent = $global_e->parent();
+		return $parent ? $parent->tag : '';
 	}
 
 	/**
@@ -470,7 +472,8 @@ class BasicFunctions {
 		// 1. The element $global_e is contained by a "label" element
 		// 2. The element $global_e has a "title" attribute
 		// 3. The element $global_e has a "aria-label" attribute
-		if ($global_e->parent()->tag == "label" || (is_array($global_e->attr) && isset($global_e->attr["title"])) || (is_array($global_e->attr) && isset($global_e->attr["aria-label"]))) return true;
+		$parent = $global_e->parent();
+		if (($parent && $parent->tag == "label") || (is_array($global_e->attr) && isset($global_e->attr["title"])) || (is_array($global_e->attr) && isset($global_e->attr["aria-label"]))) return true;
 
 		// 3. The element $global_e has an "id" attribute value that matches the "for" attribute value of a "label" element
 		$input_id = is_array($global_e->attr) && isset($global_e->attr["id"]) ? (string)$global_e->attr["id"] : '';
@@ -525,21 +528,22 @@ class BasicFunctions {
 
 		foreach ($children as $i => $child)
 		{
-			if (strtolower(trim(is_array($child->attr) && isset($child->attr["type"]) ? (string)$child->attr["type"] : '')) == "checkbox")
+			$type = (is_array($child->attr) && isset($child->attr["type"])) ? strtolower(trim((string)$child->attr["type"])) : '';
+			if ($type == "checkbox")
 			{
-				$this_name = strtolower(trim(is_array($child->attr) && isset($child->attr["name"]) ? (string)$child->attr["name"] : ''));
+				$this_name = (is_array($child->attr) && isset($child->attr["name"])) ? strtolower(trim((string)$child->attr["name"])) : '';
 
-				for($j=$i+1; $j <=$num_of_children; $j++)
+				for($j=$i+1; $j < $num_of_children; $j++)
+				{
 					// if there are radio buttons with same name,
 					// check if they are contained in "fieldset" and "legend" elements
-					if (strtolower(trim(is_array($children[$j]->attr) && isset($children[$j]->attr["name"]) ? (string)$children[$j]->attr["name"] : '')) == $this_name)
+					if (isset($children[$j]) && strtolower(trim(is_array($children[$j]->attr) && isset($children[$j]->attr["name"]) ? (string)$children[$j]->attr["name"] : '')) == $this_name)
 						if (BasicChecks::hasParent($global_e, "fieldset"))
 							return BasicChecks::hasParent($global_e, "legend");
 						else
 							return false;
+				}
 			}
-			else
-				return BasicChecks::hasFieldsetOnMultiCheckbox($child);
 		}
 
 		return true;
@@ -678,12 +682,13 @@ class BasicFunctions {
 	{
 		global $global_e;
 
-		if ($global_e->parent() == NULL) return false;
+		$parent = $global_e->parent();
+		if ($parent == NULL) return false;
 
-		if ($global_e->parent()->tag == $parent_tag)
+		if ($parent->tag == $parent_tag)
 			return true;
 		else
-			return BasicChecks::hasParent($global_e->parent(), $parent_tag);
+			return BasicChecks::hasParent($parent, $parent_tag);
 	}
 
 	/**
@@ -742,13 +747,19 @@ class BasicFunctions {
 
 		$next_sibling = $global_e->next_sibling();
 
-		if ($next_sibling->tag <> "a") return true;
+		if (!$next_sibling || $next_sibling->tag <> "a") return true;
 
 		// check if there's other text in between $global_e and its next sibling
-		$pattern = "/". preg_quote($global_e->outertext, '/')."(.*)". preg_quote($next_sibling->outertext, '/') ."/";
-		preg_match($pattern, $global_e->parent->innertext, $matches);
+		$parent = $global_e->parent();
+		if (!$parent) return true;
 
-		return (strlen(trim($matches[1])) > 0);
+		$pattern = "/". preg_quote($global_e->outertext, '/')."(.*)". preg_quote($next_sibling->outertext, '/') ."/";
+		preg_match($pattern, $parent->innertext, $matches);
+
+		if (isset($matches[1])) {
+			return (strlen(trim($matches[1])) > 0);
+		}
+		return false;
 	}
 
 	/**

@@ -338,10 +338,11 @@ class AccessibilityValidator {
 		{
 					try {
 						$check_result = eval($this->check_func_array[$check_id]);
-					} catch (Error $e) {
-						// Log the error but continue to avoid crashing the validator
+					} catch (Throwable $e) {
+						// Log the error and the code that caused it
+						error_log("AChecker Error in check $check_id: " . $e->getMessage() . " at " . $e->getFile() . ":" . $e->getLine());
 						if (defined('AC_DEBUG') && AC_DEBUG) {
-							error_log("Error in check $check_id: " . $e->getMessage());
+							error_log("AChecker Failing code for check $check_id:\n" . $this->check_func_array[$check_id]);
 						}
 						$check_result = null;
 					}
