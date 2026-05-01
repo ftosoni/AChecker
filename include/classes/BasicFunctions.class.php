@@ -37,7 +37,7 @@ class BasicFunctions {
 		global $global_e, $global_content_dom;
 
 		// 1. The element $global_e has a "title" or "aria-label" attribute
-		if (!empty($global_e->attr["title"]) && !empty($global_e->attr["aria-label"])) return true;
+		if (!empty(is_array($global_e->attr) && isset($global_e->attr["title"]) ? $global_e->attr["title"] : '') && !empty(is_array($global_e->attr) && isset($global_e->attr["aria-label"]) ? $global_e->attr["aria-label"] : '')) return true;
 
 		// 2. The element $global_e is contained by a "label" element
 		if ($global_e->parent()->tag == "label")
@@ -48,20 +48,20 @@ class BasicFunctions {
 		}
 
 		// 3. The element $global_e has an "id" attribute value that matches the "for" attribute value of a "label" element
-		$input_id = $global_e->attr["id"];
+		$input_id = is_array($global_e->attr) && isset($global_e->attr["id"]) ? (string)$global_e->attr["id"] : '';
 
 		if ($input_id == "") return false;  // attribute "id" must exist
 
 		foreach ($global_content_dom->find("label") as $e_label)
 		{
-			if ($e_label->attr["for"] == $input_id)
+			if ((is_array($e_label->attr) && isset($e_label->attr["for"]) ? (string)$e_label->attr["for"] : '') == $input_id)
 			{
 				// label contains text
 				if (trim($e_label->plaintext) <> "") return true;
 
 				// label contains an image with alt text
 				foreach ($e_label->children as $e_label_child)
-					if ($e_label_child->tag == "img" && strlen(trim($e_label_child->attr["alt"])) > 0)
+					if ($e_label_child->tag == "img" && strlen(trim(is_array($e_label_child->attr) && isset($e_label_child->attr["alt"]) ? (string)$e_label_child->attr["alt"] : '')) > 0)
 						return true;
 			}
 		}
@@ -170,7 +170,7 @@ class BasicFunctions {
 				$global_array_image_sizes[$file] = array("is_exist"=>true, "width"=>$dimensions[0], "height"=>$dimensions[1]);
 				return array($dimensions[0], $dimensions[1]);
 			} else {
-				$global_array_image_sizes[] = array($file=>array("is_exist"=>false, "width"=>NULL, "height"=>NULL));
+				$global_array_image_sizes[$file] = array("is_exist"=>false, "width"=>NULL, "height"=>NULL);
 				return false;
 			}
 		}
@@ -209,12 +209,12 @@ class BasicFunctions {
 
 		foreach ($e_htmls as $e_html)
 		{
-			if (isset($e_html->attr["xml:lang"]))
+			if (is_array($e_html->attr) && isset($e_html->attr["xml:lang"]))
 			{
 				$lang = trim($e_html->attr["xml:lang"]);
 				break;
 			}
-			else if (isset($e_html->attr["lang"]))
+			else if (is_array($e_html->attr) && isset($e_html->attr["lang"]))
 			{
 				$lang = trim($e_html->attr["lang"]);
 				break;
@@ -470,7 +470,7 @@ class BasicFunctions {
 		// 1. The element $global_e is contained by a "label" element
 		// 2. The element $global_e has a "title" attribute
 		// 3. The element $global_e has a "aria-label" attribute
-		if ($global_e->parent()->tag == "label" || isset($global_e->attr["title"]) || isset($global_e->attr["aria-label"])) return true;
+		if ($global_e->parent()->tag == "label" || (is_array($global_e->attr) && isset($global_e->attr["title"])) || (is_array($global_e->attr) && isset($global_e->attr["aria-label"]))) return true;
 
 		// 3. The element $global_e has an "id" attribute value that matches the "for" attribute value of a "label" element
 		$input_id = is_array($global_e->attr) && isset($global_e->attr["id"]) ? (string)$global_e->attr["id"] : '';
@@ -492,7 +492,7 @@ class BasicFunctions {
 	{
 		global $global_e;
 
-		return isset($global_e->attr[$attr]);
+		return is_array($global_e->attr) && isset($global_e->attr[$attr]);
 	}
 
 	/**
@@ -532,7 +532,7 @@ class BasicFunctions {
 				for($j=$i+1; $j <=$num_of_children; $j++)
 					// if there are radio buttons with same name,
 					// check if they are contained in "fieldset" and "legend" elements
-					if (strtolower(trim(is_array($children[$j]->attr["name"]) && isset($children[$j]->attr["name"]) ? (string)$children[$j]->attr["name"] : '')) == $this_name)
+					if (strtolower(trim(is_array($children[$j]->attr) && isset($children[$j]->attr["name"]) ? (string)$children[$j]->attr["name"] : '')) == $this_name)
 						if (BasicChecks::hasParent($global_e, "fieldset"))
 							return BasicChecks::hasParent($global_e, "legend");
 						else
@@ -642,10 +642,10 @@ class BasicFunctions {
 		if ($num_of_header_rows > 1 || ($num_of_header_rows > 0 && $num_of_header_cols > 0))
 		{
 			foreach ($global_e->find("th") as $th)
-				if (!isset($th->attr["id"])) return false;
+				if (!(is_array($th->attr) && isset($th->attr["id"]))) return false;
 
 			foreach ($global_e->find("td") as $td)
-				if (!isset($td->attr["headers"])) return false;
+				if (!(is_array($td->attr) && isset($td->attr["headers"]))) return false;
 		}
 
 		return true;
@@ -700,7 +700,7 @@ class BasicFunctions {
 		if ($num_of_header_rows > 0 && $num_of_header_cols > 0)
 		{
 			foreach ($global_e->find("th") as $th)
-				if (!isset($th->attr["scope"])) return false;
+				if (!(is_array($th->attr) && isset($th->attr["scope"]))) return false;
 		}
 
 		return true;
@@ -797,7 +797,7 @@ class BasicFunctions {
 				foreach ($map->children() as $map_child)
 				{
 					if ($map_child->tag == "area")
-						array_push($area_hrefs, array("href"=>trim($map_child->attr["href"]), "found" => false));
+						array_push($area_hrefs, array("href"=>trim(is_array($map_child->attr) && isset($map_child->attr["href"]) ? (string)$map_child->attr["href"] : ''), "found" => false));
 				}
 
 				break;  // stop at finding <map> with $map_name
@@ -810,7 +810,7 @@ class BasicFunctions {
 		foreach($global_content_dom->find("a") as $a)
 		{
 			foreach ($area_hrefs as $i => $area_href)
-				if ($a->attr["href"] == $area_href["href"])
+				if ((is_array($a->attr) && isset($a->attr["href"]) ? (string)$a->attr["href"] : '') == $area_href["href"])
 				{
 					$area_hrefs[$i]["found"] = true;
 					break;
@@ -871,7 +871,7 @@ class BasicFunctions {
 	{
 		global $global_e, $global_check_id;
 
-		return BasicChecks::isTextInSearchString(trim($global_e->attr[$attr]), $global_check_id, $global_e);
+		return BasicChecks::isTextInSearchString(trim(is_array($global_e->attr) && isset($global_e->attr[$attr]) ? (string)$global_e->attr[$attr] : ''), $global_check_id, $global_e);
 	}
 
 	/**
@@ -950,7 +950,7 @@ class BasicFunctions {
 
 		foreach ($global_e->find("input") as $e_input)
 		{
-			if (strtolower(trim($e_input->attr["type"])) == "radio")
+			if (strtolower(trim(is_array($e_input->attr) && isset($e_input->attr["type"]) ? (string)$e_input->attr["type"] : '')) == "radio")
 				array_push($radio_buttons, $e_input);
 		}
 
@@ -958,7 +958,7 @@ class BasicFunctions {
 		{
 			for ($j=0; $j < count($radio_buttons); $j++)
 			{
-				if ($i <> $j && strtolower(trim($radio_buttons[$i]->attr["name"])) == strtolower(trim($radio_buttons[$j]->attr["name"]))
+				if ($i <> $j && strtolower(trim(is_array($radio_buttons[$i]->attr) && isset($radio_buttons[$i]->attr["name"]) ? (string)$radio_buttons[$i]->attr["name"] : '')) == strtolower(trim(is_array($radio_buttons[$j]->attr) && isset($radio_buttons[$j]->attr["name"]) ? (string)$radio_buttons[$j]->attr["name"] : ''))
 				    && !BasicChecks::hasParent($radio_buttons[$i], "fieldset") && !BasicChecks::hasParent($radio_buttons[$i], "legend")) {
 					return false;
 				}
@@ -982,15 +982,15 @@ class BasicFunctions {
 		{
 			foreach ($form->find("input") as $button)
 			{
-				$button_type = strtolower(trim($button->attr["type"]));
+				$button_type = strtolower(trim(is_array($button->attr) && isset($button->attr["type"]) ? (string)$button->attr["type"] : ''));
 
 				if ($button_type == "submit" || $button_type == "image")
 				{
 					if ($button_type == "submit")
-						$button_value = strtolower(trim($button->attr["value"]));
+						$button_value = strtolower(trim(is_array($button->attr) && isset($button->attr["value"]) ? (string)$button->attr["value"] : ''));
 
 					if ($button_type == "image")
-						$button_value = strtolower(trim($button->attr["alt"]));
+						$button_value = strtolower(trim(is_array($button->attr) && isset($button->attr["alt"]) ? (string)$button->attr["alt"] : ''));
 
 					if (in_array($button_value, $submit_labels)) return false;
 					else array_push($submit_labels, $button_value);
@@ -1039,8 +1039,8 @@ class BasicFunctions {
 		{
 			foreach ($metas as $meta)
 			{
-				if (stristr($meta->attr['content'], 'text/html')) $is_text_content = true;
-				if (stristr($meta->attr['content'], 'application/xhtml+xml')) $is_application_content = true;
+				if (stristr(is_array($meta->attr) && isset($meta->attr['content']) ? (string)$meta->attr['content'] : '', 'text/html')) $is_text_content = true;
+				if (stristr(is_array($meta->attr) && isset($meta->attr['content']) ? (string)$meta->attr['content'] : '', 'application/xhtml+xml')) $is_application_content = true;
 			}
 		}
 		$doctypes = $global_content_dom->find("doctype");
@@ -1053,7 +1053,7 @@ class BasicFunctions {
 			{
 				// If the content is HTML, check the value of the html element's lang attribute
 				if (stristr($doctype_content, "HTML") && !stristr($doctype_content, "XHTML")) {
-					return BasicChecks::isValidLangCode(trim($global_e->attr['lang']));
+					return BasicChecks::isValidLangCode(trim(is_array($global_e->attr) && isset($global_e->attr['lang']) ? (string)$global_e->attr['lang'] : ''));
 				}
 
 				// If the content is XHTML 1.0, or any version of XHTML served as "text/html",
@@ -1061,13 +1061,13 @@ class BasicFunctions {
 				// Note: both lang attributes must be set to the same value.
 				if (stristr($doctype_content, "XHTML 1.0") || (stristr($doctype_content, " XHTML ") && $is_text_content))
 				{
-					return (BasicChecks::isValidLangCode(trim($global_e->attr['lang'])) &&
-					        BasicChecks::isValidLangCode(trim($global_e->attr['xml:lang'])) &&
-					        trim($global_e->attr['lang']) == trim($global_e->attr['xml:lang']));
+					return (BasicChecks::isValidLangCode(trim(is_array($global_e->attr) && isset($global_e->attr['lang']) ? (string)$global_e->attr['lang'] : '')) &&
+					        BasicChecks::isValidLangCode(trim(is_array($global_e->attr) && isset($global_e->attr['xml:lang']) ? (string)$global_e->attr['xml:lang'] : '')) &&
+					        trim(is_array($global_e->attr) && isset($global_e->attr['lang']) ? (string)$global_e->attr['lang'] : '') == trim(is_array($global_e->attr) && isset($global_e->attr['xml:lang']) ? (string)$global_e->attr['xml:lang'] : ''));
 				}
 				else if (stristr($doctype_content, " XHTML ") && $is_application_content)
 				{
-					return BasicChecks::isValidLangCode(trim($global_e->attr['xml:lang']));
+					return BasicChecks::isValidLangCode(trim(is_array($global_e->attr) && isset($global_e->attr['xml:lang']) ? (string)$global_e->attr['xml:lang'] : ''));
 				}
 			}
 		}
@@ -1083,10 +1083,10 @@ class BasicFunctions {
 	{
 		global $global_e;
 
-		if (isset($global_e->attr["lang"]))
+		if (is_array($global_e->attr) && isset($global_e->attr["lang"]))
 			$lang_code = trim($global_e->attr["lang"]);
 		else
-			$lang_code = trim($global_e->attr["xml:lang"]);
+			$lang_code = trim(is_array($global_e->attr) && isset($global_e->attr["xml:lang"]) ? (string)$global_e->attr["xml:lang"] : '');
 
 		// return no error if language code is not specified
 		if (!BasicChecks::isValidLangCode($lang_code)) return true;
@@ -1095,9 +1095,9 @@ class BasicFunctions {
 
 		if (in_array($lang_code, $rtl_lang_codes))
 			// When these 2 languages, "dir" attribute must be set and set to "rtl"
-			return (strtolower(trim($global_e->attr["dir"])) == "rtl");
+			return (strtolower(trim(is_array($global_e->attr) && isset($global_e->attr["dir"]) ? (string)$global_e->attr["dir"] : '')) == "rtl");
 		else
-			return (!isset($global_e->attr["dir"]) || strtolower(trim($global_e->attr["dir"])) == "ltr");
+			return (!(is_array($global_e->attr) && isset($global_e->attr["dir"])) || strtolower(trim(is_array($global_e->attr) && isset($global_e->attr["dir"]) ? (string)$global_e->attr["dir"] : '')) == "ltr");
 	}
 
 	/**
