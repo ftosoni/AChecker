@@ -268,9 +268,9 @@ class AccessibilityValidator {
 		{
 			// generate array of checks for the html tag of this element
 			if (is_array($this->check_for_tag_array[$e->tag]))
-				$check_array[$e->tag] = array_merge($this->check_for_tag_array[$e->tag], $this->check_for_all_elements_array);
+				$check_array[$e->tag] = array_unique(array_merge($this->check_for_tag_array[$e->tag], $this->check_for_all_elements_array));
 			else
-				$check_array[$e->tag] = $this->check_for_all_elements_array;
+				$check_array[$e->tag] = array_unique($this->check_for_all_elements_array);
 				
 			foreach ($check_array[$e->tag] as $check_id)
 			{
