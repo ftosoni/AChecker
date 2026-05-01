@@ -790,8 +790,8 @@ class BasicChecks {
 		$inline = "";
 
 		//controllo sullo stile inline
-		if (isset ( $e->attr ["style"] )) {
-			$inline = BasicChecks::GetElementStyleInline ( $e->attr ["style"], $p );
+		if (is_array($e->attr) && isset ( $e->attr ["style"] )) {
+			$inline = BasicChecks::GetElementStyleInline ( (string)$e->attr ["style"], $p );
 			//verifico "!important"
 			$posizione = stripos ( $inline, "!important" );
 			if ($posizione !== false) {
@@ -814,17 +814,17 @@ class BasicChecks {
 		$best = null;
 
 		//id
-		if (isset ( $e->attr ["id"] )) {
-			$id = BasicChecks::GetElementStyleId ( $e, $e->attr ["id"], $p );
+		if (is_array($e->attr) && isset ( $e->attr ["id"] )) {
+			$id = BasicChecks::GetElementStyleId ( $e, (string)$e->attr ["id"], $p );
 			$best = BasicChecks::getPriorityInfo ( $best, $id );
 		}
 		//classe
-		if (isset ( $e->attr ["class"] )) {
-			$class = BasicChecks::GetElementStyleClass ( $e, $e->attr ["class"], $p );
+		if (is_array($e->attr) && isset ( $e->attr ["class"] )) {
+			$class = BasicChecks::GetElementStyleClass ( $e, (string)$e->attr ["class"], $p );
 			$best = BasicChecks::getPriorityInfo ( $best, $class );
 		}
 		//tag
-		$tag = BasicChecks::GetElementStyle ( $e, $e->tag, $p );
+		$tag = BasicChecks::GetElementStyle ( $e, (string)$e->tag, $p );
 
 		$best = BasicChecks::getPriorityInfo ( $best, $tag );
 
@@ -841,7 +841,10 @@ class BasicChecks {
 
 		$best_all = BasicChecks::GetElementStyle ( $e, '*', $p );
 
-		if ($best == null || (stripos ( $best ["valore"], "!important" ) === false && stripos ( $best_all ["valore"], "!important" ) !== false))
+		$v_best = (is_array($best) && isset($best["valore"])) ? (string)$best["valore"] : "";
+		$v_best_all = (is_array($best_all) && isset($best_all["valore"])) ? (string)$best_all["valore"] : "";
+
+		if ($best == null || (stripos ( $v_best, "!important" ) === false && stripos ( $v_best_all, "!important" ) !== false))
 			$best = $best_all;
 
 		// if coming here was not the style inline! important since the early control
@@ -960,72 +963,67 @@ class BasicChecks {
 	(ogni struttura contiene il valore della proprieta' e il numero di id, class e tag contenuti nel selettore)
 	Restituisce la regola che ha priorità più alta in base alla tipologia dei selettori
 	Se le due regole hanno identica priorita, restituisce quella con posizione maggiore
-	*/
 	public static function getPriorityInfo($info1, $info2) {
 
-		if ($info1 == null || $info1 == "")
-			return $info2;
-		if ($info2 == null || $info2 == "")
+		if (!is_array($info1))
+			return is_array($info2) ? $info2 : null;
+		if (!is_array($info2))
 			return $info1;
 
-		if (stripos ( $info1 ["valore"], "!important" ) !== false && stripos ( $info2 ["valore"], "!important" ) === false) {
+		$v1 = isset($info1["valore"]) ? (string)$info1["valore"] : "";
+		$v2 = isset($info2["valore"]) ? (string)$info2["valore"] : "";
+
+		if (stripos ( $v1, "!important" ) !== false && stripos ( $v2, "!important" ) === false) {
 			$best = $info1;
-		} elseif (stripos ( $info1 ["valore"], "!important" ) === false && stripos ( $info2 ["valore"], "!important" ) !== false) {
+		} elseif (stripos ( $v1, "!important" ) === false && stripos ( $v2, "!important" ) !== false) {
 			$best = $info2;
-		} else //have both! important or do not have any of the two, so I check the id
-				//hanno entrambe !important o non lo hanno nessuna della due, quindi verifico il numeo di id
+		} else 
 		{
+			$id1 = isset($info1["num_id"]) ? (int)$info1["num_id"] : 0;
+			$id2 = isset($info2["num_id"]) ? (int)$info2["num_id"] : 0;
 
-			if ($info1 ["num_id"] > $info2 ["num_id"]) {
+			if ($id1 > $id2) {
 				$best = $info1;
-			} elseif ($info1 ["num_id"] < $info2 ["num_id"]) {
+			} elseif ($id1 < $id2) {
 				$best = $info2;
-			} else { // same id number, control the number of class
-					//stesso numero di id, controllo il numero di class
+			} else { 
+				$c1 = isset($info1["num_class"]) ? (int)$info1["num_class"] : 0;
+				$c2 = isset($info2["num_class"]) ? (int)$info2["num_class"] : 0;
 
-
-				if ($info1 ["num_class"] > $info2 ["num_class"]) {
+				if ($c1 > $c2) {
 					$best = $info1;
-				} elseif ($info1 ["num_class"] < $info2 ["num_class"]) {
+				} elseif ($c1 < $c2) {
 					$best = $info2;
-				} else { // same id and class number, check number of tags
-						//stesso numero di id e class, controllo in numero di tag
+				} else { 
+					$t1 = isset($info1["num_tag"]) ? (int)$info1["num_tag"] : 0;
+					$t2 = isset($info2["num_tag"]) ? (int)$info2["num_tag"] : 0;
 
-
-					if ($info1 ["num_tag"] > $info2 ["num_tag"]) {
-								// same or greater number of id, class and tags: is the priority of the new rule
-								//stesso o maggiore numero di id, class e tag: la priorità è della nuova regola
+					if ($t1 > $t2) {
 						$best = $info1;
-					} elseif ($info1 ["num_tag"] < $info2 ["num_tag"]) {
+					} elseif ($t1 < $t2) {
 						$best = $info2;
-					} else {
+					} else { 
+						$css1 = (isset($info1["css_rule"]) && isset($info1["css_rule"]["idcss"])) ? (int)$info1["css_rule"]["idcss"] : 0;
+						$css2 = (isset($info2["css_rule"]) && isset($info2["css_rule"]["idcss"])) ? (int)$info2["css_rule"]["idcss"] : 0;
 
-						// the two rules are completely equivalent, and returns
-						// with a smaller css id (the inner leaf idcss == 0).
-						//le due regole sono perfettamente equivalenti, quindi restituisco
-						// con id css piu' piccolo (idcss == 0 � il foglio interno).
-						if ($info1 ["css_rule"] ["idcss"] > $info2 ["css_rule"] ["idcss"])
+						if ($css1 > $css2)
 							$best = $info1;
-						elseif ($info1 ["css_rule"] ["idcss"] < $info2 ["css_rule"] ["idcss"])
+						elseif ($css1 < $css2)
 							$best = $info2;
-						else { // the two rules are equivalent in the same css (internal or external)
-								//le due regole equivalenti sono nello stesso css (interno o esterno)
+						else {
+							$pos1 = (isset($info1["css_rule"]) && isset($info1["css_rule"]["posizione"])) ? (int)$info1["css_rule"]["posizione"] : 0;
+							$pos2 = (isset($info2["css_rule"]) && isset($info2["css_rule"]["posizione"])) ? (int)$info2["css_rule"]["posizione"] : 0;
 
-
-							if ($info1 ["css_rule"] ["posizione"] > $info2 ["css_rule"] ["posizione"])
+							if ($pos1 > $pos2)
 								$best = $info1;
 							else
 								$best = $info2;
 						}
-
 					}
-
 				}
 			}
 		}
-
 		return $best;
-
 	}
 
 	/*
@@ -2204,8 +2202,8 @@ class BasicChecks {
 			$background = BasicChecks::get_p_css ( $e, "background-color" );
 			if ($background == "" || $background == null) //controllo se c'e bgcolor che ha priorita' inferiore dello stile
 			{
-				if (($e->tag == "table" || $e->tag == "tr" || $e->tag == "td") && isset ( $e->attr ["bgcolor"] ))
-					$background = $e->attr ["bgcolor"];
+				if (($e->tag == "table" || $e->tag == "tr" || $e->tag == "td") && is_array($e->attr) && isset ( $e->attr ["bgcolor"] ))
+					$background = (string)$e->attr ["bgcolor"];
 			}
 			// if the element has an absolute position and background not defined (default: transparent)
 			//se l'elemento ha posizione assoluta e background non definito (default:transparent)
@@ -2217,8 +2215,8 @@ class BasicChecks {
 		//se non trovo nessun background controllo che sia definito nel body, se no gli assegno il bianco
 		if ($background == "" || $background == null || $background == "transparent") {
 
-			if (($e->tag == "body" || $e->tag == "html") && isset ( $e->attr ["bgcolor"] ))
-				$background = $e->attr ["bgcolor"];
+			if (($e->tag == "body" || $e->tag == "html") && is_array($e->attr) && isset ( $e->attr ["bgcolor"] ))
+				$background = (string)$e->attr ["bgcolor"];
 			else
 				$background = "#ffffff";
 		}
