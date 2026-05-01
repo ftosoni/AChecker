@@ -202,7 +202,7 @@ AChecker.output = AChecker.output || {};
         
         $.ajax({
             type: "POST",
-            url: "checker/start_export.php",
+            url: "start_export.php",
             data: dataString,
             cache: false,
             success: function (returned_data) {
@@ -214,7 +214,7 @@ AChecker.output = AChecker.output || {};
             
                 // change src and start downloading
                 var ifrm = document.getElementById("downloadFrame");
-                ifrm.src = "checker/download.php?path=" + returned_data;
+                ifrm.src = "download.php?path=" + returned_data;
             },
         
             error: function (xhr, errorType, exception) {

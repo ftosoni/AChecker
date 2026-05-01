@@ -146,28 +146,8 @@ define('SITE_NAME',                 $_config['site_name']);
 	
 	// set default template paths:
 
-	if (isset($_SESSION['prefs']['PREF_THEME']) && file_exists(AC_INCLUDE_PATH . '../themes/' . $_SESSION['prefs']['PREF_THEME']) && isset($_SESSION['valid_user']) && $_SESSION['valid_user']) 
-	{
-		if (!is_dir(AC_INCLUDE_PATH . '../themes/' . $_SESSION['prefs']['PREF_THEME']))
-		{
-			$_SESSION['prefs']['PREF_THEME'] = 'default';
-		} 
-		else 
-		{
-			//check if enabled
-			$themesDAO = new ThemesDAO();
-			$row = $themesDAO->getByID($_SESSION['prefs']['PREF_THEME']);
+	$_SESSION['prefs']['PREF_THEME'] = 'codex';
 
-			if ($row['status'] == 0) 
-			{
-				// get default
-				$_SESSION['prefs']['PREF_THEME'] = get_default_theme();
-			}
-		}
-	} else 
-	{
-		$_SESSION['prefs']['PREF_THEME'] = get_default_theme();
-	}
 	
 	// Create new Plates instance
 	$plates = League\Plates\Engine::create(AC_INCLUDE_PATH . '../themes/' . $_SESSION['prefs']['PREF_THEME'] . '/', 'tmpl.php');

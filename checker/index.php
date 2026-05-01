@@ -20,6 +20,9 @@ include_once(AC_INCLUDE_PATH. 'classes/DAO/ChecksDAO.class.php');
 include_once(AC_INCLUDE_PATH. 'classes/DAO/UserLinksDAO.class.php');
 include_once(AC_INCLUDE_PATH. 'classes/Decision.class.php');
 
+error_log("AChecker Debug: Request URI: " . $_SERVER['REQUEST_URI']);
+error_log("AChecker Debug: POST: " . print_r($_POST, true));
+
 global $starttime;
 $mtime = microtime();
 $mtime = explode(" ", $mtime);
@@ -123,7 +126,7 @@ if (!is_array($_gids)) { // $_gids hasn't been set at validating referer URIs
 	$_SESSION['input_form']['gids'] = $_gids;
 }
 
-if ($_POST["validate_uri"])
+if (isset($_POST["validate_uri"]))
 {
 	$_POST['uri'] = htmlentities($_POST['uri']);
 
@@ -159,7 +162,7 @@ if ($_POST["validate_uri"])
 	}
 }
 
-if ($_POST["validate_file"])
+if (isset($_POST["validate_file"]))
 {
 	$allowed_file_extensions = ["html", "htm"];
 
@@ -179,7 +182,7 @@ if ($_POST["validate_file"])
 	}
 }
 
-if ($_POST["validate_paste"])
+if (isset($_POST["validate_paste"]))
 {
 	$validate_content = $_POST["pastehtml"] = $stripslashes($_POST["pastehtml"]);
 	$_SESSION['input_form']['paste'] = $validate_content;
@@ -211,17 +214,22 @@ if (isset($validate_content) && !Utility::hasEnoughMemory(strlen($validate_conte
 $show_achecker_whatis = false;
 
 // validation and display result
-if ($_POST["validate_uri"] || $_POST["validate_file"] || $_POST["validate_content"] || $_POST["validate_paste"])
+if (isset($_POST["validate_uri"]) || isset($_POST["validate_file"]) || isset($_POST["validate_content"]) || isset($_POST["validate_paste"]))
 {
 	// check accessibility
 	include(AC_INCLUDE_PATH. "classes/AccessibilityValidator.class.php");
 
-	if ($_POST["validate_uri"]) $check_uri = $_POST['uri'];
+	if (isset($_POST["validate_uri"])) $check_uri = $_POST['uri'];
 
 	if (isset($validate_content) && $has_enough_memory)
 	{
+		error_log("AChecker Debug: Initializing AccessibilityValidator");
 		$aValidator = new AccessibilityValidator($validate_content, $_gids, $check_uri);
 		$aValidator->validate();
+		error_log("AChecker Debug: Validation complete. Errors: " . $aValidator->getNumOfValidateError());
+	}
+	else {
+		error_log("AChecker Debug: Validation skipped. Content set: " . (isset($validate_content) ? 'yes' : 'no') . ", Memory: " . ($has_enough_memory ? 'ok' : 'low'));
 	}
 	// end of checking accessibility
 }
@@ -240,8 +248,10 @@ if ($msg->containsErrors()) {
 include ("checker_input_form.php");
 
 // display validation results
+error_log("AChecker Debug: Checking results inclusion. has_errors: " . ($has_errors ? 'yes' : 'no') . ", aValidator: " . (isset($aValidator) ? 'set' : 'not set') . ", htmlValidator: " . (isset($htmlValidator) ? 'set' : 'not set'));
 if (!$has_errors && (isset($aValidator) || isset($htmlValidator)))
 {
+	error_log("AChecker Debug: Including checker_results.php");
 	include ("checker_results.php");
 }
 else
@@ -251,9 +261,7 @@ else
 
 if ($show_achecker_whatis)
 {
-	echo '<div id="output_div" class="validator-output-form">';
-	echo "<p>"._AC('achecker_whatis')."</p>";
-	echo '</div>';
+	echo "<p style='margin-bottom: 32px; color: var(--cdx-color-subtle);'>"._AC('achecker_whatis')."</p>";
 }
 
 // display footer

@@ -1,4 +1,4 @@
-# AChecker
+# MediaWiki Accessibility Checker
 
 AChecker is an automated accessibility checker used to evaluate the accessibility of HTML pages, and help ensure they can be accessed by all individuals, including those with disabilities, using assistive technologies to navigate the Internet.
 
@@ -44,5 +44,64 @@ touch include/config.inc.php
 Then follow the instructions above.
 
 For more about using AChecker, see the instructional videos on [YouTube](http://www.youtube.com/watch?v=jtNyF7KuOk8).
+
+---
+
+## 🚀 Deployment (Toolforge)
+
+Follow these steps to deploy the MediaWiki Accessibility Checker on Wikimedia Toolforge. This application requires a PHP environment and a MariaDB database.
+
+> [!NOTE]
+> The examples below use `mediawiki-accessibility-checker` as the tool name. Replace this with your own Toolforge credentials where applicable.
+
+### 1. Database Setup
+The database is **CRITICAL** for AChecker. It stores not only user logins but also all accessibility guidelines, checks, and application configurations.
+
+1. **Export your local database**:
+   ```bash
+   mysqldump -u root achecker > achecker_dump.sql
+   ```
+
+2. **Upload the dump to Toolforge**:
+   ```bash
+   scp achecker_dump.sql your-username@login.toolforge.org:~/
+   ```
+
+3. **Import the database on Toolforge**:
+   Log into Toolforge, become your tool, and import:
+   ```bash
+   ssh your-username@login.toolforge.org
+   become accessibility-checker
+   sql achecker < ~/achecker_dump.sql
+   ```
+
+### 2. Upload Files
+Upload the project files to the `public_html` directory of your tool:
+
+```bash
+# From your local project root
+scp -r ./* your-username@login.toolforge.org:~/public_html/
+```
+
+### 3. Configuration
+You must update `include/config.inc.php` on Toolforge to match the environment. 
+
+1. **Database Credentials**: Use the credentials found in `~/replica.my.cnf`.
+2. **Database Host**: Use `tools.db.svc.wikimedia.cloud`.
+3. **Paths**: Ensure `AC_TEMP_DIR` points to a writable directory on Toolforge (e.g., `/data/project/accessibility-checker/temp/`).
+
+### 4. Start Webservice
+Start the PHP 7.4 webservice:
+
+```bash
+become accessibility-checker
+toolforge webservice php7.4 start
+```
+
+### 5. Monitor Logs
+If you encounter issues (like the PDF generator error), monitor the logs:
+```bash
+toolforge webservice logs -f
+```
 
 
