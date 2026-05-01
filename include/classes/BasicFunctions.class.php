@@ -76,7 +76,7 @@ class BasicFunctions {
 	{
 		global $global_e;
 
-		return strlen(trim($global_e->attr[$attr]));
+		return strlen(trim(is_array($global_e->attr) && isset($global_e->attr[$attr]) ? (string)$global_e->attr[$attr] : ''));
 	}
 
 	/**
@@ -86,7 +86,7 @@ class BasicFunctions {
 	{
 		global $global_e;
 
-		return trim($global_e->attr[$attr]);
+		return trim(is_array($global_e->attr) && isset($global_e->attr[$attr]) ? (string)$global_e->attr[$attr] : '');
 	}
 
 	/**
@@ -96,7 +96,7 @@ class BasicFunctions {
 	{
 		global $global_e;
 
-		return intval(trim($global_e->attr[$attr]));
+		return intval(trim(is_array($global_e->attr) && isset($global_e->attr[$attr]) ? (string)$global_e->attr[$attr] : ''));
 	}
 
 	/**
@@ -106,7 +106,7 @@ class BasicFunctions {
 	{
 		global $global_e;
 
-		return strtolower(trim($global_e->attr[$attr]));
+		return strtolower(trim(is_array($global_e->attr) && isset($global_e->attr[$attr]) ? (string)$global_e->attr[$attr] : ''));
 	}
 
 	/**
@@ -116,7 +116,7 @@ class BasicFunctions {
 	{
 		global $global_e;
 
-		return strlen($global_e->attr[$attr]);
+		return strlen(is_array($global_e->attr) && isset($global_e->attr[$attr]) ? (string)$global_e->attr[$attr] : '');
 	}
 
 	/**
@@ -138,7 +138,8 @@ class BasicFunctions {
 	{
 		global $global_e, $base_href, $uri, $global_array_image_sizes;
 
-		$file = BasicChecks::getFile($global_e->attr[$attr], $base_href, $uri);
+		$attr_val = is_array($global_e->attr) && isset($global_e->attr[$attr]) ? (string)$global_e->attr[$attr] : '';
+		$file = BasicChecks::getFile($attr_val, $base_href, $uri);
 		$file_size_checked = false;
 
 		// Check if the image has already been fetched.
@@ -230,7 +231,8 @@ class BasicFunctions {
 	{
 		global $global_e;
 
-		return substr(trim($global_e->attr[$attr]), -4);
+		$attr_val = is_array($global_e->attr) && isset($global_e->attr[$attr]) ? (string)$global_e->attr[$attr] : '';
+		return substr(trim($attr_val), -4);
 	}
 
 	/**
@@ -244,7 +246,7 @@ class BasicFunctions {
 		$len = 0;
 
 		foreach ($global_e->children() as $child)
-			if ($child->tag == $tag) $len = strlen(trim($child->attr[$attr]));
+			if ($child->tag == $tag) $len = strlen(trim(is_array($child->attr) && isset($child->attr[$attr]) ? (string)$child->attr[$attr] : ''));
 
 		return $len;
 	}
@@ -258,7 +260,7 @@ class BasicFunctions {
 		global $global_e;
 
 		foreach ($global_e->children() as $child)
-			if ($child->tag == $tag) $value = strtolower(trim($child->attr[$attr]));
+			if ($child->tag == $tag) $value = strtolower(trim(is_array($child->attr) && isset($child->attr[$attr]) ? (string)$child->attr[$attr] : ''));
 
 		return $value;
 	}
@@ -331,7 +333,8 @@ class BasicFunctions {
 	{
 		global $global_e;
 
-		return strtolower(trim($global_e->next_sibling()->attr[$attr]));
+		$sib = $global_e->next_sibling();
+		return strtolower(trim(is_array($sib->attr) && isset($sib->attr[$attr]) ? (string)$sib->attr[$attr] : ''));
 	}
 
 	/**
@@ -475,7 +478,7 @@ class BasicFunctions {
 		if ($input_id == "") return false;  // attribute "id" must exist
 
 		foreach ($global_content_dom->find("label") as $global_e_label)
-		  if (strtolower(trim($global_e_label->attr["for"])) == strtolower(trim($global_e->attr["id"])))
+		  if (strtolower(trim(is_array($global_e_label->attr) && isset($global_e_label->attr["for"]) ? (string)$global_e_label->attr["for"] : '')) == strtolower(trim(is_array($global_e->attr) && isset($global_e->attr["id"]) ? (string)$global_e->attr["id"] : '')))
 			return true;
 
 	  return false;
@@ -522,14 +525,14 @@ class BasicFunctions {
 
 		foreach ($children as $i => $child)
 		{
-			if (strtolower(trim($child->attr["type"])) == "checkbox")
+			if (strtolower(trim(is_array($child->attr) && isset($child->attr["type"]) ? (string)$child->attr["type"] : '')) == "checkbox")
 			{
-				$this_name = strtolower(trim($child->attr["name"]));
+				$this_name = strtolower(trim(is_array($child->attr) && isset($child->attr["name"]) ? (string)$child->attr["name"] : ''));
 
 				for($j=$i+1; $j <=$num_of_children; $j++)
 					// if there are radio buttons with same name,
 					// check if they are contained in "fieldset" and "legend" elements
-					if (strtolower(trim($children[$j]->attr["name"])) == $this_name)
+					if (strtolower(trim(is_array($children[$j]->attr["name"]) && isset($children[$j]->attr["name"]) ? (string)$children[$j]->attr["name"] : '')) == $this_name)
 						if (BasicChecks::hasParent($global_e, "fieldset"))
 							return BasicChecks::hasParent($global_e, "legend");
 						else
@@ -658,7 +661,7 @@ class BasicFunctions {
 
 		foreach ($global_e->children() as $child)
 		{
-			if ($child->tag == 'a' && BasicChecks::inSearchString($child->attr['href'], $searchStrArray))
+			if ($child->tag == 'a' && BasicChecks::inSearchString(is_array($child->attr) && isset($child->attr['href']) ? (string)$child->attr['href'] : '', $searchStrArray))
 			{
 				return true;
 			}
@@ -762,7 +765,7 @@ class BasicFunctions {
 		{
 			if ($child->tag == $childTag)
 			{
-				$rel_val = strtolower(trim($child->attr[$childAttribute]));
+				$rel_val = strtolower(trim(is_array($child->attr) && isset($child->attr[$childAttribute]) ? (string)$child->attr[$childAttribute] : ''));
 
 				if (in_array($rel_val, $valueArray))
 					return true;
@@ -779,13 +782,14 @@ class BasicFunctions {
 	{
 		global $global_e, $global_content_dom;
 
-		$map_name = substr($global_e->attr[$attr], 1);  // remove heading #
+		$attr_val = is_array($global_e->attr) && isset($global_e->attr[$attr]) ? (string)$global_e->attr[$attr] : '';
+		$map_name = substr($attr_val, 1);  // remove heading #
 
 		// find definition of <map> with $map_name
 		$map_found = false;
 		foreach($global_content_dom->find("map") as $map)
 		{
-			if ($map->attr["name"] == $map_name)
+			if ((is_array($map->attr) && isset($map->attr["name"]) ? (string)$map->attr["name"] : '') == $map_name)
 			{
 				$map_found = true;
 				$area_hrefs = array();

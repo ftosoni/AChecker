@@ -334,7 +334,15 @@ class AccessibilityValidator {
 		// has not been checked
 		if (!$result)
 		{
-			$check_result = eval($this->check_func_array[$check_id]);
+					try {
+						$check_result = eval($this->check_func_array[$check_id]);
+					} catch (Error $e) {
+						// Log the error but continue to avoid crashing the validator
+						if (defined('AC_DEBUG') && AC_DEBUG) {
+							error_log("Error in check $check_id: " . $e->getMessage());
+						}
+						$check_result = null;
+					}
 			
 			//CSS code variable
 			$css_code = BasicChecks::getCssOutput();
