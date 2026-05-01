@@ -42,12 +42,13 @@ var AChecker = AChecker || {};
         }
 
         var toggleImg = $("#" + toggleImgId);
+        var baseHref = (typeof AC_BASE_HREF !== 'undefined') ? AC_BASE_HREF : '../';
         if (toc.is(":visible")) {
-            toggleImg.attr("src", "images/arrow-closed.png");
+            toggleImg.attr("src", baseHref + "images/arrow-closed.png");
             toggleImg.attr("alt", "Expand");
             toggleImg.attr("title", "Expand");
         } else {
-            toggleImg.attr("src", "images/arrow-open.png");
+            toggleImg.attr("src", baseHref + "images/arrow-open.png");
             toggleImg.attr("alt", "Collapse");
             toggleImg.attr("title", "Collapse");
         }

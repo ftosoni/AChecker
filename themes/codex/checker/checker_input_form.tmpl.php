@@ -213,7 +213,7 @@ function get_guideline_div($guideline_rows, $num_of_guidelines_per_row, $format 
 			<div style="margin-top: 24px;">
 				<h2 style="font-size: 1.1em; border-top: 1px solid #eaecf0; padding-top: 16px; display: flex; align-items: center; cursor: pointer;"
 					onclick="AChecker.toggleDiv('div_options', 'toggle_image');">
-					<img src="images/arrow-open.png" alt="" id="toggle_image" style="margin-right: 8px;" />
+					<img src="<?php echo AC_BASE_HREF; ?>images/arrow-open.png" alt="" id="toggle_image" style="margin-right: 8px;" />
 					<span style="color: #1966d3;"><?php echo _AC("options"); ?></span>
 				</h2>
 			</div>

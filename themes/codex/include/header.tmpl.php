@@ -13,6 +13,9 @@
 	
 	<script src="<?php echo $base_path; ?>jscripts/lib/jquery.js" type="text/javascript"></script>
 	<script src="<?php echo $base_path; ?>jscripts/lib/jquery-URLEncode.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		var AC_BASE_HREF = '<?php echo AC_BASE_HREF; ?>';
+	</script>
 	<script src="<?php echo $base_path; ?>jscripts/AChecker.js" type="text/javascript"></script>
 
 	<?php echo $custom_head; ?>
