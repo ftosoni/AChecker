@@ -846,9 +846,7 @@ class BasicChecks {
 		//lo stile inline ha sempre priorita' massima, a meno che una regola in uno stile interno/esterno non contenga  !important
 
 		if ($inline != null && $inline != "") {
-			if (stripos ( $best ["valore"], "!important" ) === false) //non c'e' !important nel foglio di stile
-
-
+			if (is_array($best) && isset($best["valore"]) && stripos ( $best ["valore"], "!important" ) === false) //non c'e' !important nel foglio di stile
 				return $inline;
 		}
 		// inline style if there is not $ p 'returns the value of $ best
@@ -2098,7 +2096,7 @@ class BasicChecks {
 	public static function getForegroundA($e, $link_sel) {
 		// Find the value of foreground explicitly defined for the link element $e
 		//cerco il valore di foreground esplicitamente definito per l'elemento link $e
-		$foreground = BasicChecks::get_p_css_a ( $e, "color", $link_sel );
+		$foreground = (string) BasicChecks::get_p_css_a ( $e, "color", $link_sel );
 
 		$foreground = str_replace ( "'", "", $foreground );
 		$foreground = str_replace ( "\"", "", $foreground );
@@ -2110,7 +2108,7 @@ class BasicChecks {
 	public static function getBackgroundA($e, $link_sel) {
 		// Find the value of explicitly defined background for the element $e
 		//cerco il valore di background esplicitamente definito per l'elemento $e
-		$background = BasicChecks::get_p_css_a ( $e, "background-color", $link_sel );
+		$background = (string) BasicChecks::get_p_css_a ( $e, "background-color", $link_sel );
 		$background = str_replace ( "'", "", $background );
 		$background = str_replace ( "\"", "", $background );
 		$background = str_replace ( "!important", "", $background );
@@ -2213,7 +2211,7 @@ class BasicChecks {
 		$p = BasicChecks::get_p_css ( $e, "display" );
 		while ( ($p == "" || $p == null || $p !== "none") && $e->tag != null && $e->tag != "html" ) {
 			$e = $e->parent ();
-			$p = BasicChecks::get_p_css ( $e, $propriety );
+			$p = BasicChecks::get_p_css ( $e, "display" );
 		}
 
 		if ($p == "" || $p == null)

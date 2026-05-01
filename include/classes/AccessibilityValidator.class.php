@@ -271,7 +271,7 @@ class AccessibilityValidator {
 		foreach($element_array as $e)
 		{
 			// generate array of checks for the html tag of this element
-			if (is_array($this->check_for_tag_array[$e->tag]))
+			if (isset($this->check_for_tag_array[$e->tag]) && is_array($this->check_for_tag_array[$e->tag]))
 				$check_array[$e->tag] = array_unique(array_merge($this->check_for_tag_array[$e->tag], $this->check_for_all_elements_array));
 			else
 				$check_array[$e->tag] = array_unique($this->check_for_all_elements_array);
@@ -368,6 +368,9 @@ class AccessibilityValidator {
 			
 			if ($result == FAIL_RESULT)
 			{
+				$image = '';
+				$image_alt = '';
+				
 				$preview_html = $e->outertext;
 				if (strlen($preview_html) > DISPLAY_PREVIEW_HTML_LENGTH) 
 					$html_code = substr($preview_html, 0, DISPLAY_PREVIEW_HTML_LENGTH) . " ...";
