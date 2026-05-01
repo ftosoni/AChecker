@@ -164,13 +164,14 @@ class BasicChecks {
 
 		foreach($e->children() as $child)
 		{
-			$id_val = strtolower(trim($child->attr[$attr]));
+			$id_val = strtolower(trim((is_array($child->attr) && isset($child->attr[$attr])) ? (string)$child->attr[$attr] : ''));
 
 			// Swap out the element line number for the duplicate ID line number,
 			// This is a workaround to replace the usual lime number for body, returned
 			// when duplicate IDs are found, with the line number and ID value to make
 			// the offending duplicate easier to find.
 			if ($id_val <> "" && in_array($id_val, $id_array)){
+				if (!is_array($has_duplicate_attribute)) $has_duplicate_attribute = array();
 				$has_duplicate_attribute[] = $child->linenumber;
 				$has_duplicate_attribute[] = $child->id;
 				return $has_duplicate_attribute;
@@ -2707,8 +2708,13 @@ class BasicChecks {
 		//$vettore_link=array_reverse($vettore_link);
 		$i = 0;
 		foreach ( $vettore_link as $link ) {
-			if ($link->attr ["type"] == "text/css" && $link->attr ["rel"] == "stylesheet" && (! isset ( $link->attr ["media"] ) || $link->attr ["media"] == "all" || $link->attr ["media"] == "screen")) {
-				$csslist [$i] = $link->attr ["href"];
+			$type = (is_array($link->attr) && isset($link->attr["type"])) ? (string)$link->attr["type"] : '';
+			$rel = (is_array($link->attr) && isset($link->attr["rel"])) ? (string)$link->attr["rel"] : '';
+			$media = (is_array($link->attr) && isset($link->attr["media"])) ? (string)$link->attr["media"] : 'all';
+			$href = (is_array($link->attr) && isset($link->attr["href"])) ? (string)$link->attr["href"] : '';
+
+			if ($type == "text/css" && $rel == "stylesheet" && ($media == "all" || $media == "screen")) {
+				$csslist [$i] = $href;
 				$i ++;
 			}
 		}

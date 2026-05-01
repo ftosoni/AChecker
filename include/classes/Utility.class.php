@@ -44,7 +44,7 @@ class Utility {
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_exec($ch);
 		$target = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
-		curl_close($ch);
+		if (PHP_VERSION_ID < 80400) { @curl_close($ch); }
 
 		return $target ? $target : false;
 	}
@@ -224,14 +224,14 @@ class Utility {
 		$memory_limit = ini_get( 'memory_limit' );
 		if ($memory_limit != '')
 		{
-		    switch ( $memory_limit[strlen( $memory_limit ) - 1] )
+		    switch ( strtoupper($memory_limit[strlen( $memory_limit ) - 1]) )
 		    {
 		        case 'G':
-		            $memory_limit *= 1024;
+		            $memory_limit = (int)$memory_limit * 1024;
 		        case 'M':
-		            $memory_limit *= 1024;
+		            $memory_limit = (int)$memory_limit * 1024;
 		        case 'K':
-		            $memory_limit *= 1024;
+		            $memory_limit = (int)$memory_limit * 1024;
 		    }
 		}
 		else

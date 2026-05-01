@@ -59,7 +59,7 @@ if (isset($_POST['make_decision']) || isset($_POST['reverse']))
 // end of process to made decision
 // validate referer URIs that has passed validation and received seal. The click on the seal triggers
 // the if - else below.
-if ($_GET['uri'] == 'referer')
+if (isset($_GET['uri']) && $_GET['uri'] == 'referer')
 {
 	// validate if the URI from referer matches the URI defined in user_links.user_link_id
 	if (isset($_GET['id']))
@@ -98,6 +98,8 @@ if ($_GET['uri'] == 'referer')
 		$_POST['uri'] = $_SERVER['HTTP_REFERER'];
 		$_gids = array($grow[0]['guideline_id']);
 	}
+} else {
+	$_gids = null;
 }
 
 // a flag to record if there's problem validating html thru 3rd party web service
@@ -116,12 +118,13 @@ if (isset($_POST["enable_html_validation"])) {
 }
 
 if (!is_array($_gids)) { // $_gids hasn't been set at validating referer URIs
-	if ($_POST["rpt_format"] == REPORT_FORMAT_GUIDELINE) {
-		$_gids = $_POST["radio_gid"];
-	} else if ($_POST["rpt_format"] == REPORT_FORMAT_LINE) {
-		$_gids = $_POST["checkbox_gid"];
+	$rpt_format = isset($_POST["rpt_format"]) ? $_POST["rpt_format"] : "";
+	if ($rpt_format == REPORT_FORMAT_GUIDELINE) {
+		$_gids = isset($_POST["radio_gid"]) ? $_POST["radio_gid"] : null;
+	} else if ($rpt_format == REPORT_FORMAT_LINE) {
+		$_gids = isset($_POST["checkbox_gid"]) ? $_POST["checkbox_gid"] : null;
 	} else {
-		$_gids = $_POST["gid"];
+		$_gids = isset($_POST["gid"]) ? $_POST["gid"] : null;
 	}
 	$_SESSION['input_form']['gids'] = $_gids;
 }
@@ -194,7 +197,7 @@ if (isset($_POST["validate_paste"]))
 		$source_array = preg_split("/(?:\r\n?|\n)/", $validate_content);
 }
 
-if ($_POST["validate_content"] && $_POST["validate_content"] <> '')
+if (isset($_POST["validate_content"]) && $_POST["validate_content"] <> '')
 {
 	$validate_content = $_POST["validate_content"];
 	if (isset($_POST["show_source"]))

@@ -287,7 +287,10 @@ class simple_html_dom_node {
                 if(!empty($m[6])) {$val=$m[6];}
 
                 // convert to lowercase
-                if ($this->dom->lowercase) {$tag=strtolower($tag); $key=strtolower($key);}
+                if ($this->dom->lowercase) {
+                    if ($tag !== null) $tag = strtolower($tag);
+                    if ($key !== null) $key = strtolower($key);
+                }
 
                 $result[] = array($tag, $key, $val, $exp);
             }

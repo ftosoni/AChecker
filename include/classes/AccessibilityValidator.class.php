@@ -219,6 +219,7 @@ class AccessibilityValidator {
 			
 			// generate array of check_id
 			$rows = $checksDAO->getOpenChecksNotForAllByGuidelineIDs($guidelines);
+			$prev_html_tag = "";
 
 			if (is_array($rows))
 			{
@@ -239,6 +240,7 @@ class AccessibilityValidator {
 			
 			// generate array of prerequisite check_ids
 			$rows = $checksDAO->getOpenPreChecksByGuidelineIDs($guidelines);
+			$prev_check_id = "";
 
 			if (is_array($rows))
 			{
