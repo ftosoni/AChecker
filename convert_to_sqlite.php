@@ -43,11 +43,11 @@ while ($table_row = mysqli_fetch_row($tables_result)) {
 
     // 1. Handle AUTO_INCREMENT -> INTEGER PRIMARY KEY AUTOINCREMENT
     // This now catches tinyint, smallint, mediumint, bigint, etc. and handles "unsigned"
-    $sqlite_create = preg_replace('/`([^`]+)`\s+\w*int(\(\d+\))?(\s+unsigned)?\s+NOT\s+NULL\s+AUTO_INCREMENT/i', '`$1` INTEGER PRIMARY KEY AUTOINCREMENT', $sqlite_create);
-    $sqlite_create = preg_replace('/`([^`]+)`\s+\w*int(\(\d+\))?(\s+unsigned)?\s+AUTO_INCREMENT/i', '`$1` INTEGER PRIMARY KEY AUTOINCREMENT', $sqlite_create);
+    $sqlite_create = preg_replace('/\b\w*int(\(\d+\))?(\s+unsigned)?\s+NOT\s+NULL\s+AUTO_INCREMENT\b/i', 'INTEGER PRIMARY KEY AUTOINCREMENT', $sqlite_create);
+    $sqlite_create = preg_replace('/\b\w*int(\(\d+\))?(\s+unsigned)?\s+AUTO_INCREMENT\b/i', 'INTEGER PRIMARY KEY AUTOINCREMENT', $sqlite_create);
 
-    // 2. Generic type replacements
-    $sqlite_create = preg_replace('/\w*int(\(\d+\))?(\s+unsigned)?/i', 'INTEGER', $sqlite_create);
+    // 2. Generic type replacements - use strict boundaries to avoid INTEGEREGER
+    $sqlite_create = preg_replace('/\b(tinyint|smallint|mediumint|int|bigint|integer)(\(\d+\))?(\s+unsigned)?\b/i', 'INTEGER', $sqlite_create);
     $sqlite_create = preg_replace('/varchar\(\d+\)/i', 'TEXT', $sqlite_create);
     $sqlite_create = preg_replace('/datetime/i', 'TEXT', $sqlite_create);
     $sqlite_create = preg_replace('/longtext/i', 'TEXT', $sqlite_create);
