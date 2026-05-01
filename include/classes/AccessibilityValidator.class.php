@@ -281,7 +281,7 @@ class AccessibilityValidator {
 				// check prerequisite ids first, if fails, report failure and don't need to proceed with $check_id
 				$prerequisite_failed = false;
 
-				if (is_array($this->prerequisite_check_array[$check_id]))
+				if (isset($this->prerequisite_check_array[$check_id]) && is_array($this->prerequisite_check_array[$check_id]))
 				{
 					foreach ($this->prerequisite_check_array[$check_id] as $prerequisite_check_id)
 					{

@@ -885,8 +885,7 @@ class BasicChecks {
 
 			if ($same == false) array_push ( $array_css, $best ["css_rule"] );
 		}
-
-		return $best ["valore"];
+		return (is_array($best) && isset($best["valore"])) ? $best ["valore"] : null;
 
 	}
 
