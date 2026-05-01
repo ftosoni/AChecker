@@ -277,11 +277,11 @@ class BasicChecks {
 			// Note: base_href is from <base href="...">
 			if (isset($base_href) && $base_href <> '')
 			{
-				if (substr($base_href, -1) <> '/') $base_href .= '/';
+				if (substr((string)$base_href, -1) <> '/') $base_href .= '/';
 			}
 			else if (isset($uri) && $uri <> '')
 			{
-				preg_match('/^(.*\:\/\/.*\/).*/', $uri, $matches);
+				preg_match('/^(.*\:\/\/.*\/).*/', (string)$uri, $matches);
 				if (!isset($matches[1])) $uri .= '/';
 				else $uri = $matches[1];
 			}
