@@ -42,11 +42,10 @@ while ($table_row = mysqli_fetch_row($tables_result)) {
     $sqlite_create = $create_sql;
 
     // 1. Handle AUTO_INCREMENT -> INTEGER PRIMARY KEY AUTOINCREMENT
-    // This now catches tinyint, smallint, mediumint, bigint, etc. and handles "unsigned"
     $sqlite_create = preg_replace('/\b\w*int(\(\d+\))?(\s+unsigned)?\s+NOT\s+NULL\s+AUTO_INCREMENT\b/i', 'INTEGER PRIMARY KEY AUTOINCREMENT', $sqlite_create);
     $sqlite_create = preg_replace('/\b\w*int(\(\d+\))?(\s+unsigned)?\s+AUTO_INCREMENT\b/i', 'INTEGER PRIMARY KEY AUTOINCREMENT', $sqlite_create);
 
-    // 2. Generic type replacements - use strict boundaries to avoid INTEGEREGER
+    // 2. Generic type replacements
     $sqlite_create = preg_replace('/\b(tinyint|smallint|mediumint|int|bigint|integer)(\(\d+\))?(\s+unsigned)?\b/i', 'INTEGER', $sqlite_create);
     $sqlite_create = preg_replace('/varchar\(\d+\)/i', 'TEXT', $sqlite_create);
     $sqlite_create = preg_replace('/datetime/i', 'TEXT', $sqlite_create);
@@ -55,19 +54,24 @@ while ($table_row = mysqli_fetch_row($tables_result)) {
     $sqlite_create = preg_replace('/tinytext/i', 'TEXT', $sqlite_create);
     $sqlite_create = preg_replace('/ENUM\(.*?\)/i', 'TEXT', $sqlite_create);
 
-    // 3. Remove MySQL specific table options and indexes
+    // 3. Remove MySQL specific column modifiers
+    $sqlite_create = preg_replace('/COMMENT\s+\'.*?\'/i', '', $sqlite_create); // Strip column comments
+    $sqlite_create = preg_replace('/\s+unsigned\b/i', '', $sqlite_create);     // Strip unsigned
+    
+    // 4. Remove MySQL specific table options and indexes
     $sqlite_create = preg_replace('/PRIMARY KEY\s+\(`.*?`\),?/i', '', $sqlite_create); 
     $sqlite_create = preg_replace('/KEY `.*?` \(.*?\),?/i', '', $sqlite_create);
     $sqlite_create = preg_replace('/UNIQUE KEY `.*?` \(.*?\),?/i', '', $sqlite_create);
     $sqlite_create = preg_replace('/CONSTRAINT `.*?` FOREIGN KEY \(.*?\).*?,?/is', '', $sqlite_create);
-    $sqlite_create = preg_replace('/AUTO_INCREMENT=\d+/i', '', $sqlite_create); // Strip trailing AUTO_INCREMENT
+    $sqlite_create = preg_replace('/AUTO_INCREMENT=\d+/i', '', $sqlite_create); 
     $sqlite_create = preg_replace('/ENGINE=.*?($| )/i', '', $sqlite_create);
     $sqlite_create = preg_replace('/DEFAULT CHARSET=.*?($| )/i', '', $sqlite_create);
     $sqlite_create = preg_replace('/COLLATE=.*?($| )/i', '', $sqlite_create);
     $sqlite_create = preg_replace('/COMMENT=\'.*?\'/i', '', $sqlite_create);
 
-    // 4. Cleanup trailing commas and empty lines
+    // 5. Cleanup
     $sqlite_create = preg_replace('/,\s*\)/', ')', $sqlite_create); 
+    $sqlite_create = str_replace('`', '"', $sqlite_create); // SQLite prefers double quotes for identifiers
     
     // Execute CREATE
     try {
