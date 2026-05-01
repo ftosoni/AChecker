@@ -158,7 +158,12 @@ class BasicFunctions {
 		}
 
 		if (!$file_size_checked) {
-			$dimensions = @getimagesize($file);
+			if (preg_match('/^https?:\/\//', $file) || substr($file, 0, 2) == '//') {
+				$img_data = Utility::getURLContents($file);
+				$dimensions = @getimagesizefromstring($img_data);
+			} else {
+				$dimensions = @getimagesize($file);
+			}
 
 			if (is_array($dimensions)) {
 				$global_array_image_sizes[$file] = array("is_exist"=>true, "width"=>$dimensions[0], "height"=>$dimensions[1]);

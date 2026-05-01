@@ -2723,7 +2723,7 @@ class BasicChecks {
 
 			$foglio = str_replace ( '"', '', $foglio );
 
-			if (stripos ( $foglio, "http://" ) === false) //indirizzo relativo
+			if (stripos ( $foglio, "http://" ) === false && stripos ( $foglio, "https://" ) === false && substr ( $foglio, 0, 2 ) !== "//") //indirizzo relativo
 			{
 				if (substr ( $foglio, 0, 1 ) == "/")
 					$foglio = $uri2 . $foglio;
