@@ -232,8 +232,6 @@ class BasicChecks {
 							return false;
 				}
 			}
-			else
-				return BasicChecks::hasFieldsetOnMultiCheckbox($child);
 		}
 
 		return true;
