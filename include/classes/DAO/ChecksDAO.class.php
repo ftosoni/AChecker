@@ -500,14 +500,21 @@ class ChecksDAO extends DAO {
 	*/
 	function getCheckByID($checkID)
 	{
+		static $cache = array();
+		if (isset($cache[$checkID])) {
+			return $cache[$checkID];
+		}
+
 		$sql = "SELECT * FROM ". TABLE_PREFIX ."checks WHERE check_id=". intval($checkID);
 		$rows = $this->execute($sql);
 
-	    if (is_array($rows))
-	    	return $rows[0];
-	    else
-	    	return false;
-	  }
+		if (is_array($rows)) {
+			$cache[$checkID] = $rows[0];
+			return $rows[0];
+		} else {
+			return false;
+		}
+	}
 
 	/**
 	* Return check info of given check id

@@ -43,8 +43,10 @@ class AccessibilityValidator {
 	
 	// structure: line_number, check_id, result (success, fail)
 	var $result = array();               // all check results, including success ones and failed ones
+	private $result_map = array();       // optimized lookup map for results
 	
 	var $check_for_all_elements_array = array(); // array of the to-be-checked check_ids 
+	private $checks_data;           // cache for check definitions
 	var $check_for_tag_array = array();          // array of the to-be-checked check_ids 
 	var $prerequisite_check_array = array();     // array of prerequisite check_ids of the to-be-checked check_ids 
 	var $check_func_array = array();         // array of all the check functions 
@@ -125,8 +127,10 @@ class AccessibilityValidator {
 		
 		if (is_array($rows))
 		{
-			foreach ($rows as $row)
+			foreach ($rows as $row) {
 				$this->check_func_array[$row['check_id']] = CheckFuncUtility::convertCode($row['func']);
+				$this->checks_data[$row['check_id']] = $row; // Cache the whole row
+			}
 		}
 	}
 	
@@ -335,8 +339,7 @@ class AccessibilityValidator {
 			//CSS code variable
 			$css_code = BasicChecks::getCssOutput();
 								
-			$checksDAO = new ChecksDAO();
-			$row = $checksDAO->getCheckByID($check_id);
+			$row = $this->checks_data[$check_id];
 			
 			if (is_null($check_result))
 			{ // when $check_result is not true/false, must be something wrong with the check function.
@@ -419,10 +422,9 @@ class AccessibilityValidator {
 	 */
 	private function get_check_result($line_number, $col_number, $check_id)
 	{
-		foreach($this->result as $one_result)
-		{
-			if ($one_result["line_number"] == $line_number && $one_result["col_number"] == $col_number && $one_result["check_id"] == $check_id)
-				return $one_result["result"];
+		$key = "{$line_number}_{$col_number}_{$check_id}";
+		if (isset($this->result_map[$key])) {
+			return $this->result_map[$key];
 		}
 		
 		return false;
@@ -438,8 +440,18 @@ class AccessibilityValidator {
 	 */
 	private function save_result($line_number, $col_number, $html_code, $check_id, $result, $image, $image_alt, $css_code)
 	{
+		$key = "{$line_number}_{$col_number}_{$check_id}";
+		
+		// Strict duplicate check
+		if (isset($this->result_map[$key])) {
+			return true;
+		}
+
 		array_push($this->result, array("line_number"=>$line_number, "col_number"=>$col_number, "html_code"=>$html_code, "check_id"=>$check_id, "result"=>$result, "image"=>$image, "image_alt"=>$image_alt, "css_code"=>$css_code));
 		
+		// Update lookup map
+		$this->result_map[$key] = $result;
+
 		return true;
 	}
 	
