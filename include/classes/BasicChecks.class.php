@@ -963,6 +963,7 @@ class BasicChecks {
 	(ogni struttura contiene il valore della proprieta' e il numero di id, class e tag contenuti nel selettore)
 	Restituisce la regola che ha priorità più alta in base alla tipologia dei selettori
 	Se le due regole hanno identica priorita, restituisce quella con posizione maggiore
+	*/
 	public static function getPriorityInfo($info1, $info2) {
 
 		if (!is_array($info1))
