@@ -49,49 +49,50 @@ For more about using AChecker, see the instructional videos on [YouTube](http://
 
 ## 🚀 Deployment (Toolforge - Recommended: SQLite)
 
-Using SQLite is the easiest way to deploy AChecker on Toolforge as it requires zero server-side database configuration.
+Using SQLite is the easiest way to deploy AChecker on Toolforge. You can use either the standard **Webservice** or the modern **Build Service**.
 
 ### 1. Create SQLite Database (Local)
-Run the migration script on your local machine to convert your MySQL data into a portable file:
+Run the migration script on your local machine to convert your MySQL data:
 ```bash
 php convert_to_sqlite.php
 ```
 This creates `database/achecker.db`.
 
-### 2. Deploy to Toolforge
-Log into Toolforge and clone the repository:
+### 2. Deploy to Toolforge (Build Service - Modern)
+This method uses the `Procfile` to automatically manage your environment.
 
-```bash
-# Log into Toolforge
-ssh your-username@login.toolforge.org
+1.  **Push your code** to GitHub.
+2.  **Upload the database file** to the persistent project storage:
+    ```bash
+    scp ./database/achecker.db your-username@login.toolforge.org:/data/project/accessibility-checker/database/
+    ```
+3.  **Start the build**:
+    ```bash
+    # On Toolforge bastion
+    become accessibility-checker
+    toolforge build start https://github.com/ftosoni/AChecker.git
+    toolforge webservice buildservice start
+    ```
 
-# Become the tool
-become accessibility-checker
+### 3. Deploy to Toolforge (Standard Webservice)
+1.  **Clone the repo**:
+    ```bash
+    become accessibility-checker
+    git clone https://github.com/ftosoni/AChecker.git temp_repo
+    cp -r temp_repo/* public_html/
+    rm -rf temp_repo
+    ```
+2.  **Upload the database file**:
+    ```bash
+    scp ./database/achecker.db your-username@login.toolforge.org:/data/project/accessibility-checker/public_html/database/
+    ```
 
-# Clone the repo
-cd ~
-git clone https://github.com/ftosoni/AChecker.git temp_repo
-rm -rf public_html/*
-cp -r temp_repo/* public_html/
-rm -rf temp_repo
+### 4. Final Configuration
+In both methods, ensure `public_html/include/config.inc.php` is set to SQLite:
+```php
+define('DB_TYPE', 'sqlite');
 ```
 
-### 3. Upload the Database File
-Upload the generated `.db` file to your tool's project directory:
-```bash
-# From your local machine
-scp -r ./database your-username@login.toolforge.org:/data/project/accessibility-checker/
-```
-
-### 4. Configure Application
-Edit `public_html/include/config.inc.php` on Toolforge:
-1. Set `DB_TYPE` to `'sqlite'`.
-2. Ensure `SQLITE_PATH` points to `/data/project/accessibility-checker/database/achecker.db`.
-
-### 5. Start Webservice
-```bash
-toolforge webservice php7.4 start
-```
 Your tool will be available at `https://accessibility-checker.toolforge.org/`.
 
 
