@@ -473,7 +473,7 @@ class BasicFunctions {
 		if ($global_e->parent()->tag == "label" || isset($global_e->attr["title"]) || isset($global_e->attr["aria-label"])) return true;
 
 		// 3. The element $global_e has an "id" attribute value that matches the "for" attribute value of a "label" element
-		$input_id = $global_e->attr["id"];
+		$input_id = is_array($global_e->attr) && isset($global_e->attr["id"]) ? (string)$global_e->attr["id"] : '';
 
 		if ($input_id == "") return false;  // attribute "id" must exist
 

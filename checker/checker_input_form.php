@@ -15,6 +15,7 @@ if (!defined("AC_INCLUDE_PATH")) die("Error: AC_INCLUDE_PATH is not defined in c
 
 global $_current_user, $decision_error;
 
+$plate = array();
 $default_uri_value = "";
 $num_of_guidelines_per_row = 3;  // default number of guidelines to display in a row on the page
 

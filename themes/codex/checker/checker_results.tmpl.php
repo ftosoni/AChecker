@@ -226,7 +226,7 @@ if (isset($aValidator) && $a_rpt->getAllowSetDecisions() == 'true')
 		</section>
 	<?php endif; ?>
 
-	<?php if (is_array($seals)): ?>
+	<?php if (isset($seals) && is_array($seals)): ?>
 		<section class="cdx-card" style="margin-top: 24px; padding: 24px; border: 1px solid #a2a9b1; background: #fff;">
 			<h3 class="cdx-typography-h3" style="margin-top: 0;"><?php echo _AC('valid_icons');?></h3>
 			<p style="color: #72777d; margin-bottom: 16px;"><?php echo _AC('valid_icons_text');?></p>

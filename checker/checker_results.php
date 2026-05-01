@@ -15,6 +15,8 @@ if (!defined("AC_INCLUDE_PATH")) die("Error: AC_INCLUDE_PATH is not defined in c
 
 if (!isset($aValidator) && !isset($htmlValidator)) die(_AC("no_instance"));
 
+$plate = array();
+
 include_once(AC_INCLUDE_PATH. "classes/HTMLRpt.class.php");
 include_once(AC_INCLUDE_PATH. "classes/HTMLByGuidelineRpt.class.php");
 include_once(AC_INCLUDE_PATH. "classes/Utility.class.php");
