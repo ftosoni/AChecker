@@ -446,12 +446,12 @@ class BasicChecks {
 
 		foreach ($e_htmls as $e_html)
 		{
-			if (isset($e_html->attr["xml:lang"]))
+			if (is_array($e_html->attr) && isset($e_html->attr["xml:lang"]))
 			{
 				$lang = trim($e_html->attr["xml:lang"]);
 				break;
 			}
-			else if (isset($e_html->attr["lang"]))
+			else if (is_array($e_html->attr) && isset($e_html->attr["lang"]))
 			{
 				$lang = trim($e_html->attr["lang"]);
 				break;
@@ -523,7 +523,7 @@ class BasicChecks {
 
 		foreach($e->children() as $child)
 		{
-			$id_val = strtolower(trim($child->attr[$attr]));
+			$id_val = strtolower(trim((is_array($child->attr) && isset($child->attr[$attr])) ? (string)$child->attr[$attr] : ''));
 
 			if ($id_val <> "" && in_array($id_val, $id_array)) $has_duplicate_attribute = true;
 			else
@@ -578,7 +578,7 @@ class BasicChecks {
 
 		foreach ($e->find("input") as $e_input)
 		{
-			if (strtolower(trim($e_input->attr["type"])) == "radio")
+			if (strtolower(trim(is_array($e_input->attr) && isset($e_input->attr["type"]) ? (string)$e_input->attr["type"] : '')) == "radio")
 				array_push($radio_buttons, $e_input);
 		}
 
@@ -586,9 +586,11 @@ class BasicChecks {
 		{
 		  for ($j=0; $j < count($radio_buttons); $j++)
 		  {
-		    if ($i <> $j && strtolower(trim($radio_buttons[$i]->attr["name"])) == strtolower(trim($radio_buttons[$j]->attr["name"]))
-		        && !BasicChecks::has_parent($radio_buttons[$i], "fieldset") && !BasicChecks::has_parent($radio_buttons[$i], "legend"))
+		    if ($i <> $j && strtolower(trim(is_array($radio_buttons[$i]->attr) && isset($radio_buttons[$i]->attr["name"]) ? (string)$radio_buttons[$i]->attr["name"] : '')) == strtolower(trim(is_array($radio_buttons[$j]->attr) && isset($radio_buttons[$j]->attr["name"]) ? (string)$radio_buttons[$j]->attr["name"] : ''))
+				&& !BasicChecks::has_parent($radio_buttons[$i], "fieldset") && !BasicChecks::has_parent($radio_buttons[$i], "legend")) {
+
 		      return false;
+		    }
 		  }
 		}
 
@@ -623,7 +625,7 @@ class BasicChecks {
 	public static function associated_label_has_text($e, $content_dom)
 	{
 		// 1. The element $e has a "title" or "aria-label" attribute
-		if (!empty($e->attr["title"]) && !empty($e->attr["aria-label"])) return true;
+		if (!empty(is_array($e->attr) && isset($e->attr["title"]) ? $e->attr["title"] : '') && !empty(is_array($e->attr) && isset($e->attr["aria-label"]) ? $e->attr["aria-label"] : '')) return true;
 
 		// 2. The element $e is contained by a "label" element
 		if ($e->parent()->tag == "label")
@@ -634,20 +636,20 @@ class BasicChecks {
 		}
 
 		// 3. The element $e has an "id" attribute value that matches the "for" attribute value of a "label" element
-		$input_id = $e->attr["id"];
+		$input_id = is_array($e->attr) && isset($e->attr["id"]) ? (string)$e->attr["id"] : '';
 
 		if ($input_id == "") return false;  // attribute "id" must exist
 
 		foreach ($content_dom->find("label") as $e_label)
 		{
-			if ($e_label->attr["for"] == $input_id)
+			if ((is_array($e_label->attr) && isset($e_label->attr["for"]) ? (string)$e_label->attr["for"] : '') == $input_id)
 			{
 				// label contains text
 				if (trim($e_label->plaintext) <> "") return true;
 
 				// label contains an image with alt text
 				foreach ($e_label->children as $e_label_child)
-					if ($e_label_child->tag == "img" && strlen(trim($e_label_child->attr["alt"])) > 0)
+					if ($e_label_child->tag == "img" && strlen(trim(is_array($e_label_child->attr) && isset($e_label_child->attr["alt"]) ? (string)$e_label_child->attr["alt"] : '')) > 0)
 						return true;
 			}
 		}
