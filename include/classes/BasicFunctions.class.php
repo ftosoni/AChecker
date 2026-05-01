@@ -123,12 +123,17 @@ class BasicFunctions {
 	/**
 	* return html tag of the first child
 	*/
+	public static function getFirstChildTag()
+	{
+		global $global_e;
+
 		$children = $global_e->children();
 
 		if (isset($children[0])) {
 			return $children[0]->tag;
 		}
 		return '';
+	}
 
 	/**
 	* return the width of the image. return false if the image is not accessible or at failure
