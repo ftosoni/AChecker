@@ -73,9 +73,9 @@ while ($table_row = mysqli_fetch_row($tables_result)) {
     // 5. Cleanup
     $sqlite_create = str_replace('`', '"', $sqlite_create); // SQLite prefers double quotes for identifiers
     
-    // Remove trailing commas before the closing parenthesis (can happen if constraints are removed)
-    $sqlite_create = preg_replace('/,\s+\)/m', "\n)", $sqlite_create);
-    $sqlite_create = preg_replace('/,\s*$/m', '', $sqlite_create); // Clean up lines ending in comma if they are last
+    // Remove ONLY the trailing comma before the closing parenthesis
+    // We look for a comma followed by whitespace and a closing paren at the end of the string
+    $sqlite_create = preg_replace('/,\s*\)(?=[^)]*$)/s', "\n)", $sqlite_create);
     
     // Execute CREATE
     try {
