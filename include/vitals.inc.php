@@ -150,7 +150,7 @@ define('SITE_NAME',                 $_config['site_name']);
 
 	
 	// Create new Plates instance
-	$plates = League\Plates\Engine::create(AC_INCLUDE_PATH . '../themes/' . $_SESSION['prefs']['PREF_THEME'] . '/', 'tmpl.php');
+	$plates = new League\Plates\Engine(AC_INCLUDE_PATH . '../themes/' . $_SESSION['prefs']['PREF_THEME'] . '/', 'tmpl.php');
 
 	require(AC_INCLUDE_PATH . '../themes/' . $_SESSION['prefs']['PREF_THEME'] . '/theme.cfg.php');
 
