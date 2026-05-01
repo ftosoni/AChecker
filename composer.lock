@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7ae3e6d0c6673480f81a1df2ee697b7f",
+    "content-hash": "b3c4c100f84d32bc371dc710efdb565f",
     "packages": [
         {
             "name": "league/plates",
@@ -78,7 +78,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.1",
+        "php": "^7.4 || ^8.1",
         "ext-pdo": "*",
         "ext-pdo_sqlite": "*"
     },

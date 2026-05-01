@@ -1,6 +1,6 @@
 {
     "require": {
-        "php": "^8.1",
+        "php": "^7.4 || ^8.1",
         "league/plates": "^3.5",
         "ext-pdo": "*",
         "ext-pdo_sqlite": "*"
