@@ -71,8 +71,11 @@ while ($table_row = mysqli_fetch_row($tables_result)) {
     $sqlite_create = preg_replace('/COMMENT=\'.*?\'/i', '', $sqlite_create);
 
     // 5. Cleanup
-    $sqlite_create = preg_replace('/,\s*\)/', ')', $sqlite_create); 
     $sqlite_create = str_replace('`', '"', $sqlite_create); // SQLite prefers double quotes for identifiers
+    
+    // Remove trailing commas before the closing parenthesis (can happen if constraints are removed)
+    $sqlite_create = preg_replace('/,\s+\)/m', "\n)", $sqlite_create);
+    $sqlite_create = preg_replace('/,\s*$/m', '', $sqlite_create); // Clean up lines ending in comma if they are last
     
     // Execute CREATE
     try {
