@@ -39,7 +39,14 @@ while ($table_row = mysqli_fetch_row($tables_result)) {
     $create_sql = $create_row[1];
 
     // Basic MySQL to SQLite conversion for CREATE TABLE
-    $sqlite_create = preg_replace('/AUTO_INCREMENT/i', 'PRIMARY KEY AUTOINCREMENT', $create_sql);
+    $sqlite_create = $create_sql;
+
+    // 1. Handle AUTO_INCREMENT -> INTEGER PRIMARY KEY AUTOINCREMENT
+    // We need to find the column that has AUTO_INCREMENT and make it the INTEGER PRIMARY KEY
+    $sqlite_create = preg_replace('/`([^`]+)`\s+int\(\d+\)\s+NOT\s+NULL\s+AUTO_INCREMENT/i', '`$1` INTEGER PRIMARY KEY AUTOINCREMENT', $sqlite_create);
+    $sqlite_create = preg_replace('/`([^`]+)`\s+int\(\d+\)\s+AUTO_INCREMENT/i', '`$1` INTEGER PRIMARY KEY AUTOINCREMENT', $sqlite_create);
+
+    // 2. Generic type replacements
     $sqlite_create = preg_replace('/int\(\d+\)/i', 'INTEGER', $sqlite_create);
     $sqlite_create = preg_replace('/varchar\(\d+\)/i', 'TEXT', $sqlite_create);
     $sqlite_create = preg_replace('/datetime/i', 'TEXT', $sqlite_create);
@@ -47,17 +54,27 @@ while ($table_row = mysqli_fetch_row($tables_result)) {
     $sqlite_create = preg_replace('/mediumtext/i', 'TEXT', $sqlite_create);
     $sqlite_create = preg_replace('/tinytext/i', 'TEXT', $sqlite_create);
     $sqlite_create = preg_replace('/ENUM\(.*?\)/i', 'TEXT', $sqlite_create);
-    $sqlite_create = preg_replace('/KEY `.*?` \(.*?\),?/i', '', $sqlite_create); // Remove indexes for simplicity in create
-    $sqlite_create = preg_replace('/PRIMARY KEY \(`.*?`\),?/i', '', $sqlite_create);
+
+    // 3. Remove MySQL specific table options and indexes
+    $sqlite_create = preg_replace('/PRIMARY KEY\s+\(`.*?`\),?/i', '', $sqlite_create); // Remove separate PK since we handled it inline
+    $sqlite_create = preg_replace('/KEY `.*?` \(.*?\),?/i', '', $sqlite_create);
     $sqlite_create = preg_replace('/UNIQUE KEY `.*?` \(.*?\),?/i', '', $sqlite_create);
     $sqlite_create = preg_replace('/CONSTRAINT `.*?` FOREIGN KEY \(.*?\).*?,?/is', '', $sqlite_create);
     $sqlite_create = preg_replace('/ENGINE=.*?($| )/i', '', $sqlite_create);
     $sqlite_create = preg_replace('/DEFAULT CHARSET=.*?($| )/i', '', $sqlite_create);
+    $sqlite_create = preg_replace('/COLLATE=.*?($| )/i', '', $sqlite_create);
     $sqlite_create = preg_replace('/COMMENT=\'.*?\'/i', '', $sqlite_create);
-    $sqlite_create = preg_replace('/,\s*\)/', ')', $sqlite_create); // Clean up trailing commas
 
+    // 4. Cleanup trailing commas and empty lines
+    $sqlite_create = preg_replace('/,\s*\)/', ')', $sqlite_create); 
+    
     // Execute CREATE
-    $sqlite->exec($sqlite_create);
+    try {
+        $sqlite->exec($sqlite_create);
+    } catch (Exception $e) {
+        echo "Error creating table $table. SQL: \n$sqlite_create\n";
+        throw $e;
+    }
 
     // 4. Migrate Data
     $data_result = mysqli_query($mysql, "SELECT * FROM `$table`") or die(mysqli_error($mysql));
