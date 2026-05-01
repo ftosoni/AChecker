@@ -18,8 +18,8 @@ if(isset($_POST['submit'])) {
 	unset($progress);
 
 	//check DB & table connection
-
-	$db = mysqli_connect($_POST['db_host'], $_POST['db_login'], $_POST['db_password']);
+	mysqli_report(MYSQLI_REPORT_OFF);
+	$db = @mysqli_connect($_POST['db_host'], $_POST['db_login'], $_POST['db_password']);
 	if (!$db) {
 		$errors[] = 'Unable to connect to database server.';
 	} else {

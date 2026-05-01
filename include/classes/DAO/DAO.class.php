@@ -83,7 +83,7 @@ class DAO {
 
 	function addSlashes($string)
 	{
-		if ( get_magic_quotes_gpc() == 1 ) 
+		if ( function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() == 1 ) 
 		{
 			$string = stripslashes($string);
 		} 

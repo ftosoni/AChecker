@@ -41,7 +41,7 @@ function my_null_slashes($string) {
 	return $string;
 }
  
-if ( get_magic_quotes_gpc() == 1 ) {
+if ( function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() == 1 ) {
 	$stripslashes = 'stripslashes';
 } else {
 	$stripslashes = 'my_null_slashes';

@@ -151,7 +151,7 @@ define('AC_DATE_UNIX_TIMESTAMP',     3); /* seconds since epoch	*/
 define('AC_DATE_INDEX_VALUE',        4); /* index to the date arrays */
 
 // the temporary directory for exporting validation reports
-define('AC_EXPORT_RPT_DIR', AC_TEMP_DIR. 'exportRpt/');
+define('AC_EXPORT_RPT_DIR', (defined('AC_TEMP_DIR') ? AC_TEMP_DIR : '') . 'exportRpt/');
 
 // separator used in composing URL
 if (strpos(@ini_get('arg_separator.input'), ';') !== false) {
@@ -181,6 +181,7 @@ $_base_href	 = substr($_base_href, 0, $endpos);
 $_base_path  = substr($_base_href, strlen($server_protocol . $_SERVER['HTTP_HOST']));
 
 define('AC_BASE_HREF', $_base_href);
+define('AC_BASE_PATH', realpath(AC_INCLUDE_PATH . '../') . DIRECTORY_SEPARATOR);
 define('AC_GUIDES_PATH', $_base_path . 'documentation/');
 
 /* relative uri */

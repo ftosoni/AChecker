@@ -85,7 +85,7 @@ class acheckerTFPDF extends tFPDF {
 	function Header()
 	{
 	    // logo
-	    $this->Image(AC_BASE_HREF.'images/jpg/achecker.jpg', 12, 10, 38);
+	    $this->Image(AC_BASE_PATH.'images/jpg/achecker.jpg', 12, 10, 38);
 	    
 	    // title and url
 	    $this->SetFont('Helvetica', 'B', 10);
@@ -198,7 +198,7 @@ class acheckerTFPDF extends tFPDF {
 		if ($nr == 0) {
 			$this->Ln(3);
 			$this->SetTextColor(0, 128, 0);
-			$path = AC_BASE_HREF."images/jpg/feedback.jpg";
+			$path = AC_BASE_PATH."images/jpg/feedback.jpg";
 			$this->SetX(11);
 			$this->Image($path, $this->GetX(), $this->GetY(), 4, 4);
 			$this->SetX(17);
@@ -246,7 +246,7 @@ class acheckerTFPDF extends tFPDF {
 						foreach($check_group['errors'] as $error) {
 							// error icon img, line, column, error text
 							$img_data = explode(".", $error['img_src']);		
-							$path = $error['base_href']."images/jpg/".$img_data[0].".jpg";
+							$path = AC_BASE_PATH."images/jpg/".$img_data[0].".jpg";
 							$this->Image($path, $this->GetX()+18, $this->GetY(), 4, 4);
 							$this->SetX(32);
 							$this->SetFont('DejaVu', 'BI', 9);
@@ -336,7 +336,7 @@ class acheckerTFPDF extends tFPDF {
 		if ($nr == 0) {
 			$this->Ln(3);
 			$this->SetTextColor(0, 128, 0);
-			$path = AC_BASE_HREF."images/jpg/feedback.jpg";
+			$path = AC_BASE_PATH."images/jpg/feedback.jpg";
 			$this->Image($path, $this->GetX(), $this->GetY(), 4, 4);
 			$this->SetX(14);
 			$this->SetFont('DejaVu', 'B', 12);
@@ -348,7 +348,7 @@ class acheckerTFPDF extends tFPDF {
 				foreach($array as $error) {
 					// error icon img, line, column, error text
 					$img_data = explode(".", $error['img_src']);		
-					$path = $error['base_href']."images/jpg/".$img_data[0].".jpg";
+					$path = AC_BASE_PATH."images/jpg/".$img_data[0].".jpg";
 					$this->Image($path, $this->GetX()+7, $this->GetY(), 4, 4);
 					$this->SetX(21);
 					$this->SetTextColor(0);
@@ -399,7 +399,7 @@ class acheckerTFPDF extends tFPDF {
 					foreach($category as $error) {
 						// error icon img, line, column, error text
 						$img_data = explode(".", $error['img_src']);		
-						$path = $error['base_href']."images/jpg/".$img_data[0].".jpg";
+						$path = AC_BASE_PATH."images/jpg/".$img_data[0].".jpg";
 						$this->Image($path, $this->GetX()+7, $this->GetY(), 4, 4);
 						$this->SetX(21);
 						$this->SetTextColor(0);
@@ -470,7 +470,7 @@ class acheckerTFPDF extends tFPDF {
 		// str with error type and nr of errors
 		if ($this->error_nr_html == -1) {
 			$this->SetTextColor(0, 0, 255);
-			$path = AC_BASE_HREF."images/jpg/info.jpg";
+			$path = AC_BASE_PATH."images/jpg/info.jpg";
 			$this->Image($path, $this->GetX(), $this->GetY(), 4, 4);
 			$this->SetX(14);
 			$this->SetFont('DejaVu', 'B', 12);			
@@ -490,7 +490,7 @@ class acheckerTFPDF extends tFPDF {
 				// no html validation errors, passed
 				$this->Ln(3);
 				$this->SetTextColor(0, 128, 0);
-				$path = AC_BASE_HREF."images/jpg/feedback.jpg";
+				$path = AC_BASE_PATH."images/jpg/feedback.jpg";
 				$this->Image($path, $this->GetX(), $this->GetY(), 4, 4);
 				$this->SetX(14);
 				$this->SetFont('DejaVu', 'B', 12);
@@ -505,7 +505,7 @@ class acheckerTFPDF extends tFPDF {
 				foreach($this->html as $error) {
 					// error icon img, line, column, error text
 					$img_data = explode(".", $error['img_src']);		
-					$path = AC_BASE_HREF."images/jpg/".$img_data[0].".jpg";
+					$path = AC_BASE_PATH."images/jpg/".$img_data[0].".jpg";
 					$this->Image($path, $this->GetX()+7, $this->GetY(), 4, 4);
 					$this->SetX(21);
 					if ($error['line'] != '' && $error['col'] != '') {
@@ -566,7 +566,7 @@ class acheckerTFPDF extends tFPDF {
 		} else if ($this->css_error == '' && $this->error_nr_css == -1) {
 			// css validator is disabled
 			$this->SetTextColor(0, 0, 255);
-			$path = AC_BASE_HREF."images/jpg/info.jpg";
+			$path = AC_BASE_PATH."images/jpg/info.jpg";
 			$this->Image($path, $this->GetX(), $this->GetY(), 4, 4);
 			$this->SetX(14);
 			$this->SetFont('DejaVu', 'B', 12);			
@@ -578,7 +578,7 @@ class acheckerTFPDF extends tFPDF {
 			// css validator is only available at validating url, not at validating a uploaded file or pasted html
 			$this->Ln(3);
 			$this->SetTextColor(0, 0, 255);
-			$path = AC_BASE_HREF."images/jpg/info.jpg";
+			$path = AC_BASE_PATH."images/jpg/info.jpg";
 			$this->Image($path, $this->GetX(), $this->GetY(), 4, 4);
 			$this->SetX(14);
 			$this->SetFont('DejaVu', 'B', 12);
@@ -588,7 +588,7 @@ class acheckerTFPDF extends tFPDF {
 				// show congratulations if no errors found
 				$this->Ln(3);
 				$this->SetTextColor(0, 128, 0);
-				$path = AC_BASE_HREF."images/jpg/feedback.jpg";
+				$path = AC_BASE_PATH."images/jpg/feedback.jpg";
 				$this->Image($path, $this->GetX(), $this->GetY(), 4, 4);
 				$this->SetX(14);
 				$this->SetFont('DejaVu', 'B', 12);

@@ -32,12 +32,14 @@ require (AC_INCLUDE_PATH.'constants.inc.php');
 		$filename = $match[0];
 	}
 
-	if(strstr($path, AC_EXPORT_RPT_DIR)){
+	$path = str_replace('\\', '/', trim($_GET['path']));
+	$export_dir = str_replace('\\', '/', AC_EXPORT_RPT_DIR);
+
+	if(strstr($path, $export_dir)){
         header('Content-Type: application/force-download');
         header('Content-transfer-encoding: binary');
         header('Content-Disposition: attachment; filename='.$filename);
-        header('x-Sendfile: ', TRUE);
-        readfile(trim($path));
+        readfile($path);
 	} else {
 	    echo "nothing to download";
 	}

@@ -286,7 +286,11 @@ class BasicChecks {
 				else $uri = $matches[1];
 			}
 
-			if (substr($src_file, 0, 1) == '/')  //absolute path
+			if (substr($src_file, 0, 2) == '//')
+			{
+				$file = $src_file;
+			}
+			else if (substr($src_file, 0, 1) == '/')  //absolute path
 			{
 				if (isset($base_href) && $base_href <> '')
 				{
@@ -1862,11 +1866,12 @@ class BasicChecks {
 		BasicChecks::prepare_css_arrays ( $csslist, $cssinternal );
 
 		//fine parte in prova - end part in test
-		$size_of_selettori = sizeof ( $selettori );
+		$size_of_selettori = is_array($selettori) ? sizeof ( $selettori ) : 0;
 		for($idcss = 0; $idcss < $size_of_selettori; $idcss ++) {
 
 			//$selettori_appoggio[$idcss] =array();
-			for($i = 0; $i < count ( $selettori [$idcss] ); $i ++) {
+			$count_selettori = is_array($selettori[$idcss]) ? count ( $selettori [$idcss] ) : 0;
+			for($i = 0; $i < $count_selettori; $i ++) {
 				$sel_string = str_ireplace ( '{', '', $selettori [$idcss] [$i] ); //rimuovo "{"
 
 
@@ -1918,7 +1923,7 @@ class BasicChecks {
 					//"regole" contiene: $prorieta =>valore
 					$regole = $attributo_selettore [$idcss] [$i];
 
-					if (sizeof ( $regole ) > 0) {
+					if (is_array($regole) && sizeof ( $regole ) > 0) {
 						$pos_prop = 0;
 						foreach ( $regole as $regola ) {
 
@@ -2575,7 +2580,7 @@ class BasicChecks {
 
 		$th = $t->find ( "th" );
 		$num = 0;
-		$size_of_ids = sizeof ( $ids );
+		$size_of_ids = is_array($ids) ? sizeof ( $ids ) : 0;
 
 //		for($i = 0; $i < $size_of_ids; $i ++) {
 //			for($j = 0; $j < sizeof ( $th ); $j ++) {
@@ -2646,7 +2651,7 @@ class BasicChecks {
 		}
 
 		$tr = $t->find ( "tr" );
-		$size_of_tr = sizeof ( $tr );
+		$size_of_tr = is_array($tr) ? sizeof ( $tr ) : 0;
 
 		if ($tr == null || $size_of_tr == 0)
 			return true; //tabella mal composta - table is not well formed
@@ -2654,7 +2659,7 @@ class BasicChecks {
 
 		for($i = 0; $i < $size_of_tr - 1; $i ++) {
 			$th_next = $tr [$i + 1]->find ( "th" );
-			if ($th_next == null || sizeof ( $th_next ) == 0)
+			if ($th_next == null || (is_array($th_next) && sizeof ( $th_next ) == 0))
 				break; //l'i-esima tr contiene l'intestazione pi interna
 		}
 
@@ -2781,7 +2786,7 @@ class BasicChecks {
 	//La funzione crea l'array degli stili (interni ed esterni) da sottoporre alla validazione.
 	public static function prepare_css_arrays($array_css_esterni, $ci) {
 
-		for($b = 0; $b < count ( $array_css_esterni ); $b ++) {
+		for($b = 0; $b < (is_array($array_css_esterni) ? count ( $array_css_esterni ) : 0); $b ++) {
 			$css_content = @file_get_contents ( $array_css_esterni [$b] );
 			BasicChecks::GetCSSDom ( $css_content, $b );
 		}

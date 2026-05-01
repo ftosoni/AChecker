@@ -13,15 +13,15 @@
 
 // Called by ajax request; main file to generate files
 // @ see checker/js/checker.js
- 
+ob_start();
 define('AC_INCLUDE_PATH', '../include/');
 include(AC_INCLUDE_PATH.'vitals.inc.php');
 
 // first of all delete too old files from temp folder
-define(MINUTE, time() - 60); // minute ago
-define(HOUR, time() - 60*60); // hour ago
-define(DAY, time() - 60*60*24); // day ago
-define(WEEK, time() - 60*60*24*7); // week ago
+define('MINUTE', time() - 60); // minute ago
+define('HOUR', time() - 60*60); // hour ago
+define('DAY', time() - 60*60*24); // day ago
+define('WEEK', time() - 60*60*24*7); // week ago
 
 if ($handle = opendir(AC_EXPORT_RPT_DIR)) {
     while (false !== ($file = readdir($handle))) { 
@@ -46,7 +46,12 @@ if (isset($_POST['file']) && isset($_POST['problem'])) {
 $uri = '';
 if (isset($_SESSION['input_form']['uri'])) {
 	$uri = $_SESSION['input_form']['uri'];
-	$validate_content = @file_get_contents($uri);
+	if (isset($_SESSION['input_form']['content']) && $_SESSION['input_form']['content'] != '') {
+		$validate_content = $_SESSION['input_form']['content'];
+	} else {
+		include_once(AC_INCLUDE_PATH . 'classes/Utility.class.php');
+		$validate_content = Utility::getURLContents($uri);
+	}
 	$input_content_type = $uri;
 }
 
@@ -191,6 +196,7 @@ if ($file == 'pdf') {
 	}
 } 
 
+ob_clean();
 echo $path;
 exit();	
 ?>

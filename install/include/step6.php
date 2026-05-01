@@ -23,7 +23,7 @@ if (substr($svn_data[1], 0, 1) == 'r') {
 	$svn_data = $svn_data[2];
 }
 
-if (count($svn_data) > 1) {
+if (is_array($svn_data) && count($svn_data) > 1) {
 	$build = 'unknown';
 	$build_date = date('Y-m-d H:i:s');
 } else {

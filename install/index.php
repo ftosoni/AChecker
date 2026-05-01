@@ -12,6 +12,7 @@
 // $Id$
 
 define('AC_INCLUDE_PATH', 'include/');
+set_include_path('.' . PATH_SEPARATOR . get_include_path());
 error_reporting(E_ALL ^ E_NOTICE);
 
 require('../include/constants.inc.php');

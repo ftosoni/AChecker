@@ -128,7 +128,7 @@ class HTMLByGuidelineRpt extends AccessibilityRpt {
 ';
 
 	var $html_congrats =
-'<p><img alt="{CONGRATS_ALT}" src="/images/feedback.gif" />{CONGRATS_TEXT}<br /></p>
+'<p><img alt="{CONGRATS_ALT}" src="{BASE_HREF}images/feedback.gif" />{CONGRATS_TEXT}<br /></p>
 ';
 
 	var $html_source =

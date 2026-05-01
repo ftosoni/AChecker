@@ -418,7 +418,7 @@ if (!defined('CACHE_DIR')) {
 	function cache_storage($object, $key) {
 		$newobject=preg_replace("/[^A-Z,0-9,=]/i", 'X', $object);
 		$newkey=preg_replace("/[^A-Z,0-9,=]/i", 'X', $key);
-		$temp="${newobject}=${newkey}";
+		$temp="{$newobject}={$newkey}";
 		if (strlen($temp)>=CACHE_MAX_FILENAME_LEN) $temp="HUGE." . md5($temp);
 		$cacheobject = 'phpCache.' . $temp;
 
@@ -529,7 +529,7 @@ if (!defined('CACHE_DIR')) {
 		}
 	}
 
-	mt_srand(time(NULL));
+	mt_srand(time());
 	cache_reset();
 
 ?>

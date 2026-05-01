@@ -18,8 +18,9 @@ define('AC_PHP_COMPOSER_PATH', AC_INCLUDE_PATH .'../vendor/');
 require_once AC_PHP_COMPOSER_PATH.'autoload.php';
 
 #define('AC_DEVEL', 1);
-#define('AC_ERROR_REPORTING', E_ALL ^  E_NOTICE); // default is E_ALL ^ E_NOTICE, use E_ALL or E_ALL + E_STRICT for developing
-
+if (!defined('AC_ERROR_REPORTING')) {
+	define('AC_ERROR_REPORTING', E_ALL ^ E_NOTICE);
+}
 // Emulate register_globals off. src: http://php.net/manual/en/faq.misc.php#faq.misc.registerglobals
 function unregister_GLOBALS() {
    if (!ini_get('register_globals')) { return; }
@@ -54,7 +55,11 @@ function unregister_GLOBALS() {
 /**** 0. start system configuration options block ****/
 error_reporting(0);
 include_once(AC_INCLUDE_PATH.'config.inc.php');
-error_reporting(AC_ERROR_REPORTING);
+if (defined('AC_ERROR_REPORTING')) {
+	error_reporting(AC_ERROR_REPORTING);
+} else {
+	error_reporting(E_ALL ^ E_NOTICE);
+}
 
 if (!defined('AC_INSTALL') || !AC_INSTALL) {
 	header('Cache-Control: no-store, no-cache, must-revalidate');
@@ -89,7 +94,7 @@ function my_null_slashes($string) {
 	return $string;
 }
 
-if ( get_magic_quotes_gpc() == 1 ) {
+if ( function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() == 1 ) {
 	$stripslashes = 'stripslashes';
 } else {
 	$stripslashes = 'my_null_slashes';

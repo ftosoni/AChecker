@@ -65,7 +65,7 @@ if ($_GET['uri'] == 'referer')
 		$row = $userLinksDAO->getByUserLinkID($_GET['id']);
 
 		$pos_user_link_uri = strpos($row['URI'], '?');
-		if ($pos_user_link_URI > 0) $user_link_uri = substr($row['URI'], 0, $pos_user_link_uri);
+		if ($pos_user_link_uri > 0) $user_link_uri = substr($row['URI'], 0, $pos_user_link_uri);
 		else $user_link_uri = $row['URI'];
 
 		$pos_referer_uri = strpos($_SERVER['HTTP_REFERER'], '?');

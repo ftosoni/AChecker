@@ -33,12 +33,15 @@ class Utility {
 		return sha1(mt_rand() . microtime(TRUE));
 	}
 
-	function getRedirectFinalTarget( $url )
+	public static function getRedirectFinalTarget( $url )
 	{
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_NOBODY, 1);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); // follow redirects
 		curl_setopt($ch, CURLOPT_AUTOREFERER, 1); // set referer on redirect
+		curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+		curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_exec($ch);
 		$target = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
 		curl_close($ch);
@@ -46,12 +49,17 @@ class Utility {
 		return $target ? $target : false;
 	}
 
-	function getURLContents( $url )
+	public static function getURLContents( $url )
 	{
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36');
+		curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($ch, CURLOPT_ENCODING, ""); // handle compressed responses
 		$output = curl_exec($ch);
 		curl_close($ch);
 
@@ -213,7 +221,7 @@ class Utility {
 		$memory_limit = ini_get( 'memory_limit' );
 		if ($memory_limit != '')
 		{
-		    switch ( $memory_limit{strlen( $memory_limit ) - 1} )
+		    switch ( $memory_limit[strlen( $memory_limit ) - 1] )
 		    {
 		        case 'G':
 		            $memory_limit *= 1024;

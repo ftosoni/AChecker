@@ -715,7 +715,7 @@ function highlight($input, $var) {//$input is the string, $var is the text to be
 				$i += strlen($var);
 			}
 			else {
-				$xtemp .= $input{$i};
+				$xtemp .= $input[$i];
 				$i++;
 			}
 		}
