@@ -4,49 +4,37 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "20d58f43313a7356b38b23f0c018ed7e",
+    "content-hash": "7ae3e6d0c6673480f81a1df2ee697b7f",
     "packages": [
         {
             "name": "league/plates",
-            "version": "v4.0.0-alpha",
+            "version": "v3.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/plates.git",
-                "reference": "f53f4c1fa4bf307d0f3858a348172ff4faf7669a"
+                "reference": "12ee65166adbc6fb5916fb80b0c0758e49a2d996"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/plates/zipball/f53f4c1fa4bf307d0f3858a348172ff4faf7669a",
-                "reference": "f53f4c1fa4bf307d0f3858a348172ff4faf7669a",
+                "url": "https://api.github.com/repos/thephpleague/plates/zipball/12ee65166adbc6fb5916fb80b0c0758e49a2d996",
+                "reference": "12ee65166adbc6fb5916fb80b0c0758e49a2d996",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.0"
+                "php": "^8.0"
             },
             "require-dev": {
-                "eloquent/phony-peridot": "^2.0",
-                "peridot-php/leo": "^1.6",
-                "peridot-php/peridot": "^1.19",
-                "peridot-php/peridot-code-coverage-reporters": "^3.0",
-                "squizlabs/php_codesniffer": "~1.5"
+                "mikey179/vfsstream": "^1.6",
+                "phpunit/phpunit": "^11.4",
+                "squizlabs/php_codesniffer": "^3.5"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "4.0-dev"
+                    "dev-master": "3.0-dev"
                 }
             },
             "autoload": {
-                "files": [
-                    "src/Template/match.php",
-                    "src/Extension/Data/data.php",
-                    "src/Extension/Path/path.php",
-                    "src/Extension/RenderContext/func.php",
-                    "src/Extension/RenderContext/render-context.php",
-                    "src/Extension/LayoutSections/layout-sections.php",
-                    "src/Extension/Folders/folders.php",
-                    "src/Util/util.php"
-                ],
                 "psr-4": {
                     "League\\Plates\\": "src"
                 }
@@ -63,12 +51,12 @@
                 },
                 {
                     "name": "RJ Garcia",
-                    "email": "rj@bighead.net",
+                    "email": "ragboyjr@icloud.com",
                     "role": "Developer"
                 }
             ],
             "description": "Plates, the native PHP template system that's fast, easy to use and easy to extend.",
-            "homepage": "http://platesphp.com",
+            "homepage": "https://platesphp.com",
             "keywords": [
                 "league",
                 "package",
@@ -78,27 +66,25 @@
             ],
             "support": {
                 "issues": "https://github.com/thephpleague/plates/issues",
-                "source": "https://github.com/thephpleague/plates/tree/master"
+                "source": "https://github.com/thephpleague/plates/tree/v3.6.0"
             },
-            "time": "2018-01-31T07:20:23+00:00"
+            "time": "2024-11-02T15:03:35+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "league/plates": 15
-    },
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "7.4.*",
-        "ext-mysqli": "*",
+        "php": "^8.1",
+        "ext-pdo": "*",
         "ext-pdo_sqlite": "*"
     },
     "platform-dev": {},
     "platform-overrides": {
-        "php": "7.4.33"
+        "php": "8.1.32"
     },
     "plugin-api-version": "2.9.0"
 }
