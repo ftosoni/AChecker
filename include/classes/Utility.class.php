@@ -64,7 +64,7 @@ class Utility {
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_setopt($ch, CURLOPT_ENCODING, ""); // handle compressed responses
 		$output = curl_exec($ch);
-		curl_close($ch);
+		if (PHP_VERSION_ID < 80400) { @curl_close($ch); }
 
 		return $output;
 	}

@@ -175,6 +175,10 @@ class HTMLByGuidelineRpt extends AccessibilityRpt {
 		$group_known_problems = "";
 		$group_likely_problems = "";
 		$group_potential_problems = "";
+		
+		$guideline_level_known_problems = "";
+		$guideline_level_likely_problems = "";
+		$guideline_level_potential_problems = "";
 
 		$this->errors_by_checks = $this->rearrange_errors_array($this->errors);
 

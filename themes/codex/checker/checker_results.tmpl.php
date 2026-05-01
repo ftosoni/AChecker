@@ -20,7 +20,7 @@ include_once(AC_INCLUDE_PATH.'classes/DAO/UserLinksDAO.class.php');
 
 <?php 
 // display seals
-if (is_array($seals))
+if (isset($seals) && is_array($seals))
 {
 ?>
 <h3><?php echo _AC('valid_icons');?></h3>

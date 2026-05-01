@@ -270,7 +270,7 @@ class BasicChecks {
 	*/
 	public static function getFile($src_file, $base_href, $uri)
 	{
-		if (preg_match('/http.*(\:\/\/).*/', $src_file)) {
+		if (preg_match('/http.*(\:\/\/).*/', (string)$src_file)) {
 			$file = $src_file;
 		} else {
 			// URI that image relatively located to
@@ -286,11 +286,11 @@ class BasicChecks {
 				else $uri = $matches[1];
 			}
 
-			if (substr($src_file, 0, 2) == '//')
+			if (substr((string)$src_file, 0, 2) == '//')
 			{
 				$file = $src_file;
 			}
-			else if (substr($src_file, 0, 1) == '/')  //absolute path
+			else if (substr((string)$src_file, 0, 1) == '/')  //absolute path
 			{
 				if (isset($base_href) && $base_href <> '')
 				{
@@ -941,7 +941,7 @@ class BasicChecks {
 			if ($same == false) array_push ( $array_css, $best ["css_rule"] );
 		}
 
-		return $best ["valore"];
+		return (is_array($best) && isset($best["valore"])) ? $best ["valore"] : null;
 
 	}
 

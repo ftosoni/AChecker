@@ -380,7 +380,7 @@ class AccessibilityValidator {
 				// find out preview images for validation on <img>
 				if (strtolower(trim($row['html_tag'])) == 'img')
 				{
-					$image = BasicChecks::getFile($e->attr['src'], $base_href, $this->uri);
+					$image = isset($e->attr['src']) ? BasicChecks::getFile($e->attr['src'], $base_href, $this->uri) : '';
 
 					// The lines below to check the existence of the image slows down the validation process.
 					// So commented out.
