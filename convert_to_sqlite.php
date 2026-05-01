@@ -53,6 +53,7 @@ while ($table_row = mysqli_fetch_row($tables_result)) {
     $sqlite_create = preg_replace('/mediumtext/i', 'TEXT', $sqlite_create);
     $sqlite_create = preg_replace('/tinytext/i', 'TEXT', $sqlite_create);
     $sqlite_create = preg_replace('/ENUM\(.*?\)/i', 'TEXT', $sqlite_create);
+    $sqlite_create = preg_replace('/\bblob\b/i', 'BLOB', $sqlite_create);
 
     // 3. Remove MySQL specific column modifiers
     $sqlite_create = preg_replace('/COMMENT\s+\'.*?\'/i', '', $sqlite_create); // Strip column comments
@@ -60,8 +61,8 @@ while ($table_row = mysqli_fetch_row($tables_result)) {
     
     // 4. Remove MySQL specific table options and indexes
     $sqlite_create = preg_replace('/PRIMARY KEY\s+\(`.*?`\),?/i', '', $sqlite_create); 
-    $sqlite_create = preg_replace('/KEY `.*?` \(.*?\),?/i', '', $sqlite_create);
-    $sqlite_create = preg_replace('/UNIQUE KEY `.*?` \(.*?\),?/i', '', $sqlite_create);
+    $sqlite_create = preg_replace('/(UNIQUE\s+)?KEY\s+`.*?`\s+\(.*?\)?,?/i', '', $sqlite_create);
+    $sqlite_create = preg_replace('/UNIQUE\s+\(.*?\)?,?/i', '', $sqlite_create);
     $sqlite_create = preg_replace('/CONSTRAINT `.*?` FOREIGN KEY \(.*?\).*?,?/is', '', $sqlite_create);
     $sqlite_create = preg_replace('/AUTO_INCREMENT=\d+/i', '', $sqlite_create); 
     $sqlite_create = preg_replace('/ENGINE=.*?($| )/i', '', $sqlite_create);
