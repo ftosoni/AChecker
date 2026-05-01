@@ -60,10 +60,11 @@ while ($table_row = mysqli_fetch_row($tables_result)) {
     $sqlite_create = preg_replace('/\s+unsigned\b/i', '', $sqlite_create);     // Strip unsigned
     
     // 4. Remove MySQL specific table options and indexes
-    $sqlite_create = preg_replace('/PRIMARY KEY\s+\(`.*?`\),?/i', '', $sqlite_create); 
-    $sqlite_create = preg_replace('/(UNIQUE\s+)?KEY\s+`.*?`\s+\(.*?\)?,?/i', '', $sqlite_create);
-    $sqlite_create = preg_replace('/UNIQUE\s+\(.*?\)?,?/i', '', $sqlite_create);
-    $sqlite_create = preg_replace('/CONSTRAINT `.*?` FOREIGN KEY \(.*?\).*?,?/is', '', $sqlite_create);
+    // Handle multi-line/multi-column constraints more robustly
+    $sqlite_create = preg_replace('/PRIMARY KEY\s*\([^)]+\),?/is', '', $sqlite_create);
+    $sqlite_create = preg_replace('/(UNIQUE\s+)?KEY\s+["`].*?["`]\s*\([^)]+\),?/is', '', $sqlite_create);
+    $sqlite_create = preg_replace('/UNIQUE\s*\([^)]+\),?/is', '', $sqlite_create);
+    $sqlite_create = preg_replace('/CONSTRAINT\s+["`].*?["`]\s+FOREIGN KEY\s*\([^)]+\)\s+REFERENCES\s+["`].*?["`]\s*\([^)]+\),?/is', '', $sqlite_create);
     $sqlite_create = preg_replace('/AUTO_INCREMENT=\d+/i', '', $sqlite_create); 
     $sqlite_create = preg_replace('/ENGINE=.*?($| )/i', '', $sqlite_create);
     $sqlite_create = preg_replace('/DEFAULT CHARSET=.*?($| )/i', '', $sqlite_create);
