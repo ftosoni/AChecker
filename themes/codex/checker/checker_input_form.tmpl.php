@@ -147,7 +147,7 @@ function get_guideline_div($guideline_rows, $num_of_guidelines_per_row, $format 
 						value="<?php if (isset($_POST['uri']))
 							echo $_POST['uri'];
 						else
-							$v($default_uri_value); ?>"
+							echo $this->e($default_uri_value); ?>"
 						placeholder="Insert URL here (e.g. https://example.org)" />
 				</div>
 				<div style="display: flex; align-items: center; gap: 16px;">
