@@ -43,9 +43,13 @@ class BasicFunctions {
 		$parent = $global_e->parent();
 		if ($parent && $parent->tag == "label")
 		{
-			$pattern = "/(.*)". preg_quote($global_e->outertext, '/') ."/";
-			preg_match($pattern, $parent->innertext, $matches);
-			if (isset($matches[1]) && strlen(trim($matches[1])) > 0) return true;
+			// Find text before $global_e within the label
+			foreach ($parent->nodes as $node) {
+				if ($node === $global_e) break;
+				if ($node->nodetype == HDOM_TYPE_TEXT && strlen(trim($node->plaintext)) > 0) return true;
+				// Also check if previous elements have alt text or content
+				if ($node->nodetype == HDOM_TYPE_ELEMENT && strlen(trim($node->plaintext)) > 0) return true;
+			}
 		}
 
 		// 3. The element $global_e has an "id" attribute value that matches the "for" attribute value of a "label" element
@@ -758,11 +762,16 @@ class BasicFunctions {
 		$parent = $global_e->parent();
 		if (!$parent) return true;
 
-		$pattern = "/". preg_quote($global_e->outertext, '/')."(.*)". preg_quote($next_sibling->outertext, '/') ."/";
-		preg_match($pattern, $parent->innertext, $matches);
-
-		if (isset($matches[1])) {
-			return (strlen(trim($matches[1])) > 0);
+		$found_start = false;
+		foreach ($parent->nodes as $node) {
+			if ($node === $global_e) {
+				$found_start = true;
+				continue;
+			}
+			if ($found_start) {
+				if ($node === $next_sibling) break;
+				if (strlen(trim($node->plaintext)) > 0) return true;
+			}
 		}
 		return false;
 	}

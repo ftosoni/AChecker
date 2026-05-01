@@ -91,6 +91,12 @@ class AccessibilityValidator {
 		
 		$this->finalize();
 
+		// Release memory from DOM object
+		if (is_object($this->content_dom)) {
+			$this->content_dom->clear();
+			unset($this->content_dom);
+		}
+
 		// end of validation process
 	}
 	
