@@ -92,7 +92,17 @@ class CheckFuncUtility {
     	if (trim($code) == '')
     		return 'return true;';
     	else
-			return "global \$global_e, \$global_content_dom, \$header_array, \$base_href, \$global_check_id, \$htmlValidator, \$uri;\nif (!is_object(\$e)) return true;\n\$global_e = \$e;\n\$global_content_dom = \$this->content_dom;\n\$uri = \$this->uri;\n\$global_check_id=\$check_id;\n" . $code;
+			return "global \$global_e, \$global_content_dom, \$header_array, \$base_href, \$global_check_id, \$htmlValidator, \$uri;\n" .
+				   "if (!is_object(\$e)) return true;\n" .
+				   "\$global_e = \$e;\n" .
+				   "\$global_content_dom = \$this->content_dom;\n" .
+				   "\$uri = \$this->uri;\n" .
+				   "\$global_check_id = \$check_id;\n" .
+				   "\$attr = is_array(\$e->attr) ? \$e->attr : array();\n" .
+				   "\$e_attr = \$attr;\n" .
+				   "\$linenumber = isset(\$e->linenumber) ? \$e->linenumber : 0;\n" .
+				   "\$col_number = isset(\$col_number) ? \$col_number : 0;\n" .
+				   $code;
 	}
 }
 ?>

@@ -725,7 +725,7 @@ function highlight($input, $var) {//$input is the string, $var is the text to be
 }
 
 /* @See: ./index.php */
-function format_content($input, $html = 0, $glossary, $simple = false) {
+function format_content($input, $html = 0, $glossary = null, $simple = false) {
 	global $_base_path, $_config_defaults;
 
 	if (!$html) {

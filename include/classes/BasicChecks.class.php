@@ -215,18 +215,22 @@ class BasicChecks {
 
 		foreach ($children as $i => $child)
 		{
-			if (strtolower(trim($child->attr["type"])) == "checkbox")
+			$type = (is_array($child->attr) && isset($child->attr["type"])) ? strtolower(trim((string)$child->attr["type"])) : '';
+			if ($type == "checkbox")
 			{
-				$this_name = strtolower(trim($child->attr["name"]));
+				$this_name = (is_array($child->attr) && isset($child->attr["name"])) ? strtolower(trim((string)$child->attr["name"])) : '';
 
-				for($j=$i+1; $j <=$num_of_children; $j++)
+				for($j=$i+1; $j < $num_of_children; $j++)
+				{
 					// if there are radio buttons with same name,
 					// check if they are contained in "fieldset" and "legend" elements
-					if (strtolower(trim($children[$j]->attr["name"])) == $this_name)
+					$other_name = (is_array($children[$j]->attr) && isset($children[$j]->attr["name"])) ? strtolower(trim((string)$children[$j]->attr["name"])) : '';
+					if ($other_name == $this_name)
 						if (BasicChecks::hasParent($e, "fieldset"))
 							return BasicChecks::hasParent($e, "legend");
 						else
 							return false;
+				}
 			}
 			else
 				return BasicChecks::hasFieldsetOnMultiCheckbox($child);
