@@ -1,1 +1,1 @@
-web: mkdir -p ./public_html/database && ln -sf /data/project/accessibility-checker/database/achecker.db ./public_html/database/achecker.db && heroku-php-apache2 public_html/
+web: mkdir -p ./database && ln -sf /data/project/accessibility-checker/database/achecker.db ./database/achecker.db && heroku-php-apache2 .
