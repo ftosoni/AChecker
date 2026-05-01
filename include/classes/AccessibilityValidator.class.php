@@ -209,6 +209,8 @@ class AccessibilityValidator {
 			{
 				foreach ($rows as $id => $row)
 					$this->check_for_all_elements_array[$count++] = $row["check_id"];
+				
+				$this->check_for_all_elements_array = array_unique($this->check_for_all_elements_array);
 			}
 			
 			// generate array of check_id
@@ -224,6 +226,11 @@ class AccessibilityValidator {
 					
 					$prev_html_tag = $row["html_tag"];
 				}
+
+				// Deduplicate tag-specific checks
+				foreach ($this->check_for_tag_array as $tag => $checks) {
+					$this->check_for_tag_array[$tag] = array_unique($checks);
+				}
 			}
 			
 			// generate array of prerequisite check_ids
@@ -238,6 +245,11 @@ class AccessibilityValidator {
 					array_push($prerequisite_check_array[$row["check_id"]], $row["prerequisite_check_id"]);
 					
 					$prev_check_id = $row["check_id"];
+				}
+
+				// Deduplicate prerequisite checks
+				foreach ($prerequisite_check_array as $check_id => $pres) {
+					$prerequisite_check_array[$check_id] = array_unique($pres);
 				}
 			}
 			$this->prerequisite_check_array = $prerequisite_check_array;
