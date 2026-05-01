@@ -1918,7 +1918,7 @@ class BasicChecks {
 					$array_appoggio ["idcss"] = $idcss;
 					$array_appoggio ["posizione"] = $i;
 					//"regole" contiene: $prorieta =>valore
-					$regole = $attributo_selettore [$idcss] [$i];
+					$regole = (is_array($attributo_selettore) && isset($attributo_selettore [$idcss] [$i])) ? $attributo_selettore [$idcss] [$i] : null;
 
 					if (is_array($regole) && sizeof ( $regole ) > 0) {
 						$pos_prop = 0;
@@ -1928,7 +1928,7 @@ class BasicChecks {
 							$regola = trim ( $regola );
 							//$regola = split ( ":", $regola );
 							$regola = explode ( ":", $regola );
-							if (sizeof ( $regola == 2 )) {
+							if (count($regola) == 2) {
 								$proprieta = trim ( $regola [0] );
 								$valore = trim ( $regola [1] );
 
