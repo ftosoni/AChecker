@@ -1109,18 +1109,24 @@ class BasicChecks {
 		$i = 0;
 		foreach ( $array_pr as $regola ) {
 			// break every rule, separated by ':' in: property => value
-			//spezzo ogni regola, separata dai ":" in: proprieta=>valore
-			//$appoggio = split ( ":", trim ( $regola ) );
-			$appoggio = explode ( ":", trim ( $regola ) );
-			if (isset ( $array_val [trim ( $appoggio [0] )] ) && stripos ( $array_val [$appoggio [0]] ["val"], "!important" ) !== false) {
-				if (stripos ( $appoggio [1], "!important" ) !== false) {
-					$array_val [$appoggio [0]] ["val"] = trim ( $appoggio [1] );
-					$array_val [$appoggio [0]] ["pos"] = trim ( $i );
+			$regola_trimmed = is_null($regola) ? '' : trim((string)$regola);
+			if ($regola_trimmed === '') continue;
+
+			$appoggio = explode ( ":", $regola_trimmed );
+			$prop = isset($appoggio[0]) ? trim($appoggio[0]) : '';
+			$valore = isset($appoggio[1]) ? trim($appoggio[1]) : '';
+
+			if ($prop === '') continue;
+
+			if (isset ( $array_val [$prop] ) && is_array($array_val[$prop]) && isset($array_val[$prop]["val"]) && stripos ( (string)$array_val [$prop] ["val"], "!important" ) !== false) {
+				if (stripos ( $valore, "!important" ) !== false) {
+					$array_val [$prop] ["val"] = $valore;
+					$array_val [$prop] ["pos"] = trim ( (string)$i );
 				}
 
 			} else {
-				$array_val [$appoggio [0]] ["val"] = trim ( $appoggio [1] );
-				$array_val [$appoggio [0]] ["pos"] = trim ( $i );
+				$array_val [$prop] ["val"] = $valore;
+				$array_val [$prop] ["pos"] = trim ( (string)$i );
 			}
 			$i ++;
 		}
