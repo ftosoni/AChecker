@@ -49,59 +49,62 @@ For more about using AChecker, see the instructional videos on [YouTube](http://
 
 ## 🚀 Deployment (Toolforge)
 
-Follow these steps to deploy the MediaWiki Accessibility Checker on Wikimedia Toolforge. This application requires a PHP environment and a MariaDB database.
+Follow these steps to deploy the application on Wikimedia Toolforge.
 
-> [!NOTE]
-> The examples below use `mediawiki-accessibility-checker` as the tool name. Replace this with your own Toolforge credentials where applicable.
+### 1. Initialize Database
+Before uploading files, you must create your tool's private database to generate your credentials:
+1.  Go to **[toolsadmin.wikimedia.org](https://toolsadmin.wikimedia.org/tools/id/accessibility-checker/databases)**.
+2.  Log in and click **"Create Database"**.
+3.  Wait 1-2 minutes for the system to generate your `~/.my.cnf` file.
 
-### 1. Database Setup
-The database is **CRITICAL** for AChecker. It stores not only user logins but also all accessibility guidelines, checks, and application configurations.
-
-1. **Export your local database**:
-   ```bash
-   mysqldump -u root achecker > achecker_dump.sql
-   ```
-
-2. **Upload the dump to Toolforge**:
-   ```bash
-   scp achecker_dump.sql your-username@login.toolforge.org:~/
-   ```
-
-3. **Import the database on Toolforge**:
-   Log into Toolforge, become your tool, and import:
-   ```bash
-   ssh your-username@login.toolforge.org
-   become accessibility-checker
-   sql achecker < ~/achecker_dump.sql
-   ```
-
-### 2. Upload Files
-Upload the project files to the `public_html` directory of your tool:
+### 2. Deploy Code via Git
+Instead of using `scp`, it is recommended to clone the repository directly on the Toolforge bastion:
 
 ```bash
-# From your local project root
-scp -r ./* your-username@login.toolforge.org:~/public_html/
+# Log into Toolforge
+ssh your-username@login.toolforge.org
+
+# Become the tool
+become accessibility-checker
+
+# Navigate to your home directory
+cd ~
+
+# Clone the repo into a temporary folder
+git clone https://github.com/ftosoni/AChecker.git temp_repo
+
+# Move files to public_html (ensure public_html is empty first)
+rm -rf public_html/*
+cp -r temp_repo/* public_html/
+rm -rf temp_repo
 ```
 
-### 3. Configuration
-You must update `include/config.inc.php` on Toolforge to match the environment. 
+### 3. Import Database Dump
+Upload your local SQL dump and import it into the new Toolforge database:
 
-1. **Database Credentials**: Use the credentials found in `~/replica.my.cnf`.
-2. **Database Host**: Use `tools.db.svc.wikimedia.cloud`.
-3. **Paths**: Ensure `AC_TEMP_DIR` points to a writable directory on Toolforge (e.g., `/data/project/accessibility-checker/temp/`).
+```bash
+# From your local machine
+scp achecker_dump.sql your-username@login.toolforge.org:/data/project/accessibility-checker/
 
-### 4. Start Webservice
+# On Toolforge (as the tool user)
+# Find your DB name via: mysql --defaults-file=$HOME/.my.cnf -e "SHOW DATABASES;"
+mysql --defaults-file=$HOME/.my.cnf sXXXXX__achecker < /data/project/accessibility-checker/achecker_dump.sql
+```
+
+### 4. Configure Application
+Update `include/config.inc.php` on the server with your Toolforge database details:
+- **DB Host**: `tools.db.svc.wikimedia.cloud`
+- **DB User**: (Found in `~/.my.cnf`)
+- **DB Pass**: (Found in `~/.my.cnf`)
+- **DB Name**: `sXXXXX__achecker`
+
+### 5. Start Webservice
 Start the PHP 7.4 webservice:
 
 ```bash
-become accessibility-checker
 toolforge webservice php7.4 start
 ```
 
-### 5. Monitor Logs
-If you encounter issues (like the PDF generator error), monitor the logs:
-```bash
-toolforge webservice logs -f
-```
+Your tool will be available at `https://accessibility-checker.toolforge.org/`.
 
 
