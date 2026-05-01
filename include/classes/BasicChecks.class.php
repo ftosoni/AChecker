@@ -1182,12 +1182,16 @@ class BasicChecks {
 				// Check if there is a background image, if the property exists set to -1
 				//verifico se c'è un'immagine di sfondo, nel caso setto la proprietà a -1
 				if (isset ( $array_regole ["regole"] ["background-image"] ))
-					$valore_proprieta_new = "-1";
-				elseif (isset ( $array_regole ["regole"] ["background"] ) && stripos ( $array_regole ["regole"] ["background"] ["val"], "url" ) !== false)
-					$valore_proprieta_new = "-1";
+					$valore_proprieta = "-1";
+				elseif (isset ( $array_regole ["regole"] ["background"] ) && stripos ( (string)$array_regole ["regole"] ["background"] ["val"], "url" ) !== false)
+					$valore_proprieta = "-1";
 
 				elseif (isset ( $array_val [$val] ) || isset ( $array_val ["background"] ))
-					$valore_proprieta = BasicChecks::getBgColor ( BasicChecks::get_priority_prop ( $array_val [$val], $array_val ["background"] ) );
+				{
+					$v1 = isset($array_val[$val]) ? $array_val[$val] : null;
+					$v2 = isset($array_val["background"]) ? $array_val["background"] : null;
+					$valore_proprieta = BasicChecks::getBgColor ( BasicChecks::get_priority_prop ( $v1, $v2 ) );
+				}
 				break;
 
 			default :
@@ -1362,22 +1366,24 @@ class BasicChecks {
 	//ad esempio viene usata per quelle regole che contengono sia la definizione di margin che di margin-top
 	public static function get_priority_prop($reg1, $reg2) {
 
-		if (! isset ( $reg1 ))
-			$valore_proprieta_new = $reg2 ["val"];
-		elseif (! isset ( $reg2 ))
-			$valore_proprieta_new = $reg1 ["val"];
-		elseif (stripos ( $reg1 ["val"], "!important" ) === false && stripos ( $reg2 ["val"], "!important" ) === false) {
-			if ($reg1 ["pos"] > $reg2 ["pos"])
+		if (!is_array($reg1) && !is_array($reg2)) return "";
+
+		if (!is_array($reg1) || ! isset ( $reg1 ["val"] ))
+			$valore_proprieta_new = (is_array($reg2) && isset($reg2["val"])) ? $reg2 ["val"] : "";
+		elseif (!is_array($reg2) || ! isset ( $reg2 ["val"] ))
+			$valore_proprieta_new = (is_array($reg1) && isset($reg1["val"])) ? $reg1 ["val"] : "";
+		elseif (stripos ( (string)$reg1 ["val"], "!important" ) === false && stripos ( (string)$reg2 ["val"], "!important" ) === false) {
+			if (isset($reg1["pos"]) && isset($reg2["pos"]) && $reg1 ["pos"] > $reg2 ["pos"])
 				$valore_proprieta_new = $reg1 ["val"];
 			else
-				$valore_proprieta_new = $reg2 ["val"];
-		} elseif (stripos ( $reg1 ["val"], "!important" ) !== false) {
+				$valore_proprieta_new = (is_array($reg2) && isset($reg2["val"])) ? $reg2 ["val"] : "";
+		} elseif (stripos ( (string)$reg1 ["val"], "!important" ) !== false) {
 			$valore_proprieta_new = $reg1 ["val"];
 		} else {
-			$valore_proprieta_new = $reg2 ["val"];
+			$valore_proprieta_new = (is_array($reg2) && isset($reg2["val"])) ? $reg2 ["val"] : "";
 		}
 
-		return $valore_proprieta_new;
+		return (string)$valore_proprieta_new;
 	}
 
 	/*
@@ -1430,54 +1436,80 @@ class BasicChecks {
 			switch ($val) {
 
 				case "margin-top" :
-					if (isset ( $array_regole ["regole"] [$val] ) || isset ( $array_regole ["regole"] ["margin"] ))
-						$valore_proprieta_new = BasicChecks::getTop ( BasicChecks::get_priority_prop ( $array_regole ["regole"] [$val], $array_regole ["regole"] ["margin"] ) );
+					if (isset ( $array_regole ["regole"] [$val] ) || isset ( $array_regole ["regole"] ["margin"] )) {
+						$rv1 = isset($array_regole["regole"][$val]) ? $array_regole["regole"][$val] : null;
+						$rv2 = isset($array_regole["regole"]["margin"]) ? $array_regole["regole"]["margin"] : null;
+						$valore_proprieta_new = BasicChecks::getTop ( BasicChecks::get_priority_prop ( $rv1, $rv2 ) );
+					}
 					break;
 
 				case "margin-bottom" :
-					if (isset ( $array_regole ["regole"] [$val] ) || isset ( $array_regole ["regole"] ["margin"] ))
-						$valore_proprieta_new = BasicChecks::getBottom ( BasicChecks::get_priority_prop ( $array_regole ["regole"] [$val], $array_regole ["regole"] ["margin"] ) );
+					if (isset ( $array_regole ["regole"] [$val] ) || isset ( $array_regole ["regole"] ["margin"] )) {
+						$rv1 = isset($array_regole["regole"][$val]) ? $array_regole["regole"][$val] : null;
+						$rv2 = isset($array_regole["regole"]["margin"]) ? $array_regole["regole"]["margin"] : null;
+						$valore_proprieta_new = BasicChecks::getBottom ( BasicChecks::get_priority_prop ( $rv1, $rv2 ) );
+					}
 					break;
 
 				case "margin-left" :
-					if (isset ( $array_regole ["regole"] [$val] ) || isset ( $array_regole ["regole"] ["margin"] ))
-						$valore_proprieta_new = BasicChecks::getLeft ( BasicChecks::get_priority_prop ( $array_regole ["regole"] [$val], $array_regole ["regole"] ["margin"] ) );
+					if (isset ( $array_regole ["regole"] [$val] ) || isset ( $array_regole ["regole"] ["margin"] )) {
+						$rv1 = isset($array_regole["regole"][$val]) ? $array_regole["regole"][$val] : null;
+						$rv2 = isset($array_regole["regole"]["margin"]) ? $array_regole["regole"]["margin"] : null;
+						$valore_proprieta_new = BasicChecks::getLeft ( BasicChecks::get_priority_prop ( $rv1, $rv2 ) );
+					}
 					break;
 
 				case "margin-right" :
-					if (isset ( $array_regole ["regole"] [$val] ) || isset ( $array_regole ["regole"] ["margin"] ))
-						$valore_proprieta_new = BasicChecks::getRight ( BasicChecks::get_priority_prop ( $array_regole ["regole"] [$val], $array_regole ["regole"] ["margin"] ) );
+					if (isset ( $array_regole ["regole"] [$val] ) || isset ( $array_regole ["regole"] ["margin"] )) {
+						$rv1 = isset($array_regole["regole"][$val]) ? $array_regole["regole"][$val] : null;
+						$rv2 = isset($array_regole["regole"]["margin"]) ? $array_regole["regole"]["margin"] : null;
+						$valore_proprieta_new = BasicChecks::getRight ( BasicChecks::get_priority_prop ( $rv1, $rv2 ) );
+					}
 					break;
 
 				case "padding-top" :
-					if (isset ( $array_regole ["regole"] [$val] ) || isset ( $array_regole ["regole"] ["padding"] ))
-						$valore_proprieta_new = BasicChecks::getTop ( BasicChecks::get_priority_prop ( $array_regole ["regole"] [$val], $array_regole ["regole"] ["padding"] ) );
+					if (isset ( $array_regole ["regole"] [$val] ) || isset ( $array_regole ["regole"] ["padding"] )) {
+						$rv1 = isset($array_regole["regole"][$val]) ? $array_regole["regole"][$val] : null;
+						$rv2 = isset($array_regole["regole"]["padding"]) ? $array_regole["regole"]["padding"] : null;
+						$valore_proprieta_new = BasicChecks::getTop ( BasicChecks::get_priority_prop ( $rv1, $rv2 ) );
+					}
 					break;
 
 				case "padding-bottom" :
-					if (isset ( $array_regole ["regole"] [$val] ) || isset ( $array_regole ["regole"] ["padding"] ))
-						$valore_proprieta_new = BasicChecks::getBottom ( BasicChecks::get_priority_prop ( $array_regole ["regole"] [$val], $array_regole ["regole"] ["padding"] ) );
+					if (isset ( $array_regole ["regole"] [$val] ) || isset ( $array_regole ["regole"] ["padding"] )) {
+						$rv1 = isset($array_regole["regole"][$val]) ? $array_regole["regole"][$val] : null;
+						$rv2 = isset($array_regole["regole"]["padding"]) ? $array_regole["regole"]["padding"] : null;
+						$valore_proprieta_new = BasicChecks::getBottom ( BasicChecks::get_priority_prop ( $rv1, $rv2 ) );
+					}
 					break;
 
 				case "padding-left" :
-					if (isset ( $array_regole ["regole"] [$val] ) || isset ( $array_regole ["regole"] ["padding"] ))
-						$valore_proprieta_new = BasicChecks::getLeft ( BasicChecks::get_priority_prop ( $array_regole ["regole"] [$val], $array_regole ["regole"] ["padding"] ) );
+					if (isset ( $array_regole ["regole"] [$val] ) || isset ( $array_regole ["regole"] ["padding"] )) {
+						$rv1 = isset($array_regole["regole"][$val]) ? $array_regole["regole"][$val] : null;
+						$rv2 = isset($array_regole["regole"]["padding"]) ? $array_regole["regole"]["padding"] : null;
+						$valore_proprieta_new = BasicChecks::getLeft ( BasicChecks::get_priority_prop ( $rv1, $rv2 ) );
+					}
 					break;
 
 				case "padding-right" :
-					if (isset ( $array_regole ["regole"] [$val] ) || isset ( $array_regole ["regole"] ["padding"] ))
-						$valore_proprieta_new = BasicChecks::getRight ( BasicChecks::get_priority_prop ( $array_regole ["regole"] [$val], $array_regole ["regole"] ["padding"] ) );
+					if (isset ( $array_regole ["regole"] [$val] ) || isset ( $array_regole ["regole"] ["padding"] )) {
+						$rv1 = isset($array_regole["regole"][$val]) ? $array_regole["regole"][$val] : null;
+						$rv2 = isset($array_regole["regole"]["padding"]) ? $array_regole["regole"]["padding"] : null;
+						$valore_proprieta_new = BasicChecks::getRight ( BasicChecks::get_priority_prop ( $rv1, $rv2 ) );
+					}
 					break;
 
 				case "background-color" :
-
-					//verifico se c'e' un'immagine di sfondo, nel caso setto la proprietà a -1
+					// Check if there is a background image, if the property exists set to -1
 					if (isset ( $array_regole ["regole"] ["background-image"] ))
 						$valore_proprieta_new = "-1";
-					elseif (isset ( $array_regole ["regole"] ["background"] ) && stripos ( $array_regole ["regole"] ["background"] ["val"], "url" ) !== false)
+					elseif (isset ( $array_regole ["regole"] ["background"] ) && stripos ( (string)$array_regole ["regole"] ["background"] ["val"], "url" ) !== false)
 						$valore_proprieta_new = "-1";
-					elseif (isset ( $array_regole ["regole"] [$val] ) || isset ( $array_regole ["regole"] ["background"] ))
-						$valore_proprieta_new = BasicChecks::getBgColor ( BasicChecks::get_priority_prop ( $array_regole ["regole"] [$val], $array_regole ["regole"] ["background"] ) );
+					elseif (isset ( $array_regole ["regole"] [$val] ) || isset ( $array_regole ["regole"] ["background"] )) {
+						$rv1 = isset($array_regole["regole"][$val]) ? $array_regole["regole"][$val] : null;
+						$rv2 = isset($array_regole["regole"]["background"]) ? $array_regole["regole"]["background"] : null;
+						$valore_proprieta_new = BasicChecks::getBgColor ( BasicChecks::get_priority_prop ( $rv1, $rv2 ) );
+					}
 					break;
 
 				default :
