@@ -1,5 +1,13 @@
 {
     "require": {
-        "league/plates": "v4.0.0-alpha"
+        "php": "7.4.*",
+        "league/plates": "v4.0.0-alpha",
+        "ext-mysqli": "*",
+        "ext-pdo_sqlite": "*"
+    },
+    "config": {
+        "platform": {
+            "php": "7.4.33"
+        }
     }
 }
