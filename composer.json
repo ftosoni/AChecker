@@ -1,7 +1,7 @@
 {
     "require": {
         "php": "^7.4 || ^8.1",
-        "league/plates": "3.4.*",
+        "league/plates": "^3.5",
         "ext-pdo": "*",
         "ext-pdo_sqlite": "*"
     },

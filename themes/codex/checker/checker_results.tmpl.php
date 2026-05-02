@@ -96,6 +96,7 @@ if (isset($aValidator) && $a_rpt->getAllowSetDecisions() == 'true')
 						<option value="earl">EARL</option>
 						<option value="csv">CSV</option>
 						<option value="html">HTML</option>
+						<option value="wikitext">Wikitext</option>
 					</select>
 				</div>
 				

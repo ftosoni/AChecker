@@ -69,6 +69,22 @@ AChecker.output = AChecker.output || {};
         $("#guideline_in_checkbox").show();
         $("#guideline_in_radio").hide();
     };
+
+    /**
+     * Disable clickables and show spinner
+     */
+    var disableClickablesAndShowSpinner = function (spinnerID) {
+        $('.cdx-button, .cdx-text-input').attr('disabled', 'disabled').addClass('cdx-button--disabled');
+        $('#' + spinnerID).show();
+    };
+
+    /**
+     * Enable clickables and hide spinner
+     */
+    var enableClickablesAndHideSpinner = function (spinnerID) {
+        $('.cdx-button, .cdx-text-input').removeAttr('disabled').removeClass('cdx-button--disabled');
+        $('#' + spinnerID).hide();
+    };
     
     /**
      * Display the clicked tab and show/hide "made decision" button according to the displayed tab.
