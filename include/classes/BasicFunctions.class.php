@@ -515,7 +515,7 @@ class BasicFunctions {
 	{
 		global $has_duplicate_attribute, $global_e;
 
-		$has_duplicate_attribute = false;
+		$has_duplicate_attribute = array();
 		$id_array = array();
 
 		BasicChecks::hasDuplicateAttribute($global_e, $attr, $id_array);
@@ -906,7 +906,7 @@ class BasicFunctions {
 	{
 		global $is_data_table, $global_e;
 
-		$is_data_table = false;
+		$is_data_table = array();
 		BasicChecks::isDataTable($global_e);
 
 		return $is_data_table;

@@ -109,8 +109,8 @@ class AccessibilityValidator {
 	{
 		global $header_array, $base_href, $has_duplicate_attribute, $is_data_table, $is_radio_buttons_grouped;
 
-		// find all header tags which are used in BasicFunctions.class.php
 		$header_array = $this->content_dom->find("h1, h2, h3, h4, h5, h6, h7");
+		$base_href = '';
 
 		// find base href, used to check image size
 		$all_base_elements = $this->content_dom->find("base");
@@ -128,7 +128,7 @@ class AccessibilityValidator {
 		}
 
 		$has_duplicate_attribute = array();
-		$is_data_table = false;
+		$is_data_table = array();
 		$is_radio_buttons_grouped = true;
 
 		// set all check functions
@@ -351,9 +351,7 @@ class AccessibilityValidator {
 					} catch (Throwable $e) {
 						// Log the error and the code that caused it
 						error_log("AChecker Error in check $check_id: " . $e->getMessage() . " at " . $e->getFile() . ":" . $e->getLine());
-						if (defined('AC_DEBUG') && AC_DEBUG) {
-							error_log("AChecker Failing code for check $check_id:\n" . $this->check_func_array[$check_id]);
-						}
+						error_log("AChecker Failing code for check $check_id:\n" . $this->check_func_array[$check_id]);
 						$check_result = null;
 					}
 			
