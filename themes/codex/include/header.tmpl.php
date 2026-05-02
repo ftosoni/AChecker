@@ -132,7 +132,7 @@
 				<a href="<?php echo AC_BASE_HREF; ?>register.php"
 					class="cdx-button cdx-button--weight-quiet"><?php echo _AC('register'); ?></a>
 			<?php endif; ?>
-			<a href="<?php echo AC_BASE_HREF; ?>handbook/index.php"
+			<a href="<?php echo AC_BASE_HREF; ?>documentation/index.php"
 				class="cdx-button cdx-button--weight-quiet"><?php echo _AC('handbook'); ?></a>
 		</div>
 	</header>
