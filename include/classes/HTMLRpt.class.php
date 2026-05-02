@@ -40,7 +40,7 @@ class HTMLRpt extends AccessibilityRpt {
 	
 	var $html_problem_achecker =
 '      <li class="{MSG_TYPE}">
-         <span class="err_type"><img src="{BASE_HREF}images/{IMG_SRC}" alt="{IMG_TYPE}" title="{IMG_TYPE}" width="15" height="15" /></span>
+         <span class="err_type"><span class="cdx-report-marker cdx-report-marker--{MARKER_TYPE}" title="{IMG_TYPE}">{EMOJI}</span></span>
          <em>{LINE_TEXT} {LINE_NUMBER}, {COL_TEXT} {COL_NUMBER}</em>:
          <span class="msg">
             <a href="{BASE_HREF}checker/suggestion.php?id={CHECK_ID}"
@@ -349,19 +349,22 @@ class HTMLRpt extends AccessibilityRpt {
 		{
 			$msg_type = "msg_err";
 			$img_type = _AC('error');
-			$img_src = "error.png";
+			$marker_type = "error";
+			$emoji = "❌";
 		}
 		else if ($error_type == IS_WARNING)
 		{
 			$msg_type = "msg_info";
 			$img_type = _AC('warning');
-			$img_src = "warning.png";
+			$marker_type = "warning";
+			$emoji = "⚠️";
 		}
 		else if ($error_type == IS_INFO)
 		{
 			$msg_type = "msg_info";
 			$img_type = _AC('manual_check');
-			$img_src = "info.png";
+			$marker_type = "info";
+			$emoji = "ℹ️";
 		}
 		
 		
@@ -390,7 +393,8 @@ class HTMLRpt extends AccessibilityRpt {
 		}
 		
 		return str_replace(array("{MSG_TYPE}", 
-		                         "{IMG_SRC}", 
+		                         "{MARKER_TYPE}", 
+		                         "{EMOJI}",
 		                         "{IMG_TYPE}", 
 		                         "{LINE_TEXT}", 
 		                         "{LINE_NUMBER}", 
@@ -406,7 +410,8 @@ class HTMLRpt extends AccessibilityRpt {
 		                         "{REPAIR}",
 		                         "{DECISION}"),
 		                   array($msg_type, 
-		                         $img_src, 
+		                         $marker_type, 
+		                         $emoji,
 		                         $img_type,
 		                         _AC('line'), 
 		                         $line_number, 

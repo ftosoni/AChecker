@@ -95,7 +95,7 @@ class HTMLByGuidelineRpt extends AccessibilityRpt {
 ';
 
 	var $html_problem =
-'         <span class="err_type"><img id="msg_icon_{LINE_NUMBER}_{COL_NUMBER}_{CHECK_ID}" src="{BASE_HREF}images/{IMG_SRC}" alt="{IMG_TYPE}" title="{IMG_TYPE}" width="15" height="15" /></span>
+'         <span class="err_type"><span id="msg_icon_{LINE_NUMBER}_{COL_NUMBER}_{CHECK_ID}" class="cdx-report-marker cdx-report-marker--{MARKER_TYPE}" title="{IMG_TYPE}">{EMOJI}</span></span>
          <em>{LABEL_START}{LINE_TEXT} {LINE_NUMBER_TO_SOURCE}, {COL_TEXT} {COL_NUMBER}{LABEL_END}</em>:
          <pre><code class="input">{HTML_CODE}</code></pre>
          {IMAGE}
@@ -407,17 +407,20 @@ class HTMLByGuidelineRpt extends AccessibilityRpt {
 				$this->num_of_errors++;
 
 				$img_type = _AC('error');
-				$img_src = "error.png";
+				$marker_type = "error";
+				$emoji = "❌";
 			} else if ($confidence == LIKELY) {
 				$this->num_of_likely_problems++;
 
 				$img_type = _AC('warning');
-				$img_src = "warning.png";
+				$marker_type = "warning";
+				$emoji = "⚠️";
 			} else if ($confidence == POTENTIAL) {
 				$this->num_of_potential_problems++;
 
 				$img_type = _AC('manual_check');
-				$img_src = "info.png";
+				$marker_type = "info";
+				$emoji = "ℹ️";
 			}
 
 			if ($this->show_source == 'true') {
@@ -458,11 +461,13 @@ class HTMLByGuidelineRpt extends AccessibilityRpt {
 			if ($row && $row['decision'] == AC_DECISION_PASS) { // pass decision has been made, display "congrats" icon
 				$msg_type = "msg_info";
 				$img_type = _AC('passed_decision');
-				$img_src = "feedback.gif";
+				$marker_type = "success";
+				$emoji = "✅";
 			}
 
 			// generate individual problem string
-			$problem_cell = str_replace(array("{IMG_SRC}",
+		                   array("{MARKER_TYPE}",
+		                         "{EMOJI}",
 		                         "{IMG_TYPE}",
 		                         "{LINE_TEXT}",
 		                         "{LINE_NUMBER}",
@@ -474,7 +479,8 @@ class HTMLByGuidelineRpt extends AccessibilityRpt {
 		                         "{CSS_CODE}",
 		                         "{BASE_HREF}",
 		                         "{IMAGE}"),
-		                   array($img_src,
+		                   array($marker_type,
+		                         $emoji,
 		                         $img_type,
 		                         _AC('line'),
 		                         $error['line_number'],

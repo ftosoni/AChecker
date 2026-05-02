@@ -144,7 +144,7 @@ if (isset($aValidator) && $a_rpt->getAllowSetDecisions() == 'true')
 		<div id="AC_errors" style="padding-top: 24px;">
 			<?php if (isset($aValidator) && $num_of_errors == 0): ?>
 				<div class="cdx-message cdx-message--success" style="padding: 16px; background: #eaf3ff; border: 1px solid #3366cc; border-radius: 2px;">
-					<img src="<?php echo AC_BASE_HREF; ?>images/feedback.gif" alt="" style="margin-right: 8px;" />
+					<span class="cdx-report-marker cdx-report-marker--success" style="margin-right: 8px;">✅</span>
 					<?php echo _AC("congrats_no_known"); ?>
 				</div>
 			<?php elseif (isset($aValidator)): ?>
