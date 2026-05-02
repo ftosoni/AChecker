@@ -142,6 +142,10 @@ class acheckerTFPDF extends tFPDF {
 	    $this->Write(4, ' | Powered by ');
 	    $this->SetTextColor(51, 102, 204);
 	    $this->Write(4, 'AChecker', 'https://github.com/cg-a11y/AChecker');
+	    $this->SetTextColor(120);
+	    $this->Write(4, ' by the ');
+	    $this->SetTextColor(51, 102, 204);
+	    $this->Write(4, 'Inclusive Design Institute', 'https://idrc.ocadu.ca/');
 	    
 	    $this->Ln(15);
 	}
