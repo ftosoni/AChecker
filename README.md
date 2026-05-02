@@ -1,5 +1,10 @@
 # MediaWiki Accessibility Checker
 
+[![SWH](https://archive.softwareheritage.org/badge/origin/https://github.com/ftosoni/mediawiki-accessibility-checker/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/ftosoni/mediawiki-accessibility-checker)
+[![PHP](https://img.shields.io/badge/php-%5E7.4-blue.svg?style=flat-square)](https://www.php.net/)
+[![CI](https://github.com/ftosoni/mediawiki-accessibility-checker/actions/workflows/php-ci.yml/badge.svg?branch=main&style=flat-square)](https://github.com/ftosoni/mediawiki-accessibility-checker/actions/workflows/php-ci.yml)
+[![License](https://img.shields.io/github/license/ftosoni/mediawiki-accessibility-checker?style=flat-square)](./LICENSE)
+
 AChecker is an automated accessibility checker used to evaluate the accessibility of HTML pages, and help ensure they can be accessed by all individuals, including those with disabilities, using assistive technologies to navigate the Internet.
 
 AChecker live site: https://achecker.achecks.ca
