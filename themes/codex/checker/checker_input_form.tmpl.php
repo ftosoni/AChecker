@@ -103,12 +103,6 @@ function get_guideline_div($guideline_rows, $num_of_guidelines_per_row, $format 
 }
 ?>
 <div class="center-input-form" style="margin-top: 24px;">
-	<div class="cdx-message cdx-message--notice" style="margin-bottom: 24px;">
-		<span class="cdx-message__icon"></span>
-		<div class="cdx-message__content">
-			<strong>Welcome to the MediaWiki Accessibility Checker.</strong> This tool checks single HTML pages for conformance with accessibility standards to ensure the content can be accessed by everyone. See the <strong>Handbook</strong> link to the upper right for more about the Web Accessibility Checker.
-		</div>
-	</div>
 
 	<form name="input_form" enctype="multipart/form-data" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 

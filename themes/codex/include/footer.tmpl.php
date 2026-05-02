@@ -22,8 +22,7 @@ global $languageManager, $_my_uri;
     <span>Created by: <a href="https://meta.wikimedia.org/wiki/Special:MyLanguage/User:Super_nabla" target="_blank"
             style="color: #3366cc;">Super nabla 🪰</a> (<a
             href="https://meta.wikimedia.org/wiki/Special:MyLanguage/Indic_MediaWiki_Developers_User_Group"
-            target="_blank" style="color: #3366cc;">Indic MediaWiki Developers UG</a>) &amp; <a
-            href="https://acube.di.unipi.it/" target="_blank" style="color: #3366cc;">Acube Lab</a></span>
+            target="_blank" style="color: #3366cc;">Indic MediaWiki Developers UG</a>)</span>
     <span style="opacity: 0.3;">|</span>
     <span>Licence: <a href="https://github.com/ftosoni/mediawiki-accessibility-checker/blob/main/LICENSE"
             target="_blank" style="color: inherit;">GPL 2.0</a></span>

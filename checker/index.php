@@ -262,10 +262,6 @@ else
 	$show_achecker_whatis = true;
 }
 
-if ($show_achecker_whatis)
-{
-	echo "<p style='margin-bottom: 32px; color: var(--cdx-color-subtle);'>"._AC('achecker_whatis')."</p>";
-}
 
 // display footer
 include(AC_INCLUDE_PATH.'footer.inc.php');
