@@ -119,10 +119,9 @@ if (isset($aValidator) && $a_rpt->getAllowSetDecisions() == 'true')
 
 				<iframe id="downloadFrame" src="" style="display:none;"></iframe>
 				<input class="report_file_button" type="button" name="validate_export" id="validate_file_button" value="<?php echo _AC("get_file"); ?>" onclick="return AChecker.input.validateFile('spinner_export');" />
-				<div class="spinner_div">
+				<span style="display:inline-block; vertical-align: middle; margin-left: 10px;">
 					<img class="spinner_img" id="spinner_export" style="display:none" src="<?php echo AC_BASE_HREF.'themes/'.$_SESSION['prefs']['PREF_THEME']; ?>/images/spinner.gif" alt="<?php echo _AC("in_progress"); ?>" />
-					&nbsp;
-				</div>
+				</span>
 			</div>
 		</fieldset>
 	

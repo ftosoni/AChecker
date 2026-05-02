@@ -213,8 +213,12 @@ AChecker.output = AChecker.output || {};
                 enableClickablesAndHideSpinner(exportSpinnerID);
             
                 // change src and start downloading
-                var ifrm = document.getElementById("downloadFrame");
-                ifrm.src = "download.php?path=" + returned_data;
+                if (returned_data.indexOf('achecker_') === -1) {
+                    alert(returned_data);
+                } else {
+                    var ifrm = document.getElementById("downloadFrame");
+                    ifrm.src = "download.php?path=" + encodeURIComponent(returned_data);
+                }
             },
         
             error: function (xhr, errorType, exception) {

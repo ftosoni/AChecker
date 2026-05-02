@@ -27,6 +27,10 @@ include_once(AC_INCLUDE_PATH.'classes/DAO/GuidelineGroupsDAO.class.php');
 include_once(AC_INCLUDE_PATH.'classes/DAO/GuidelineSubgroupsDAO.class.php');
 
 class FileExportRptGuideline extends AccessibilityRpt {
+	public $gid;
+	protected $checksDAO;
+	protected $guidelineGroupsDAO;
+	protected $guidelineSubgroupsDAO;
 
 	var $errors_by_checks = array();               // Re-arranged errors table with the array key check_id
 

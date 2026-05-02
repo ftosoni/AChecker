@@ -92,7 +92,7 @@ class CheckFuncUtility {
     	if (trim($code) == '')
     		return 'return true;';
     	else
-			return "global \$global_e, \$global_content_dom, \$header_array, \$base_href, \$global_check_id, \$htmlValidator, \$uri;\n" .
+			return "global \$global_e, \$global_content_dom, \$header_array, \$base_href, \$global_check_id, \$htmlValidator, \$uri, \$has_duplicate_attribute, \$is_data_table, \$is_radio_buttons_grouped;\n" .
 				   "if (!is_object(\$e)) return true;\n" .
 				   "\$global_e = \$e;\n" .
 				   "\$global_content_dom = \$this->content_dom;\n" .

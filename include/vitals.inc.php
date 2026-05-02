@@ -16,6 +16,7 @@ if (!defined('AC_INCLUDE_PATH')) { exit; }
  // Enable the composer autoload file
 define('AC_PHP_COMPOSER_PATH', AC_INCLUDE_PATH .'../vendor/');
 require_once AC_PHP_COMPOSER_PATH.'autoload.php';
+require_once AC_INCLUDE_PATH.'mbstring_polyfill.inc.php';
 
 #define('AC_DEVEL', 1);
 if (!defined('AC_ERROR_REPORTING')) {

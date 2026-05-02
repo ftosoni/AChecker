@@ -168,6 +168,8 @@ if ($file == 'pdf') {
 	if (!$path || $path == '') {
 		// handle failure
 		error_log("AChecker Error: PDF generation failed for URI: " . $uri);
+		echo _AC('error_occurred');
+		exit;
 	}
 			
 } else {	
