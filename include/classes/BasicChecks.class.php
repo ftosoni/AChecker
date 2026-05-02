@@ -553,9 +553,8 @@ class BasicChecks {
 
 		if ($input_id == "") return false;  // attribute "id" must exist
 
-		foreach ($content_dom->find("label") as $e_label)
-		  if (strtolower(trim(is_array($e_label->attr) && isset($e_label->attr["for"]) ? (string)$e_label->attr["for"] : '')) == strtolower(trim($input_id)))
-		    return true;
+		global $label_for_map;
+		if (isset($label_for_map[strtolower(trim($input_id))])) return true;
 
 	  return false;
 	}
@@ -642,7 +641,9 @@ class BasicChecks {
 
 		if ($input_id == "") return false;  // attribute "id" must exist
 
-		foreach ($content_dom->find("label") as $e_label)
+		global $label_array;
+		if (is_array($label_array))
+		foreach ($label_array as $e_label)
 		{
 			if ((is_array($e_label->attr) && isset($e_label->attr["for"]) ? (string)$e_label->attr["for"] : '') == $input_id)
 			{

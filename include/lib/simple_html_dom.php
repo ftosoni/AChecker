@@ -429,6 +429,8 @@ class simple_html_dom {
     protected $index;
     public $callback = null;
     protected $noise = array();
+    protected $noise_keys = null;
+    protected $noise_values = null;
     // use isset instead of in_array, performance boost about 30%...
     protected $token_blank = array(' '=>1, "\t"=>1, "\r"=>1, "\n"=>1);
     protected $token_equal = array(' '=>1, '='=>1, '/'=>1, '>'=>1, '<'=>1);
@@ -867,6 +869,8 @@ class simple_html_dom {
             $key = '___noise___'.sprintf('% 3d', count($this->noise));
             $idx = ($remove_tag) ? 0 : 1;
             $this->noise[$key] = ($remove_contents) ? '' : $matches[$i][$idx][0];
+            $this->noise_keys = null;
+            $this->noise_values = null;
             
             $new_lines = '';
             for ($j = 0; $j < $this->count_line_number($matches[$i][$idx][0])-1; $j++)
@@ -883,12 +887,12 @@ class simple_html_dom {
 
     // restore noise to html content
     function restore_noise($text) {
-        while(($pos=strpos($text, '___noise___'))!==false) {
-            $key = '___noise___'.$text[$pos+11].$text[$pos+12].$text[$pos+13];
-            if (isset($this->noise[$key]))
-                $text = substr($text, 0, $pos).$this->noise[$key].substr($text, $pos+14);
+        if (empty($this->noise)) return $text;
+        if ($this->noise_keys === null) {
+            $this->noise_keys = array_keys($this->noise);
+            $this->noise_values = array_values($this->noise);
         }
-        return $text;
+        return str_replace($this->noise_keys, $this->noise_values, $text);
     }
 
     function __toString() {

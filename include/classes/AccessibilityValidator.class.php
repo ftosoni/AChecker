@@ -109,9 +109,18 @@ class AccessibilityValidator {
 	 */
 	private function prepare_global_vars()
 	{
-		global $header_array, $base_href, $has_duplicate_attribute, $is_data_table, $is_radio_buttons_grouped;
+		global $header_array, $base_href, $has_duplicate_attribute, $is_data_table, $is_radio_buttons_grouped, $label_array, $label_for_map;
 
 		$header_array = $this->content_dom->find("h1, h2, h3, h4, h5, h6, h7");
+		$label_array = $this->content_dom->find("label");
+		$label_for_map = array();
+		if (is_array($label_array)) {
+			foreach ($label_array as $label) {
+				if (isset($label->attr['for'])) {
+					$label_for_map[strtolower(trim($label->attr['for']))] = true;
+				}
+			}
+		}
 		$base_href = '';
 
 		// find base href, used to check image size
