@@ -146,9 +146,9 @@
 
 .handbook-license {
     margin-top: 64px;
-    padding: 24px;
-    background: #f8f9fa;
-    border-radius: 2px;
+    padding: 16px;
+    background: #fff;
+    border-top: 1px solid #eaecf0;
     color: #72777d;
     font-size: 0.85em;
     text-align: center;
