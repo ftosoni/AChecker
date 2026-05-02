@@ -61,7 +61,7 @@ class HTMLValidator {
 			$result = $this->validate_uri($this->validate_content);
 		}
 
-		if (!result) return false;
+		if (!$result) return false;
 		else
 		{						
 			$this->full_return = $result;
