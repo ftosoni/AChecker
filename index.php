@@ -11,12 +11,8 @@
 /************************************************************************/
 // $Id$
 
-define('AC_INCLUDE_PATH', 'include/');
-
-include(AC_INCLUDE_PATH.'vitals.inc.php');
-include(AC_INCLUDE_PATH.'header.inc.php');
-
-// display footer
-include(AC_INCLUDE_PATH.'footer.inc.php');
-
+// Redirect to the main checker interface
+$query = (isset($_SERVER['QUERY_STRING']) && $_SERVER['QUERY_STRING'] !== '') ? '?' . $_SERVER['QUERY_STRING'] : '';
+header('Location: checker/index.php' . $query);
+exit;
 ?>
