@@ -57,8 +57,8 @@ class acheckerWikitext {
 	public function	getWikitext($problem, $input_content_type, $title, $_gids) 
 	{	
 		$date = AC_date('%Y-%m-%d');
-		$time = AC_date('%H:%M:%S');
-		$filename = 'achecker_'.$date.'_'.str_replace(':', '-', $time);
+		$time = AC_date('%H-%i-%s');
+		$filename = 'achecker_'.$date.'_'.$time;
 		
 		$content = "== Accessibility Review ==\n";
 		$content .= "* '''Date:''' " . $date . " " . $time . "\n";

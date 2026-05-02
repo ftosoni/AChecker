@@ -75,7 +75,7 @@ AChecker.output = AChecker.output || {};
      */
     var disableClickablesAndShowSpinner = function (spinnerID) {
         $('.cdx-button, .cdx-text-input').attr('disabled', 'disabled').addClass('cdx-button--disabled');
-        $('#' + spinnerID).show();
+        $('#' + spinnerID).css('display', 'inline-flex');
     };
 
     /**

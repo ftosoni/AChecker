@@ -221,10 +221,10 @@ footer.cdx-footer {
 
 /* Spinner */
 .cdx-spinner {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 4px !important;
-    height: 16px !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 16px;
 }
 
 .cdx-spinner__dot {
