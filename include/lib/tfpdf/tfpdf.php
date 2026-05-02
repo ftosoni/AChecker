@@ -1744,7 +1744,11 @@ function _putfonts()
 		   for($sfid=0;$sfid<count($font['subsetfontids']);$sfid++) {
 			$this->fonts[$k]['n'][$sfid]=$this->n+1;		// NB an array for subset
 			$subsetname = 'MPDFA'.$ssfaid.'+'.$font['name'];
-			$ssfaid++;
+			if (function_exists('str_increment')) {
+				$ssfaid = str_increment($ssfaid);
+			} else {
+				$ssfaid++;
+			}
 			$subset = $font['subsets'][$sfid];
 			unset($subset[0]);
 			$ttfontstream = $ttf->makeSubset($subset);
@@ -1843,8 +1847,7 @@ function _putfonts()
 function _putimages()
 {
 	$filter=($this->compress) ? '/Filter /FlateDecode ' : '';
-	reset($this->images);
-	while(list($file,$info)=each($this->images))
+	foreach($this->images as $file=>$info)
 	{
 		$this->_newobj();
 		$this->images[$file]['n']=$this->n;

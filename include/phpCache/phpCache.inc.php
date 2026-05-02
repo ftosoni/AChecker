@@ -213,13 +213,13 @@ if (!defined('CACHE_DIR')) {
 						$expirein=$cdata['expire']-$curtime+1;
 						cache_debug('Cache expires in '.$expirein);
 						if (is_array($cdata['variables'])) {
-							while (list($k,$v)=each($cdata['variables'])) {
+							foreach ($cdata['variables'] as $k => $v) {
 								cache_debug("Restoring variable $k to value $v");
 								$GLOBALS[$k]=$v;
 							}
 						}
 						if (is_array($cdata['headers'])) {
-							while(list(,$h)=each($cdata['headers'])) {
+							foreach ($cdata['headers'] as $h) {
 								cache_debug("Restoring header $h");
 								Header("$h");
 							}

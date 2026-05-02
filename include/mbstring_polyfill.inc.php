@@ -16,7 +16,7 @@ if (!function_exists('mb_substr')) {
     function mb_substr($str, $start, $length = null, $encoding = 'UTF-8') {
         if (strtolower($encoding) === 'utf-8') {
             // Use preg_split to handle UTF-8 characters
-            $chars = preg_split('//u', $str, -1, PREG_SPLIT_NO_EMPTY);
+            $chars = preg_split('//u', (string)$str, -1, PREG_SPLIT_NO_EMPTY);
             if ($length === null) {
                 return implode('', array_slice($chars, $start));
             }
