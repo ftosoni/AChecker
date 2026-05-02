@@ -9,13 +9,12 @@
 /* modify it under the terms of the GNU General Public License          */
 /* as published by the Free Software Foundation.                        */
 /************************************************************************/
-// $Id$
 
 define('AC_INCLUDE_PATH', '../include/');
 include(AC_INCLUDE_PATH.'vitals.inc.php');
 include(AC_INCLUDE_PATH.'handbook_pages.inc.php');
 
-global $handbook_pages;
+global $handbook_pages, $_pages;
 
 if (isset($_GET['p'])) {
 	$p = htmlentities($_GET['p']);
@@ -25,83 +24,139 @@ if (isset($_GET['p'])) {
 	{
 		if (is_array($page_key))
 		{
-			if (isset($_pages[$page_key])) $display_page = $page_key;
+			if (isset($_pages[$page_key])) $p = $page_key;
 		}
 		else
 		{
-			if (isset($_pages[$page_value])) $display_page = $page_value;
+			if (isset($_pages[$page_value])) $p = $page_value;
 		}
-		if (isset($display_page))
-		{
-			header('Location: index.php?p='.htmlentities($page_key));
-			exit;
-		}
+		if (isset($p)) break;
 	}
-} 
-?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 TRANSITIONAL//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?php echo DEFAULT_LANGUAGE_CODE; ?>" lang="<?php echo DEFAULT_LANGUAGE_CODE; ?>"> 
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<title><?php echo _AC('achecker_handbook'); ?></title>
-
-<script type="text/javascript">
-
-var i = 0;
-
-function show2() {
-	var fs = document.getElementById('frameset1');
-	if (fs) {
-		i += 5;
-		if (i > 28) {
-			i = 28;
-		}
-		fs.cols = i + '%, *';
-	}
-	if (i < 28) {
-		window.setTimeout('show2()', 1);
-	}
-	return true;
-}
-function show() {
-	i = 0;
-	window.setTimeout('show2()', 1);
-	return true;
 }
 
-function hide2() {
-	var fs = document.getElementById('frameset1');
-	if (fs) {
-		i -= 5;
-		if (i < 0) {
-			i =0;
+// Prepare data for the theme
+$page_title = _AC('achecker_handbook');
+if (isset($_pages[$p])) {
+    $page_title .= ' - ' . _AC($_pages[$p]['title_var']);
+}
+
+$_custom_head = '<link rel="stylesheet" href="' . AC_BASE_HREF . 'themes/' . $_SESSION['prefs']['PREF_THEME'] . '/handbook_styles.css" type="text/css" />';
+include(AC_INCLUDE_PATH.'header.inc.php');
+
+/**
+ * Modern handbook TOC printer for Codex
+ */
+function hb_print_modern_toc($handbook_pages, $current_p) {
+	global $_pages;
+	echo '<ul class="handbook-sidebar-list">';
+	foreach ($handbook_pages as $page_key => $page_value) {
+		$id = is_array($page_value) ? $page_key : $page_value;
+		if (isset($_pages[$id])) {
+            $active_class = ($id == $current_p) ? ' handbook-sidebar-item--active' : '';
+			echo '<li class="handbook-sidebar-item' . $active_class . '">';
+			echo '<a href="index.php?p='.$id.'">'._AC($_pages[$id]['title_var']).'</a>';
+			if (is_array($page_value)) {
+				hb_print_modern_toc($page_value, $current_p);
+			}
+			echo '</li>';
 		}
-		fs.cols = i + '%, *';
 	}
-	if (i > 0) {
-		window.setTimeout('hide2()', 1);
-	}
-	return false;
+	echo '</ul>';
 }
+?>
 
-function hide() {
-	i= 28;
-	window.setTimeout('hide2()', 1);
-	return false;
-}
-</script>
-</head>
-<frameset rows="24,*">
-	<frame src="frame_header.php?p=<?php echo $p; ?>" frameborder="0" name="header" title="header" scrolling="no" noresize="noresize">
-	<frameset cols="22%, *" id="frameset1">
-		<frame frameborder="0" scrolling="auto" marginwidth="0" marginheight="0" src="frame_toc.php" name="toc" id="toc" title="Table of Contents">
-		<frame frameborder="0" src="frame_content.php?p=<?php echo $p; ?>" name="body" id="body" title="Content">
-	</frameset>
+<div class="handbook-container">
+    <!-- Sidebar -->
+    <aside class="handbook-sidebar">
+        <h2 class="handbook-sidebar-title">
+            <?php echo _AC('handbook_toc'); ?>
+        </h2>
+        <nav>
+            <?php hb_print_modern_toc($handbook_pages, $p); ?>
+        </nav>
+    </aside>
 
-	<noframes>
-		<h1><?php echo _AC('achecker_handbook'); ?></h1>
-		<p><a href="frame_toc.html">Table of Contents</a></p>
-	 </noframes>
-</frameset>
+    <!-- Content Area -->
+    <main class="handbook-main">
+        <?php
+        $this_page = $p;
+        // Logic from handbook_header.inc.php to get prev/next
+        $merged_array = array();
+        function merge_page_array_local($pages_array, &$merged) {
+            foreach ($pages_array as $page_key => $page_value) {
+                if (is_array($page_value)) {
+                    $merged[] = $page_key;
+                    merge_page_array_local($page_value, $merged);
+                } else {
+                    $merged[] = $page_value;
+                }
+            }
+        }
+        merge_page_array_local($handbook_pages, $merged_array);
+        
+        $prev_page = null;
+        $next_page = null;
+        foreach ($merged_array as $key => $page) {
+            if (strcmp($page, $p) == 0) {
+                if ($key >= 1) $prev_page = $merged_array[$key - 1];
+                if ($key < count($merged_array) - 1) $next_page = $merged_array[$key + 1];
+                break;
+            }
+        }
+        ?>
 
-</html>
+        <!-- Top Navigation -->
+        <div class="handbook-nav-top">
+            <div>
+                <?php if ($prev_page): ?>
+                    <a href="index.php?p=<?php echo $prev_page; ?>" class="handbook-nav-link">
+                        &larr; <?php echo _AC($_pages[$prev_page]['title_var']); ?>
+                    </a>
+                <?php endif; ?>
+            </div>
+            <div>
+                <?php if ($next_page): ?>
+                    <a href="index.php?p=<?php echo $next_page; ?>" class="handbook-nav-link">
+                        <?php echo _AC($_pages[$next_page]['title_var']); ?> &rarr;
+                    </a>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <article class="handbook-article">
+            <?php
+            if (isset($_pages[$p]['guide'])) {
+                echo _AC($_pages[$p]['guide']);
+            } else {
+                echo '<p>' . _AC('page_not_found') . '</p>';
+            }
+            ?>
+        </article>
+
+        <!-- Bottom Navigation -->
+        <div class="handbook-nav-bottom">
+            <div>
+                <?php if ($prev_page): ?>
+                    <span class="handbook-nav-label"><?php echo _AC('previous_chapter'); ?></span>
+                    <a href="index.php?p=<?php echo $prev_page; ?>" class="handbook-nav-link handbook-nav-link--large">
+                        &larr; <?php echo _AC($_pages[$prev_page]['title_var']); ?>
+                    </a>
+                <?php endif; ?>
+            </div>
+            <div style="text-align: right;">
+                <?php if ($next_page): ?>
+                    <span class="handbook-nav-label"><?php echo _AC('next_chapter'); ?></span>
+                    <a href="index.php?p=<?php echo $next_page; ?>" class="handbook-nav-link handbook-nav-link--large">
+                        <?php echo _AC($_pages[$next_page]['title_var']); ?> &rarr;
+                    </a>
+                <?php endif; ?>
+            </div>
+        </div>
+        
+        <div class="handbook-license">
+            <p>All text is available under the terms of the <a href="https://www.gnu.org/licenses/fdl-1.3.html">GNU Free Documentation License</a>.</p>
+        </div>
+    </main>
+</div>
+
+<?php include(AC_INCLUDE_PATH.'footer.inc.php'); ?>

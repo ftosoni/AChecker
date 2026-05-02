@@ -9,115 +9,167 @@
 /* as published by the Free Software Foundation.                        */
 /************************************************************************/
 
-body {
-    background-color: #fff;
-    font-family: 'Ubuntu', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    color: #202122;
-    line-height: 1.6;
-    margin: 0;
+.handbook-container {
+    display: flex;
+    min-height: 80vh;
+    gap: 32px;
+    margin-top: 24px;
+}
+
+.handbook-sidebar {
+    flex: 0 0 300px;
+    border-right: 1px solid #eaecf0;
+    padding-right: 24px;
+}
+
+.handbook-sidebar-title {
+    font-size: 1em;
+    text-transform: uppercase;
+    color: #72777d;
+    letter-spacing: 0.05em;
+    margin-bottom: 16px;
+    margin-top: 0;
+}
+
+.handbook-sidebar-list {
+    list-style: none;
     padding: 0;
+    margin: 0;
 }
 
-h1, h2, h3, h4, h5, h6 {
-    font-family: 'Ubuntu', sans-serif;
-    color: #000;
-    margin-top: 1.5em;
+.handbook-sidebar-item {
+    margin-bottom: 4px;
+}
+
+.handbook-sidebar-item a {
+    display: block;
+    padding: 8px 12px;
+    color: #202122;
+    text-decoration: none;
+    border-radius: 2px;
+    font-size: 0.95em;
+    font-weight: normal;
+}
+
+.handbook-sidebar-item a:hover {
+    background: #f8f9fa;
+    color: #3366cc;
+}
+
+.handbook-sidebar-item--active > a {
+    background: #eaf3ff;
+    color: #3366cc;
+    font-weight: bold;
+}
+
+.handbook-sidebar-item ul {
+    padding-left: 16px;
+    margin-top: 4px;
+}
+
+.handbook-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.handbook-article {
+    line-height: 1.6;
+    color: #202122;
+    font-size: 1.1em;
+}
+
+.handbook-article h1 {
+    font-size: 2em;
     margin-bottom: 0.5em;
-}
-
-h1 {
-    font-size: 1.8em;
     border-bottom: 1px solid #a2a9b1;
     padding-bottom: 0.25em;
     margin-top: 0;
 }
 
-h2 {
+.handbook-article h2 {
     font-size: 1.5em;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
     border-bottom: 1px solid #eaecf0;
     padding-bottom: 0.25em;
 }
 
-p {
+.handbook-article p {
     margin-bottom: 1em;
 }
 
-a {
+.handbook-article pre {
+    background: #f8f9fa;
+    border: 1px solid #eaecf0;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9em;
+    margin: 1.5em 0;
+    border-radius: 2px;
+}
+
+.handbook-article code {
+    background: #f8f9fa;
+    padding: 2px 4px;
+    border-radius: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9em;
+    color: #d33;
+}
+
+.handbook-nav-top {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #eaecf0;
+}
+
+.handbook-nav-bottom {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid #eaecf0;
+}
+
+.handbook-nav-link {
+    color: #3366cc;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.handbook-nav-link:hover {
+    text-decoration: underline;
+}
+
+.handbook-nav-link--large {
+    font-size: 1.1em;
+}
+
+.handbook-nav-label {
+    color: #72777d;
+    font-size: 0.9em;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.handbook-license {
+    margin-top: 64px;
+    padding: 24px;
+    background: #f8f9fa;
+    border-radius: 2px;
+    color: #72777d;
+    font-size: 0.85em;
+    text-align: center;
+}
+
+.handbook-license a {
     color: #3366cc;
     text-decoration: none;
 }
 
-a:hover {
+.handbook-license a:hover {
     text-decoration: underline;
-}
-
-pre {
-    background-color: #f8f9fa;
-    border: 1px solid #eaecf0;
-    padding: 12px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.9em;
-    overflow-x: auto;
-    border-radius: 2px;
-}
-
-code {
-    background-color: #f8f9fa;
-    color: #d33;
-    padding: 0.2em 0.4em;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.9em;
-    border-radius: 2px;
-}
-
-table {
-    border-collapse: collapse;
-    width: 100%;
-    margin-bottom: 1em;
-}
-
-th, td {
-    border: 1px solid #eaecf0;
-    padding: 8px 12px;
-    text-align: left;
-}
-
-th {
-    background-color: #f8f9fa;
-    font-weight: bold;
-}
-
-ul, ol {
-    margin-bottom: 1em;
-    padding-left: 2em;
-}
-
-li {
-    margin-bottom: 0.5em;
-}
-
-.handbook-nav {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 24px;
-    padding: 16px 0;
-    border-bottom: 1px solid #eaecf0;
-}
-
-.handbook-nav a {
-    font-weight: bold;
-}
-
-.seq {
-    display: none; /* We use our own handbook-nav instead */
-}
-
-.tag {
-    margin-top: 48px;
-    padding: 24px;
-    background: #f8f9fa;
-    color: #72777d;
-    font-size: 0.85em;
-    text-align: center;
-    border-radius: 2px;
 }
