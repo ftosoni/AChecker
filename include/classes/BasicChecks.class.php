@@ -631,9 +631,8 @@ class BasicChecks {
 		// 2. The element $e is contained by a "label" element
 		if ($e->parent()->tag == "label")
 		{
-			$pattern = "/(.*)". preg_quote($e->outertext, '/') ."/";
-			preg_match($pattern, $e->parent->innertext, $matches);
-			if (strlen(trim($matches[1])) > 0) return true;
+			// Check if label contains any text besides tags
+			if (trim($e->parent()->plaintext) !== '') return true;
 		}
 
 		// 3. The element $e has an "id" attribute value that matches the "for" attribute value of a "label" element
@@ -2811,25 +2810,36 @@ isset ( $e->attr ['onload'] ) || isset ( $e->attr ['onunload'] ) || isset ( $e->
 			if (is_array($one->attr) && (! isset ( $one->attr ["media"] ) || (string)$one->attr ["media"] == "all" || (string)$one->attr ["media"] == "screen")) {
 				$cssint = $cssint . $one->innertext;
 				$cssint = trim ( $cssint );
-				while ( substr ( $cssint, 0, 7 ) == "@import" ) {
-					$import = substr ( $cssint, 7, stripos ( $cssint, ";" ) + 1 );
+				$import_limit = 10;
+				while ( $import_limit > 0 && substr ( trim($cssint), 0, 7 ) == "@import" ) {
+					$cssint = trim($cssint);
+					$pos_semicolon = stripos ( $cssint, ";" );
+					if ($pos_semicolon === false) break;
 
-					$cssint = str_ireplace ( $import, "", $cssint );
+					$import_line = substr ( $cssint, 0, $pos_semicolon + 1 );
+					$import_content = substr ( $import_line, 7 ); // remove @import
 
-					$indirizzo = substr ( $import, stripos ( $import, '(' ) + 1, stripos ( $import, ')' ) - stripos ( $import, '(' ) - 1 );
-
-					$indirizzo = str_ireplace ( '"', '', $indirizzo );
-
-					if (stripos ( $indirizzo, "http://" ) === false) //indirizzo relativo
-{
-						if (substr ( $indirizzo, 0, 1 ) == "/")
-							$indirizzo = $uri2 . $indirizzo;
-						else
-							$indirizzo = $uri2 . "/" . $indirizzo;
+					$indirizzo = '';
+					if (preg_match('/url\s*\(([\'"]?)(.*?)\1\)/i', $import_content, $matches)) {
+						$indirizzo = $matches[2];
+					} else if (preg_match('/([\'"])(.*?)\1/', $import_content, $matches)) {
+						$indirizzo = $matches[2];
 					}
 
-					$cssint = Utility::getURLContents ( $indirizzo ) . "\n" . $cssint;
-					//echo($indirizzo);
+					if ($indirizzo) {
+						if (stripos ( $indirizzo, "http://" ) === false && stripos ( $indirizzo, "https://" ) === false && substr ( $indirizzo, 0, 2 ) !== "//") {
+							if (substr ( $indirizzo, 0, 1 ) == "/")
+								$indirizzo = $uri2 . $indirizzo;
+							else
+								$indirizzo = $uri2 . "/" . $indirizzo;
+						}
+
+						$imported_css = Utility::getURLContents ( $indirizzo );
+						$cssint = substr ( $cssint, $pos_semicolon + 1 ) . "\n" . $imported_css;
+					} else {
+						$cssint = substr ( $cssint, $pos_semicolon + 1 );
+					}
+					$import_limit--;
 				}
 			}
 		}
