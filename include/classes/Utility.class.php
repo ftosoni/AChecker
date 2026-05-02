@@ -39,7 +39,7 @@ class Utility {
 		curl_setopt($ch, CURLOPT_NOBODY, 1);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); // follow redirects
 		curl_setopt($ch, CURLOPT_AUTOREFERER, 1); // set referer on redirect
-		curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+		curl_setopt($ch, CURLOPT_USERAGENT, 'MediaWiki Accessibility Checker (https://accessibility-checker.toolforge.org/; Contact: https://meta.wikimedia.org/wiki/User_talk:Super_nabla)');
 		curl_setopt($ch, CURLOPT_TIMEOUT, 15);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_exec($ch);
@@ -56,7 +56,7 @@ class Utility {
 		}
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+		curl_setopt($ch, CURLOPT_USERAGENT, 'MediaWiki Accessibility Checker (https://accessibility-checker.toolforge.org/; Contact: https://meta.wikimedia.org/wiki/User_talk:Super_nabla)');
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 15);
@@ -115,7 +115,7 @@ class Utility {
 				if (substr($uri, 0, strlen($prefix)) <> $prefix)
 				{
 					$prefixed_uri = $prefix.$uri;
-					$connection = @file_get_contents($prefixed_uri);
+					$connection = Utility::getURLContents($prefixed_uri);
 					
 					if (!$connection)
 					{
@@ -130,7 +130,7 @@ class Utility {
 		}
 		else
 		{
-			$connection = @file_get_contents($uri);
+			$connection = Utility::getURLContents($uri);
 			
 			if ($connection) return $uri;
 			else return $uri;

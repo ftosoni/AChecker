@@ -86,7 +86,7 @@ class HTMLValidator {
 			curl_setopt($ch, CURLOPT_URL, $this->validator_url. "?uri=".$uri);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-			curl_setopt ($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+			curl_setopt ($ch, CURLOPT_USERAGENT, 'MediaWiki Accessibility Checker (https://accessibility-checker.toolforge.org/; Contact: https://meta.wikimedia.org/wiki/User_talk:Super_nabla)');
 			$pageOutput = curl_exec($ch);
 			curl_close($ch);
 			return $pageOutput;
