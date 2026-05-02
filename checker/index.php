@@ -252,5 +252,7 @@ if (!$has_errors && (isset($aValidator) || isset($htmlValidator)))
 
 
 // display footer
+error_log("AChecker Debug: Script reaching end of index.php");
 include(AC_INCLUDE_PATH.'footer.inc.php');
+error_log("AChecker Debug: Script finished");
 ?>

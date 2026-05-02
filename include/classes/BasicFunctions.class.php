@@ -37,7 +37,7 @@ class BasicFunctions {
 		global $global_e, $global_content_dom;
 
 		// 1. The element $global_e has a "title" or "aria-label" attribute
-		if (!empty(is_array($global_e->attr) && isset($global_e->attr["title"]) ? $global_e->attr["title"] : '') && !empty(is_array($global_e->attr) && isset($global_e->attr["aria-label"]) ? $global_e->attr["aria-label"] : '')) return true;
+		if (!empty(is_array($global_e->attr) && isset($global_e->attr["title"]) ? $global_e->attr["title"] : '') || !empty(is_array($global_e->attr) && isset($global_e->attr["aria-label"]) ? $global_e->attr["aria-label"] : '')) return true;
 
 		// 2. The element $global_e is contained by a "label" element
 		$parent = $global_e->parent();
@@ -167,11 +167,13 @@ class BasicFunctions {
 		}
 
 		if (!$file_size_checked) {
-			if (preg_match('/^https?:\/\//', $file) || substr($file, 0, 2) == '//') {
+			// Try getimagesize first as it is more efficient for remote files (only fetches headers)
+			$dimensions = @getimagesize($file);
+			
+			if (!is_array($dimensions) && (preg_match('/^https?:\/\//', $file) || substr($file, 0, 2) == '//')) {
+				// Fallback to downloading content only if getimagesize fails and it's a URL
 				$img_data = Utility::getURLContents($file);
 				$dimensions = @getimagesizefromstring($img_data);
-			} else {
-				$dimensions = @getimagesize($file);
 			}
 
 			if (is_array($dimensions)) {

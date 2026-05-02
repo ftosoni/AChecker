@@ -87,7 +87,9 @@ class AccessibilityValidator {
 		// set arrays of check_id, prerequisite check_id, next check_id
 		$this->prepare_check_arrays($this->guidelines);
 
+		error_log("AChecker Debug: Starting element validation");
 		$this->validate_element($this->content_dom->find('html'));
+		error_log("AChecker Debug: Element validation complete");
 		
 		$this->finalize();
 
@@ -128,8 +130,11 @@ class AccessibilityValidator {
 		}
 
 		$has_duplicate_attribute = array();
-		$is_data_table = array();
+		$is_data_table = false;
 		$is_radio_buttons_grouped = true;
+		
+		global $global_array_image_sizes;
+		$global_array_image_sizes = array();
 
 		// set all check functions
 		$checksDAO = new ChecksDAO();
@@ -154,18 +159,18 @@ class AccessibilityValidator {
 	{
 		global $msg;
 		
-		$dom = str_get_dom($content);
-		
-		if (count($dom->find('html')) == 0)
+		// Optimization: check if <html> tag exists before parsing
+		if (stripos($content, '<html') === false)
 		{
 			$complete_html = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'.
 			                 '<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">'.
 			                 $content.
 			                 '</html>';
 			$this->col_offset = 175;  // The number of extra characters that are added onto the first line.
-			
-			$dom = str_get_dom($complete_html);
+			$content = $complete_html;
 		}
+		
+		$dom = str_get_dom($content);
 		return $dom;
 	}
 	
@@ -314,7 +319,10 @@ class AccessibilityValidator {
 				}
 			}
 			
-			$this->validate_element($e->children());
+			$children = $e->children();
+			if (!empty($children)) {
+				$this->validate_element($children);
+			}
 		}
 	}
 
@@ -347,10 +355,11 @@ class AccessibilityValidator {
 		if (!$result)
 		{
 					try {
+						// error_log("AChecker Debug: Evaluating check $check_id on element " . $e->tag);
 						$check_result = eval($this->check_func_array[$check_id]);
-					} catch (Throwable $e) {
+					} catch (Throwable $e_eval) {
 						// Log the error and the code that caused it
-						error_log("AChecker Error in check $check_id: " . $e->getMessage() . " at " . $e->getFile() . ":" . $e->getLine());
+						error_log("AChecker Error in check $check_id: " . $e_eval->getMessage() . " at " . $e_eval->getFile() . ":" . $e_eval->getLine());
 						error_log("AChecker Failing code for check $check_id:\n" . $this->check_func_array[$check_id]);
 						$check_result = null;
 					}
