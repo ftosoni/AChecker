@@ -57,6 +57,7 @@ function get_guideline_div($guideline_rows, $num_of_guidelines_per_row, $format 
 	if ($format == "checkbox")
 		$output .= ' style="display:none"';
 	$output .= '>' . "\n";
+	$output .= '				<fieldset style="border:none; padding:0; margin:0;"><legend class="cdx-label cdx-label--visually-hidden">' . _AC("guidelines_to_check") . '</legend>' . "\n";
 	$output .= '				<table width="100%">' . "\n";
 
 	$count_guidelines_in_current_row = 0;
@@ -97,6 +98,7 @@ function get_guideline_div($guideline_rows, $num_of_guidelines_per_row, $format 
 		}
 	}
 	$output .= "				</table>\n";
+	$output .= "				</fieldset>\n";
 	$output .= "			</div>\n";
 
 	return $output;
@@ -242,8 +244,8 @@ function get_guideline_div($guideline_rows, $num_of_guidelines_per_row, $format 
 					</div>
 				</div>
 
-				<div class="cdx-field" style="margin-top: 24px;">
-					<label class="cdx-label" style="font-size: 1.1em;"><?php echo _AC("report_format"); ?></label>
+				<fieldset class="cdx-field" style="margin-top: 24px; border: none; padding: 0;">
+					<legend class="cdx-label" style="font-size: 1.1em;"><?php echo _AC("report_format"); ?></legend>
 					<div style="display: flex; gap: 24px; margin-top: 12px;">
 						<div>
 							<input type="radio" name="rpt_format" value="<?php echo REPORT_FORMAT_GUIDELINE; ?>"
@@ -258,7 +260,7 @@ function get_guideline_div($guideline_rows, $num_of_guidelines_per_row, $format 
 							<label for="option_rpt_line"><?php echo _AC("view_by_line"); ?></label>
 						</div>
 					</div>
-				</div>
+				</fieldset>
 			</div>
 		</section>
 	</form>
