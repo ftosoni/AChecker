@@ -85,7 +85,32 @@ class acheckerTFPDF extends tFPDF {
 	function Header()
 	{
 	    // new logo
-	    $this->Image(AC_BASE_PATH.'images/Indic_MediaWiki_Developers_UG_logo_variation_2.svg.png', 12, 10, 60);
+	    $img_path = AC_BASE_PATH.'images/Indic_MediaWiki_Developers_UG_logo_variation_2.svg.png';
+	    
+	    // tFPDF doesn't support alpha channel in PNG. We flatten it to a temporary JPG if needed.
+	    $final_img = $img_path;
+	    if (function_exists('imagecreatefrompng')) {
+	        $temp_img = AC_EXPORT_RPT_DIR . 'logo_flattened.jpg';
+	        if (!file_exists($temp_img) || (time() - filemtime($temp_img) > 3600)) {
+	            $im = @imagecreatefrompng($img_path);
+	            if ($im) {
+	                $w = imagesx($im);
+	                $h = imagesy($im);
+	                $canvas = imagecreatetruecolor($w, $h);
+	                $white = imagecolorallocate($canvas, 255, 255, 255);
+	                imagefill($canvas, 0, 0, $white);
+	                imagecopy($canvas, $im, 0, 0, 0, 0, $w, $h);
+	                imagejpeg($canvas, $temp_img, 95);
+	                imagedestroy($im);
+	                imagedestroy($canvas);
+	            }
+	        }
+	        if (file_exists($temp_img)) {
+	            $final_img = $temp_img;
+	        }
+	    }
+
+	    $this->Image($final_img, 12, 10, 60);
 	    
 	    // title and url
 	    $this->SetFont('DejaVu', 'B', 10);
