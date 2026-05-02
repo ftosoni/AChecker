@@ -649,6 +649,7 @@ class acheckerTFPDF extends tFPDF {
 		// set filename
 		$date = AC_date('%Y-%m-%d');
 		$time = AC_date('%H-%i-%s');
+		$rand_str = '_' . substr(md5(uniqid(rand(), true)), 0, 5);
 		$filename = 'achecker_'.$date.'_'.$time.$rand_str;		
 		
 		$guidelinesDAO = new GuidelinesDAO();

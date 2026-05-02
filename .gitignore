@@ -19,3 +19,16 @@ include/config.inc.php
 
 # Vendor Folder
 vendor/
+
+# Temporary files
+temp/*
+!temp/.gitkeep
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# System files
+.DS_Store

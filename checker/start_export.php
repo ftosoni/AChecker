@@ -14,20 +14,33 @@
 // Called by ajax request; main file to generate files
 // @ see checker/js/checker.js
 ob_start();
+
+// Increase limits for PDF generation
+@ini_set('memory_limit', '512M');
+@set_time_limit(300);
+
 define('AC_INCLUDE_PATH', '../include/');
 include(AC_INCLUDE_PATH.'vitals.inc.php');
 
 // ensure export directory exists
 if (!is_dir(AC_EXPORT_RPT_DIR)) {
-	@mkdir(AC_EXPORT_RPT_DIR, 0755, true);
+	if (!@mkdir(AC_EXPORT_RPT_DIR, 0755, true)) {
+		error_log("AChecker Error: Could not create export directory: " . AC_EXPORT_RPT_DIR);
+	}
 }
+
+// time constants in seconds
+if (!defined('MINUTE')) define('MINUTE', 60);
+if (!defined('HOUR'))   define('HOUR', 3600);
+if (!defined('DAY'))    define('DAY', 86400);
+if (!defined('WEEK'))   define('WEEK', 604800);
 
 if ($handle = @opendir(AC_EXPORT_RPT_DIR)) {
     while (false !== ($file = readdir($handle))) { 
         $file_delete_pattern = '/achecker_(.*)/';
         if(preg_match($file_delete_pattern, $file, $match)) {
-			// chose 1 from MINUTE|HOUR|DAY|WEEK
-        	if (MINUTE > filectime(AC_EXPORT_RPT_DIR.$file)) {
+			// delete files older than 1 hour
+        	if (time() - HOUR > filectime(AC_EXPORT_RPT_DIR.$file)) {
         		unlink(AC_EXPORT_RPT_DIR.$file);
         	}
         }

@@ -222,7 +222,8 @@ AChecker.output = AChecker.output || {};
             },
         
             error: function (xhr, errorType, exception) {
-                alert(AChecker.lang.error_occur + exception);
+                var errorMsg = exception || errorType || xhr.statusText || 'Unknown error';
+                alert(AChecker.lang.error_occur + ': ' + errorMsg);
 
                 // enable the clickable tabs/buttons and hide the spinner
                 enableClickablesAndHideSpinner(exportSpinnerID);
