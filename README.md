@@ -47,7 +47,7 @@ For more about using AChecker, see the instructional videos on [YouTube](http://
 
 ---
 
-## 🚀 Deployment (Toolforge - Recommended: SQLite)
+## 🚀 Deployment on Toolforge
 
 Using SQLite is the easiest way to deploy AChecker on Toolforge. You can use either the standard **Webservice** or the modern **Build Service**.
 
@@ -70,21 +70,16 @@ This method uses the `Procfile` to automatically manage your environment.
     ```bash
     # On Toolforge bastion
     become accessibility-checker
-    toolforge build start https://github.com/ftosoni/mediawiki-accessibility-checker.git
-    toolforge webservice buildservice start
-    ```
 
-### 3. Deploy to Toolforge (Standard Webservice)
-1.  **Clone the repo**:
-    ```bash
-    become accessibility-checker
-    git clone https://github.com/ftosoni/mediawiki-accessibility-checker.git temp_repo
-    cp -r temp_repo/* public_html/
-    rm -rf temp_repo
-    ```
-2.  **Upload the database file**:
-    ```bash
-    scp ./database/achecker.db your-username@login.toolforge.org:/data/project/accessibility-checker/public_html/database/
+    # Stop and clean existing build
+    toolforge webservice buildservice stop --mount=all
+    toolforge build clean -y
+    
+    # Start build from repository
+    toolforge build start https://github.com/ftosoni/mediawiki-accessibility-checker
+    
+    # Start webservice with 6GiB RAM
+    toolforge webservice buildservice start --mount=all -m 6Gi
     ```
 
 ### 4. Final Configuration
