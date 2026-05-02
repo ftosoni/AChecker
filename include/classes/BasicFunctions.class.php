@@ -519,8 +519,7 @@ class BasicFunctions {
 		$id_array = array();
 
 		BasicChecks::hasDuplicateAttribute($global_e, $attr, $id_array);
-
-		return $has_duplicate_attribute;
+		return (is_array($has_duplicate_attribute) && count($has_duplicate_attribute) > 0);
 	}
 
 	/**

@@ -173,7 +173,7 @@ class BasicChecks {
 			if ($id_val <> "" && in_array($id_val, $id_array)){
 				if (!is_array($has_duplicate_attribute)) $has_duplicate_attribute = array();
 				$has_duplicate_attribute[] = $child->linenumber;
-				$has_duplicate_attribute[] = $child->id;
+				$has_duplicate_attribute[] = $id_val;
 				return $has_duplicate_attribute;
 			} else {
 				if ($id_val <> "") array_push($id_array, $id_val);
@@ -525,7 +525,9 @@ class BasicChecks {
 		{
 			$id_val = strtolower(trim((is_array($child->attr) && isset($child->attr[$attr])) ? (string)$child->attr[$attr] : ''));
 
-			if ($id_val <> "" && in_array($id_val, $id_array)) $has_duplicate_attribute = true;
+			if ($id_val <> "" && in_array($id_val, $id_array)) {
+				$has_duplicate_attribute = array($child->linenumber, $id_val);
+			}
 			else
 			{
 				if ($id_val <> "") array_push($id_array, $id_val);

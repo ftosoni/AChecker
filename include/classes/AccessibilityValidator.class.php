@@ -416,7 +416,7 @@ class AccessibilityValidator {
 				}
 				
 				global $has_duplicate_attribute;
-				if(is_array($has_duplicate_attribute)){
+				if(is_array($has_duplicate_attribute) && isset($has_duplicate_attribute[0]) && isset($has_duplicate_attribute[1])){
 					$line_number = $has_duplicate_attribute[0];
 					$html_code .= "(".$has_duplicate_attribute[1].")";
 				}
