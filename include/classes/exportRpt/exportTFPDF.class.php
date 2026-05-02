@@ -116,35 +116,47 @@ class acheckerTFPDF extends tFPDF {
 	    $this->SetY(24);
 	    $this->SetX(12);
 	    $this->SetFont('DejaVu', '', 6);
-	    $this->SetTextColor(120);
+	    $this->SetTextColor(80); // Higher contrast
 	    $this->Cell(60, 4, 'Logo by Kuldeepburjbhalaike - CC BY-SA 4.0', 0, 0, 'C');
 
 	    // title and url (top right)
 	    $this->SetY(10);
+	    $this->SetX(100); // Start at X=100 for the right block
 	    $this->SetFont('DejaVu', 'B', 10);
-	    $this->Cell(140);
 	    $this->SetTextColor(0);
-	    $this->Cell(50,5,'MediaWiki Accessibility Checker', 0, 2, 'R');
+	    $this->Cell(100, 5, 'MediaWiki Accessibility Checker', 0, 2, 'R');
+	    
 	    $this->SetFont('DejaVu', '', 8);
-	    $this->Cell(50,5,'accessibility-checker.toolforge.org', 0, 2, 'R');
+	    $this->SetTextColor(0);
+	    $this->Cell(100, 5, 'accessibility-checker.toolforge.org', 0, 2, 'R');
 	    
 	    // Attribution and License info (top right)
+	    // We use a small MultiCell or just careful X positioning
 	    $this->SetFont('DejaVu', '', 7);
-	    $this->SetTextColor(120);
+	    $this->SetTextColor(80); // Higher contrast
+	    
+	    // Link color (High contrast blue: 0, 51, 153)
+	    $linkColor = array(0, 51, 153);
+	    
+	    // Reset X for the next lines
+	    $this->SetX(70); 
 	    $this->Write(4, 'Developed by ');
-	    $this->SetTextColor(51, 102, 204);
+	    $this->SetTextColor($linkColor[0], $linkColor[1], $linkColor[2]);
 	    $this->Write(4, 'Francesco Tosoni (Super nabla)', 'https://meta.wikimedia.org/wiki/Special:MyLanguage/User:Super_nabla');
-	    $this->SetTextColor(120);
+	    $this->SetTextColor(80);
 	    $this->Write(4, ' | License: ');
-	    $this->SetTextColor(51, 102, 204);
+	    $this->SetTextColor($linkColor[0], $linkColor[1], $linkColor[2]);
 	    $this->Write(4, 'GNU GPL 2.0', 'https://github.com/ftosoni/mediawiki-accessibility-checker/blob/main/LICENSE');
-	    $this->SetTextColor(120);
-	    $this->Write(4, ' | Powered by ');
-	    $this->SetTextColor(51, 102, 204);
+	    
+	    $this->Ln(4);
+	    $this->SetX(70);
+	    $this->SetTextColor(80);
+	    $this->Write(4, 'Powered by ');
+	    $this->SetTextColor($linkColor[0], $linkColor[1], $linkColor[2]);
 	    $this->Write(4, 'AChecker', 'https://github.com/cg-a11y/AChecker');
-	    $this->SetTextColor(120);
+	    $this->SetTextColor(80);
 	    $this->Write(4, ' by the ');
-	    $this->SetTextColor(51, 102, 204);
+	    $this->SetTextColor($linkColor[0], $linkColor[1], $linkColor[2]);
 	    $this->Write(4, 'Inclusive Design Institute', 'https://idrc.ocadu.ca/');
 	    
 	    $this->Ln(15);
