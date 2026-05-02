@@ -134,11 +134,11 @@ class acheckerTFPDF extends tFPDF {
 		$this->AddPage();
 		
 		// time
-		$time_to_print = str_replace("-", ":", $time);
+		$time_to_print = str_replace("-", ":", $time ?? '');
 
 		// date
 		$today = getdate();
-		$date_to_print = AC_date('%l').' '.AC_date('%F').' '.$today['mday'].', '.$today['year'];
+		$date_to_print = AC_date('%l').' '.AC_date('%F').' '.($today['mday'] ?? '').', '.($today['year'] ?? '');
 		$this->SetFont('DejaVu', '', 9);
 		$this->Write(5, $date_to_print. ' '. $time_to_print);
 		$this->Ln(8);	
@@ -231,14 +231,14 @@ class acheckerTFPDF extends tFPDF {
 						$this->SetTextColor(0);	
 						$this->SetFont('DejaVu', 'B', 10);
 						$this->SetX(21);
-						$check = $check_group['check_label']." ".$check_group['check_id'].": ".strip_tags($check_group['error']);
+						$check = ($check_group['check_label'] ?? "")." ".($check_group['check_id'] ?? "").": ".strip_tags($check_group['error'] ?? "");
 						$this->Write(5, $check);				
 						$this->SetTextColor(0);
 						$this->SetFont('DejaVu', '', 10);
 						$this->Ln(8);					
 						if (is_array($check_group['repair'])) {
 							$this->SetX(28);
-							$this->Write(5, $check_group['repair']['label'].": ".strip_tags($check_group['repair']['detail']));
+							$this->Write(5, ($check_group['repair']['label'] ?? "" ).": ".strip_tags($check_group['repair']['detail'] ?? ""));
 							$this->Ln(8);
 						}
 						
@@ -251,7 +251,7 @@ class acheckerTFPDF extends tFPDF {
 							$this->SetX(32);
 							$this->SetFont('DejaVu', 'BI', 9);
 							$this->SetTextColor(0);
-							$location = " ".$error['line_text']." ".$error['line_nr'].", ".$error['col_text']." ".$error['col_nr'].":";
+							$location = " ".($error['line_text'] ?? "")." ".($error['line_nr'] ?? "").", ".($error['col_text'] ?? "")." ".($error['col_nr'] ?? "").":";
 							$this->Write(5, $location);
 							$this->Ln(5);
 							
@@ -259,14 +259,14 @@ class acheckerTFPDF extends tFPDF {
 							$this->SetTextColor(0);
 							$this->SetX(28);
 							$this->SetFont('DejaVu', '', 9);						
-							if (($error['error_img'] != '') && ($error['error_img']['img_src'] != '')) {
-								preg_match('/src=(.)*/', html_entity_decode($error['html_code']), $match);
-								$img_parts = explode('"', $match[0]);
+							if (($error['error_img'] ?? '') != '' && ($error['error_img']['img_src'] ?? '') != '') {
+								preg_match('/src=(.)*/', html_entity_decode($error['html_code'] ?? ""), $match);
+								$img_parts = explode('"', $match[0] ?? '');
 								if (count($img_parts)<3) {
-									$error['html_code'] = "<img ".$img_parts[0].'"'.$error['error_img']['img_src'].'" ...';
+									$error['html_code'] = "<img ".($img_parts[0] ?? "").'"'.($error['error_img']['img_src'] ?? "").'" ...';
 								}
 							}
-							$str = str_replace("\t", "    ", html_entity_decode($error['html_code']));
+							$str = str_replace("\t", "    ", html_entity_decode($error['html_code'] ?? ""));
 							$this->Write(5, $str);
 							$this->Ln(8);
 							
@@ -408,21 +408,21 @@ class acheckerTFPDF extends tFPDF {
 						$this->Write(5, $location);
 						$this->SetTextColor(26, 74, 114);
 						$this->SetFont('DejaVu', '', 10);
-						$this->Write(5, strip_tags($error['error']));
+						$this->Write(5, strip_tags($error['error'] ?? ""));
 						$this->Ln(7);
 									
 						// html code of error (if there is image in error show full img src in even if string is >100 long)
 						$this->SetFont('DejaVu', '', 9);
 						$this->SetTextColor(0);
 						$this->SetX(17);
-						if (($error['image'] != '') && ($error['image']['src'] != '')) {
-							preg_match('/src=(.)*/', html_entity_decode($error['html_code']), $match);
-							$img_parts = explode('"', $match[0]);
+						if (($error['image'] ?? '') != '' && ($error['image']['src'] ?? '') != '') {
+							preg_match('/src=(.)*/', html_entity_decode($error['html_code'] ?? ""), $match);
+							$img_parts = explode('"', $match[0] ?? '');
 							if (count($img_parts)<3) {
-								$error['html_code'] = "<img ".$img_parts[0].'"'.$error['image']['src'].'" ...';
+								$error['html_code'] = "<img ".($img_parts[0] ?? "").'"'.($error['image']['src'] ?? "").'" ...';
 							}
 						}
-						$str = str_replace("\t", "    ", html_entity_decode($error['html_code']));
+						$str = str_replace("\t", "    ", html_entity_decode($error['html_code'] ?? ""));
 						$this->Write(5, $str);
 						$this->Ln(8);
 
@@ -516,7 +516,7 @@ class acheckerTFPDF extends tFPDF {
 					}
 					$this->SetTextColor(26, 74, 114);
 					$this->SetFont('DejaVu', '', 10);
-					$this->Write(5, html_entity_decode(strip_tags($error['err'])));
+					$this->Write(5, html_entity_decode(strip_tags($error['err'] ?? "")));
 					$this->Ln(7);
 	
 					// html code of error
@@ -524,13 +524,13 @@ class acheckerTFPDF extends tFPDF {
 						$this->SetFont('DejaVu', '', 9);
 						$this->SetX(17);
 						$this->SetTextColor(0);
-						$str = str_replace("\t", "    ", html_entity_decode(htmlspecialchars_decode($error['html_1'], ENT_QUOTES)));
+						$str = str_replace("\t", "    ", html_entity_decode(htmlspecialchars_decode($error['html_1'] ?? "", ENT_QUOTES)));
 						$this->Write(5, $str);
 						$this->SetTextColor(255, 0 ,0);
-						$str = str_replace("\t", "    ", html_entity_decode(htmlspecialchars_decode($error['html_2'], ENT_QUOTES)));
+						$str = str_replace("\t", "    ", html_entity_decode(htmlspecialchars_decode($error['html_2'] ?? "", ENT_QUOTES)));
 						$this->Write(5, $str);
 						$this->SetTextColor(0);
-						$str = str_replace("\t", "    ", html_entity_decode(htmlspecialchars_decode($error['html_3'], ENT_QUOTES)));
+						$str = str_replace("\t", "    ", html_entity_decode(htmlspecialchars_decode($error['html_3'] ?? "", ENT_QUOTES)));
 						$this->Write(5, $str);
 						$this->Ln(10);
 					}
@@ -539,7 +539,7 @@ class acheckerTFPDF extends tFPDF {
 					if ($error['text'] != '') {
 						$this->SetX(17);
 						$this->SetFont('DejaVu', '', 10);
-						$this->Write(5, html_entity_decode(strip_tags($error['text'])));
+						$this->Write(5, html_entity_decode(strip_tags($error['text'] ?? "")));
 						$this->Ln(10);
 					}
 				}
@@ -655,12 +655,15 @@ class acheckerTFPDF extends tFPDF {
 		$guideline_rows = $guidelinesDAO->getGuidelineByIDs($_gids);
 		
 		// get list of guidelines separated by ','
+		$guidelines_text = '';
 		if (is_array($guideline_rows)) {
 			foreach ($guideline_rows as $id => $row) {
 				$guidelines_text .= $row["title"]. ', ';
 			}
 		}
-		$guidelines_text = substr($guidelines_text, 0, -2); // remove ending space and ,
+		if ($guidelines_text != '') {
+			$guidelines_text = substr($guidelines_text, 0, -2); // remove ending space and ,
+		}
 	
 		// print time, date, [resource title,] [resource url,] str with guidelines
 		$this->printInfo($title, $uri, $guidelines_text, $time);

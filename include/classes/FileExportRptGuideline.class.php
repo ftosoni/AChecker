@@ -79,9 +79,9 @@ class FileExportRptGuideline extends AccessibilityRpt {
 		{
 			foreach ($named_groups as $group)
 			{
-				unset($subgroup_known_problems);
-				unset($subgroup_likely_problems);
-				unset($subgroup_potential_problems);
+				$subgroup_known_problems = array();
+				$subgroup_likely_problems = array();
+				$subgroup_potential_problems = array();
 
 				// display named subgroups and their checks
 				$named_subgroups = $this->guidelineSubgroupsDAO->getNamedSubgroupByGroupID($group['group_id']);
@@ -114,15 +114,13 @@ class FileExportRptGuideline extends AccessibilityRpt {
 
 				$group_title = _AC($group['name']);
 
-				if ($subgroup_known_problems <> '') {
+				if (!empty($subgroup_known_problems)) {
 					$this->group_known_problems[$group_title] = $subgroup_known_problems;
 				}
-
-				if ($subgroup_likely_problems <> '') {
+				if (!empty($subgroup_likely_problems)) {
 					$this->group_likely_problems[$group_title] = $subgroup_likely_problems;
 				}
-
-				if ($subgroup_potential_problems <> '') {
+				if (!empty($subgroup_potential_problems)) {
 					$this->group_potential_problems[$group_title] = $subgroup_potential_problems;
 				}
 			} // end of foreach $named_groups
@@ -158,13 +156,13 @@ class FileExportRptGuideline extends AccessibilityRpt {
 		if (!is_array($checks_array)) return NULL;
 
 		foreach ($checks_array as $check) {
-			unset($howto_repair);
-			unset($question);
+			$howto_repair = array();
+			$question = array();
 
 			$check_id = $check["check_id"];
 
 			// continue with the next check if there is no errors for this check
-			if (!is_array($this->errors_by_checks[$check_id])) continue;
+			if (!isset($this->errors_by_checks[$check_id]) || !is_array($this->errors_by_checks[$check_id])) continue;
 
 			$row = $this->checksDAO->getCheckByID($check_id);
 
@@ -184,15 +182,15 @@ class FileExportRptGuideline extends AccessibilityRpt {
 			$one_problem['subgroup_id'] = $check["subgroupID"];
 			$one_problem['errors'] = $error_set;
 
-			if ($row["confidence"] == KNOWN) {
+			if (($row["confidence"] ?? 0) == KNOWN) {
 				$known[] = $one_problem;
-			} else if ($row["confidence"] == LIKELY) {
+			} else if (($row["confidence"] ?? 0) == LIKELY) {
 				$likely[] = $one_problem;
-			} else if ($row["confidence"] == POTENTIAL) {
+			} else if (($row["confidence"] ?? 0) == POTENTIAL) {
 				$potential[] = $one_problem;
 			}
 		}
-		return array($known, $likely, $potential);
+		return array($known ?? array(), $likely ?? array(), $potential ?? array());
 	}
 
 	/**
@@ -273,12 +271,12 @@ class FileExportRptGuideline extends AccessibilityRpt {
 		    $problem_cell['html_code'] = htmlentities($error["html_code"], ENT_COMPAT, 'UTF-8');
 		    $problem_cell['css_code'] = $error['css_code'];
 		    $problem_cell['base_href'] = AC_BASE_HREF;
-		    $problem_cell['error_img'] = $error_img;
+		    $problem_cell['error_img'] = $error_img ?? array();
 		    $problem_cell['test_passed'] = $passed;
 
 			$array[] = $problem_cell;
 		}
-		return $array;
+		return $array ?? array();
 	}
 
 }

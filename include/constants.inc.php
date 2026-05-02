@@ -151,7 +151,7 @@ define('AC_DATE_UNIX_TIMESTAMP',     3); /* seconds since epoch	*/
 define('AC_DATE_INDEX_VALUE',        4); /* index to the date arrays */
 
 // the temporary directory for exporting validation reports
-define('AC_EXPORT_RPT_DIR', (defined('AC_TEMP_DIR') ? AC_TEMP_DIR : '') . 'exportRpt/');
+define('AC_EXPORT_RPT_DIR', (defined('AC_TEMP_DIR') && AC_TEMP_DIR != '' ? AC_TEMP_DIR : realpath(AC_INCLUDE_PATH . '../temp/') . DIRECTORY_SEPARATOR) . 'exportRpt' . DIRECTORY_SEPARATOR);
 
 // separator used in composing URL
 if (strpos(@ini_get('arg_separator.input'), ';') !== false) {

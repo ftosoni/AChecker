@@ -41,7 +41,8 @@ foreach ($rows as $row)
 	$privs[] = $row['privilege_id'];
 
 /* initialize pages accessed by public */
-//$_pages[AC_NAV_PUBLIC] = array('index.php' => array('parent'=>AC_NAV_PUBLIC));
+$_pages['index.php']['title_var'] = 'web_accessibility_checker';
+$_pages['index.php']['parent']    = AC_NAV_PUBLIC;
 
 /* define all accessible pages */
 // 1. public pages

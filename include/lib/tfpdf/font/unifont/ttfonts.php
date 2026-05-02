@@ -323,7 +323,7 @@ var $maxStrLenRead;
 			if (!$psName)
 				die("Could not find PostScript font name");
 			for ($i=0;$i<strlen($psName);$i++) {
-				$c = $psName{$i};	// 1.02
+				$c = $psName[$i];	// 1.02
 				$oc = ord($c);
 				if ($oc>126 || strpos(' [](){}<>/%',$c)!==false)
 					die("psName=".$psName." contains invalid character ".$c." ie U+".ord(c));

@@ -17,13 +17,12 @@ ob_start();
 define('AC_INCLUDE_PATH', '../include/');
 include(AC_INCLUDE_PATH.'vitals.inc.php');
 
-// first of all delete too old files from temp folder
-define('MINUTE', time() - 60); // minute ago
-define('HOUR', time() - 60*60); // hour ago
-define('DAY', time() - 60*60*24); // day ago
-define('WEEK', time() - 60*60*24*7); // week ago
+// ensure export directory exists
+if (!is_dir(AC_EXPORT_RPT_DIR)) {
+	@mkdir(AC_EXPORT_RPT_DIR, 0755, true);
+}
 
-if ($handle = opendir(AC_EXPORT_RPT_DIR)) {
+if ($handle = @opendir(AC_EXPORT_RPT_DIR)) {
     while (false !== ($file = readdir($handle))) { 
         $file_delete_pattern = '/achecker_(.*)/';
         if(preg_match($file_delete_pattern, $file, $match)) {
@@ -79,7 +78,7 @@ $error_nr_html = -1;
 $html_error = '';
 
 // validate html
-if ($_SESSION['input_form']['enable_html_validation'] == true) {
+if (($_SESSION['input_form']['enable_html_validation'] ?? false) == true) {
 	include(AC_INCLUDE_PATH. "classes/HTMLValidator.class.php");
 
 	if ($input_content_type == 'file' || $input_content_type == 'paste') {
@@ -113,7 +112,7 @@ $error_nr_css = -1;
 $css_error = '';
 
 // validate css
-if ($_SESSION['input_form']['enable_css_validation'] == true) {
+if (($_SESSION['input_form']['enable_css_validation'] ?? false) == true) {
 	include(AC_INCLUDE_PATH. "classes/CSSValidator.class.php");
 
 	if ($input_content_type == $uri) {
@@ -165,6 +164,11 @@ if ($file == 'pdf') {
 	$pdf = new acheckerTFPDF($known, $likely, $potential, $html, $css, 
 		$error_nr_known, $error_nr_likely, $error_nr_potential, $error_nr_html, $error_nr_css, $css_error, $html_error);
 	$path = $pdf->getPDF($title, $uri, $problem, $mode, $_gids);
+
+	if (!$path || $path == '') {
+		// handle failure
+		error_log("AChecker Error: PDF generation failed for URI: " . $uri);
+	}
 			
 } else {	
 	if ($problem != 'html' && $problem != 'css') {

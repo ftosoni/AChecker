@@ -2138,7 +2138,8 @@ class BasicChecks {
 	public static function getForegroundA($e, $link_sel) {
 		// Find the value of foreground explicitly defined for the link element $e
 		//cerco il valore di foreground esplicitamente definito per l'elemento link $e
-		$foreground = (string) BasicChecks::get_p_css_a ( $e, "color", $link_sel );
+		$info = BasicChecks::get_p_css_a ( $e, "color", $link_sel );
+		$foreground = (is_array($info) && isset($info['valore'])) ? (string)$info['valore'] : "";
 
 		$foreground = str_replace ( "'", "", $foreground );
 		$foreground = str_replace ( "\"", "", $foreground );
@@ -2150,7 +2151,9 @@ class BasicChecks {
 	public static function getBackgroundA($e, $link_sel) {
 		// Find the value of explicitly defined background for the element $e
 		//cerco il valore di background esplicitamente definito per l'elemento $e
-		$background = (string) BasicChecks::get_p_css_a ( $e, "background-color", $link_sel );
+		$info = BasicChecks::get_p_css_a ( $e, "background-color", $link_sel );
+		$background = (is_array($info) && isset($info['valore'])) ? (string)$info['valore'] : "";
+		
 		$background = str_replace ( "'", "", $background );
 		$background = str_replace ( "\"", "", $background );
 		$background = str_replace ( "!important", "", $background );

@@ -42,9 +42,12 @@ define('TABLE_PREFIX',                 'AC_');
 /* manager and imported files.  If security is a concern, it is         */
 /* recommended that the temporary directory be moved outside of the web	*/
 /* accessible area.														*/
-define('AC_TEMP_DIR', 'C:\\xampp\\htdocs\\AChecker\\temp\\');
+define('AC_TEMP_DIR', realpath(dirname(__FILE__) . '/../temp/') . DIRECTORY_SEPARATOR);
 
 /* DO NOT ALTER THIS LAST LINE                                          */
 define('AC_INSTALL', TRUE);
+
+/* Enable debugging mode to see failing check code in logs */
+define('AC_DEBUG', TRUE);
 
 ?>
