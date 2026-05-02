@@ -195,26 +195,37 @@ if ($file == 'pdf') {
 		list($error_nr_known, $error_nr_likely, $error_nr_potential) = $a_rpt->getErrorNr();
 	}
 	
-	if ($file == 'earl') {
-		include_once(AC_INCLUDE_PATH. 'classes/exportRpt/exportEARL.class.php');
-		
-		$earl = new acheckerEARL($known, $likely, $potential, $html, $css, 
-			$error_nr_known, $error_nr_likely, $error_nr_potential, $error_nr_html, $error_nr_css, $css_error, $html_error);
-		$path = $earl->getEARL($problem, $input_content_type, $title, $_gids);
-		
-	} else if ($file == 'csv') {	
-		include_once(AC_INCLUDE_PATH. 'classes/exportRpt/exportCSV.class.php');		
-		
-		$csv = new acheckerCSV($known, $likely, $potential, $html, $css, 
-			$error_nr_known, $error_nr_likely, $error_nr_potential, $error_nr_html, $error_nr_css, $css_error, $html_error);
-		$path = $csv->getCSV($problem, $input_content_type, $title, $_gids);
-		
-	} else if ($file == 'html') {	
-		include_once(AC_INCLUDE_PATH. 'classes/exportRpt/exportHTML.class.php');		
-		$html_file = new acheckerHTML($known, $likely, $potential, $html, $css, 
-			$error_nr_known, $error_nr_likely, $error_nr_potential, $error_nr_html, $error_nr_css, $css_error, $html_error);
-		$path = $html_file->getHTMLfile($problem, $_gids, $errors, $user_link_id);
+	try {
+		if ($file == 'earl') {
+			include_once(AC_INCLUDE_PATH. 'classes/exportRpt/exportEARL.class.php');
+			
+			$earl = new acheckerEARL($known, $likely, $potential, $html, $css, 
+				$error_nr_known, $error_nr_likely, $error_nr_potential, $error_nr_html, $error_nr_css, $css_error, $html_error);
+			$path = $earl->getEARL($problem, $input_content_type, $title, $_gids);
+			
+		} else if ($file == 'csv') {	
+			include_once(AC_INCLUDE_PATH. 'classes/exportRpt/exportCSV.class.php');		
+			
+			$csv = new acheckerCSV($known, $likely, $potential, $html, $css, 
+				$error_nr_known, $error_nr_likely, $error_nr_potential, $error_nr_html, $error_nr_css, $css_error, $html_error);
+			$path = $csv->getCSV($problem, $input_content_type, $title, $_gids);
+			
+		} else if ($file == 'html') {	
+			include_once(AC_INCLUDE_PATH. 'classes/exportRpt/exportHTML.class.php');		
+			$html_file = new acheckerHTML($known, $likely, $potential, $html, $css, 
+				$error_nr_known, $error_nr_likely, $error_nr_potential, $error_nr_html, $error_nr_css, $css_error, $html_error);
+			$path = $html_file->getHTMLfile($problem, $_gids, $errors, $user_link_id);
 
+		}
+
+		if (!$path || $path == '') {
+			throw new Exception("Export path is empty for format: $file");
+		}
+	} catch (Throwable $e) {
+		error_log("AChecker Error: $file export failed: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+		header("HTTP/1.1 500 Internal Server Error");
+		echo "Export Error ($file): " . $e->getMessage();
+		exit;
 	}
 } 
 

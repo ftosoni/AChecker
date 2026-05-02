@@ -23,13 +23,13 @@ include_once(AC_INCLUDE_PATH. "classes/DAO/GuidelinesDAO.class.php");
 
 // end of line; system dependent
 if (PHP_EOL == "\r\n") {
-    define(EOL, "\r\n");
+    define('EOL', "\r\n");
 } else {
-    define(EOL, "\n");
+    define('EOL', "\n");
 }
 
 // delimiter
-define(DELIM, ",");
+define('DELIM', ",");
 
 class acheckerCSV {
 
@@ -191,7 +191,7 @@ class acheckerCSV {
 		}
 		
 		// \n | ; | , | " => "$str"
-		if (($str[0] != '"' && $str[strlen($str)-1] != '"') && 
+		if ($str !== '' && ($str[0] != '"' && $str[strlen($str)-1] != '"') && 
 			((strstr($str, "\n") != false) || (strstr($str, ";") != false) || (strstr($str, ",") != false))) {
 		
 			$str = '"'.$str.'"';
@@ -208,6 +208,7 @@ class acheckerCSV {
 	*/
 	private function getResultSection($problem_type) 
 	{		
+		$file_content = '';
 		if ($problem_type == 'known') {
 			$array = $this->known;
 			$nr = $this->error_nr_known;
@@ -313,6 +314,7 @@ class acheckerCSV {
 	*/
 	private function getHTML() 
 	{	
+		$file_content = '';
 		$file_content .= EOL._AC("html_validation_result").': '.$this->error_nr_html.DELIM.strip_tags(_AC("html_validator_provided_by")).EOL;
 
 		// str with error type and nr of errors
@@ -354,6 +356,7 @@ class acheckerCSV {
 	*/
 	private function getCSS() 
 	{		
+		$file_content = '';
 		$file_content .= EOL._AC("css_validation_result").': '.$this->error_nr_css.DELIM.strip_tags(_AC("css_validator_provided_by")).EOL;		
 		
 		if ($this->css_error == '' && $this->error_nr_css == -1) {

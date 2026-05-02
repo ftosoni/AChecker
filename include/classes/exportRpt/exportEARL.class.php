@@ -138,6 +138,7 @@ class acheckerEARL {
 		$this->error_id = 1;
 		$this->problem_prefix = 'html';
 		
+		$file_content = '';
 		$file_content .= '<!-- ========================== HTML validation ========================== -->
 		';
 		
@@ -267,6 +268,7 @@ class acheckerEARL {
 		$this->error_id = 1;
 		$this->problem_prefix = 'css';
 		
+		$file_content = '';
 		$file_content .= '<!-- ========================== CSS validation ========================== -->
 		';
 		
@@ -481,18 +483,21 @@ class acheckerEARL {
 			$array = $this->known;
 			$nr = $this->error_nr_known;
 			$this->problem_prefix = 'known';
+			$file_content = '';
 			$file_content .= '<!-- ========================== Known problems ========================== -->
 		';
 		} else if ($problem_type == 'likely') {
 			$array = $this->likely;
 			$nr = $this->error_nr_likely;
 			$this->problem_prefix = 'likely';
+			$file_content = '';
 			$file_content .= '<!-- ========================== Likely problems ========================== -->
 		';
 		} else if ($problem_type == 'potential') {
 			$array = $this->potential;
 			$nr = $this->error_nr_potential;
 			$this->problem_prefix = 'potential';
+			$file_content = '';
 			$file_content .= '<!-- ========================== Potential problems ========================== -->
 		';
 		}

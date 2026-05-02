@@ -222,21 +222,12 @@ AChecker.output = AChecker.output || {};
             },
         
             error: function (xhr, errorType, exception) {
-                var errorMsg = exception || errorType || xhr.statusText || 'Unknown error';
-                
-                // If it's a 500 error, try to extract more info from the response
-                if (xhr.status === 500 && xhr.responseText) {
-                    var details = xhr.responseText.trim();
-                    if (details.length > 0) {
-                        errorMsg += "\n\nServer Response: " + details.substring(0, 300);
-                        if (details.length > 300) errorMsg += "...";
-                    }
-                }
-
-                alert(AChecker.lang.error_occur + ': ' + errorMsg);
-
                 // enable the clickable tabs/buttons and hide the spinner
                 enableClickablesAndHideSpinner(exportSpinnerID);
+                
+                var errorMsg = xhr.responseText || exception || errorType || xhr.statusText || 'Unknown error';
+                alert(AChecker.lang.error_occur + ': ' + errorMsg);
+                console.error("Export failed:", {xhr: xhr, errorType: errorType, exception: exception});
             }
         });
     };
