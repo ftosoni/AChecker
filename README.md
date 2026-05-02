@@ -70,7 +70,7 @@ This method uses the `Procfile` to automatically manage your environment.
     ```bash
     # On Toolforge bastion
     become accessibility-checker
-    toolforge build start https://github.com/ftosoni/AChecker.git
+    toolforge build start https://github.com/ftosoni/mediawiki-accessibility-checker.git
     toolforge webservice buildservice start
     ```
 
@@ -78,7 +78,7 @@ This method uses the `Procfile` to automatically manage your environment.
 1.  **Clone the repo**:
     ```bash
     become accessibility-checker
-    git clone https://github.com/ftosoni/AChecker.git temp_repo
+    git clone https://github.com/ftosoni/mediawiki-accessibility-checker.git temp_repo
     cp -r temp_repo/* public_html/
     rm -rf temp_repo
     ```
