@@ -131,15 +131,11 @@ class HTMLByGuidelineRpt extends AccessibilityRpt {
 '<p><img alt="{CONGRATS_ALT}" src="{BASE_HREF}images/feedback.gif" />{CONGRATS_TEXT}<br /></p>
 ';
 
-	var $html_source =
-'	<ol class="source">
-{SOURCE_CONTENT}
-	</ol>
+	var $html_source = 
+'	<div class="source-container"><pre class="line-numbers language-markup"><code>{SOURCE_CONTENT}</code></pre></div>
 ';
-
-	var $html_source_line =
-'		<li id="line-{LINE_ID}">{LINE}</li>
-';
+	
+	var $html_source_line = '<span id="line-{LINE_ID}">{LINE}</span>' . "\n";
 
 	/**
 	* public

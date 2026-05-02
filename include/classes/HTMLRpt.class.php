@@ -120,14 +120,10 @@ class HTMLRpt extends AccessibilityRpt {
 ';
 	
 	var $html_source = 
-'	<ol class="source">
-{SOURCE_CONTENT}
-	</ol>
+'	<div class="source-container"><pre class="line-numbers language-markup"><code>{SOURCE_CONTENT}</code></pre></div>
 ';
 	
-	var $html_source_line =
-'		<li id="line-{LINE_ID}">{LINE}</li>
-';
+	var $html_source_line = '<span id="line-{LINE_ID}">{LINE}</span>' . "\n";
 	
 	/**
 	* public
