@@ -2914,7 +2914,7 @@ isset ( $e->attr ['onload'] ) || isset ( $e->attr ['onunload'] ) || isset ( $e->
 			//------>
 			$css_code .= "<p style='padding:1em'>" . _AC ( "element_CSS_rules" ) . ": </p>\n\t\n\t<pre>\n\t\n\t";
 			$int_css = '';
-			$ext_css = '';
+			$ext_css = array();
 			$size_of_css_list = sizeof ( $csslist );
 
 			foreach ( $array_css as $rule ) {
@@ -2943,15 +2943,18 @@ isset ( $e->attr ['onload'] ) || isset ( $e->attr ['onunload'] ) || isset ( $e->
 				if ($rule ["idcss"] == $size_of_css_list) //ultimo posto, stile interno
 					$int_css .= $temp_css_code;
 					//$css_code=$css_code._AC("internal_CSS").":\n\t\n\t      ";
-				else
-					$ext_css [$csslist [$rule ["idcss"]]] = $ext_css [$csslist [$rule ["idcss"]]] . $temp_css_code;
-					//$ext_css [$csslist [$rule ["idcss"]]] .= $temp_css_code;
-				//$css_code=$css_code._AC("external_CSS")." (<a title='external CSS link' href='".$csslist[$rule["idcss"]]."'>".$csslist[$rule["idcss"]]."</a>):\n\t\n\t      ";
+				else {
+					$url = $csslist [$rule ["idcss"]];
+					if (!isset($ext_css [$url])) {
+						$ext_css [$url] = '';
+					}
+					$ext_css [$url] .= $temp_css_code;
+				}
 			}
 			if ($int_css != '')
 				$css_code .= _AC ( "internal_CSS" ) . ":\n\t\n\t " . $int_css;
 
-			if ($ext_css != '')
+			if (!empty($ext_css))
 				foreach ( $ext_css as $url => $val ) {
 					$css_code .= _AC ( "external_CSS" ) . " (<a title='external CSS link' href='" . $url . "'>" . $url . "</a>):\n\t\n\t      " . $val;
 				}
