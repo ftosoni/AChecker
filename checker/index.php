@@ -187,7 +187,7 @@ if (isset($_POST["validate_file"]))
 
 if (isset($_POST["validate_paste"]))
 {
-	$validate_content = $_POST["pastehtml"] = $stripslashes($_POST["pastehtml"]);
+	$validate_content = $_POST["pastehtml"] = stripslashes($_POST["pastehtml"]);
 	$_SESSION['input_form']['paste'] = $validate_content;
 
 	if (isset($_POST["enable_html_validation"]))

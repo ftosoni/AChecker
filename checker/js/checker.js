@@ -74,15 +74,21 @@ AChecker.output = AChecker.output || {};
      * Disable clickables and show spinner
      */
     var disableClickablesAndShowSpinner = function (spinnerID) {
-        $('.cdx-button, .cdx-text-input').attr('disabled', 'disabled').addClass('cdx-button--disabled');
-        
-        for (var key in inputDivMapping) {
-            if ($('#' + inputDivMapping[key].menuID).length) {
-                $('#' + inputDivMapping[key].menuID).addClass(disableClass);
-            }
-        }
-        
+        // Show spinner immediately
         $('#' + spinnerID).css('display', 'inline-flex');
+
+        // Delay disabling buttons to allow the form submission to be initiated.
+        // If buttons are disabled immediately in a synchronous form submission,
+        // some browsers cancel the request.
+        setTimeout(function() {
+            $('.cdx-button, .cdx-text-input').attr('disabled', 'disabled').addClass('cdx-button--disabled');
+            
+            for (var key in inputDivMapping) {
+                if ($('#' + inputDivMapping[key].menuID).length) {
+                    $('#' + inputDivMapping[key].menuID).addClass(disableClass);
+                }
+            }
+        }, 10);
     };
 
     /**

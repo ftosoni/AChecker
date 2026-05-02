@@ -288,8 +288,8 @@ class simple_html_dom_node {
 
                 // convert to lowercase
                 if ($this->dom->lowercase) {
-                    if ($tag !== null) $tag = strtolower($tag);
-                    if ($key !== null) $key = strtolower($key);
+                    if ($tag !== null) $tag = strtolower((string)$tag);
+                    if ($key !== null) $key = strtolower((string)$key);
                 }
 
                 $result[] = array($tag, $key, $val, $exp);

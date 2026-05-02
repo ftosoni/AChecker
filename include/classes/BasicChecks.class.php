@@ -164,7 +164,7 @@ class BasicChecks {
 
 		foreach($e->children() as $child)
 		{
-			$id_val = strtolower(trim((is_array($child->attr) && isset($child->attr[$attr])) ? (string)$child->attr[$attr] : ''));
+			$id_val = strtolower(trim((string)((isset($child->attr) && isset($child->attr[$attr])) ? $child->attr[$attr] : '')));
 
 			// Swap out the element line number for the duplicate ID line number,
 			// This is a workaround to replace the usual lime number for body, returned
@@ -215,10 +215,10 @@ class BasicChecks {
 
 		foreach ($children as $i => $child)
 		{
-			$type = (is_array($child->attr) && isset($child->attr["type"])) ? strtolower(trim((string)$child->attr["type"])) : '';
+			$type = (isset($child->attr) && isset($child->attr["type"])) ? strtolower(trim((string)$child->attr["type"])) : '';
 			if ($type == "checkbox")
 			{
-				$this_name = (is_array($child->attr) && isset($child->attr["name"])) ? strtolower(trim((string)$child->attr["name"])) : '';
+				$this_name = (isset($child->attr) && isset($child->attr["name"])) ? strtolower(trim((string)$child->attr["name"])) : '';
 
 				for($j=$i+1; $j < $num_of_children; $j++)
 				{
