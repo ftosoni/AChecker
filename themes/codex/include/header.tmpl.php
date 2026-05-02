@@ -7,6 +7,9 @@
 	<meta name="Generator" content="AChecker - Adapted by Super nabla" />
 	<link rel="shortcut icon" href="https://codesearch.wmcloud.org/favicon.ico" type="image/x-icon" />
 	
+	<!-- Font Assets -->
+	<link href='https://tools-static.wmflabs.org/fontcdn/css?family=Ubuntu|JetBrains+Mono' rel='stylesheet' type='text/css'>
+	
 	<!-- Wikimedia Codex Design System -->
 	<link rel="stylesheet" href="https://doc.wikimedia.org/codex/main/codex.style.css" />
 	<link rel="stylesheet" href="<?php echo $base_path.'themes/'.$theme; ?>/index.css" type="text/css" />
