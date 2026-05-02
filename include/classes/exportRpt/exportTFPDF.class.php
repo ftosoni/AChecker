@@ -112,14 +112,38 @@ class acheckerTFPDF extends tFPDF {
 
 	    $this->Image($final_img, 12, 10, 60);
 	    
-	    // title and url
+	    // Logo credit
+	    $this->SetY(24);
+	    $this->SetX(12);
+	    $this->SetFont('DejaVu', '', 6);
+	    $this->SetTextColor(120);
+	    $this->Cell(60, 4, 'Logo by Kuldeepburjbhalaike - CC BY-SA 4.0', 0, 0, 'C');
+
+	    // title and url (top right)
+	    $this->SetY(10);
 	    $this->SetFont('DejaVu', 'B', 10);
 	    $this->Cell(140);
 	    $this->SetTextColor(0);
 	    $this->Cell(50,5,'MediaWiki Accessibility Checker', 0, 2, 'R');
 	    $this->SetFont('DejaVu', '', 8);
-	    $this->Cell(50,5,'accessibility-checker.toolforge.org', 0, 1, 'R');
-	    $this->Ln(12);
+	    $this->Cell(50,5,'accessibility-checker.toolforge.org', 0, 2, 'R');
+	    
+	    // Attribution and License info (top right)
+	    $this->SetFont('DejaVu', '', 7);
+	    $this->SetTextColor(120);
+	    $this->Write(4, 'Developed by ');
+	    $this->SetTextColor(51, 102, 204);
+	    $this->Write(4, 'Francesco Tosoni (Super nabla)', 'https://meta.wikimedia.org/wiki/Special:MyLanguage/User:Super_nabla');
+	    $this->SetTextColor(120);
+	    $this->Write(4, ' | License: ');
+	    $this->SetTextColor(51, 102, 204);
+	    $this->Write(4, 'GNU GPL 2.0', 'https://github.com/ftosoni/mediawiki-accessibility-checker/blob/main/LICENSE');
+	    $this->SetTextColor(120);
+	    $this->Write(4, ' | Powered by ');
+	    $this->SetTextColor(51, 102, 204);
+	    $this->Write(4, 'AChecker', 'https://github.com/cg-a11y/AChecker');
+	    
+	    $this->Ln(15);
 	}
 	
 	/**
@@ -127,36 +151,10 @@ class acheckerTFPDF extends tFPDF {
 	*/
 	function Footer()
 	{
-	    // position at 2.5 cm from bottom
-	    $this->SetY(-25);
-	    $this->SetFont('DejaVu','',7);
-	    $this->SetTextColor(120);
-	    
-	    // Credits line
-	    $this->Write(4, 'Logo by Kuldeepburjbhalaike - CC BY-SA 4.0. Maintained by ');
-	    $this->SetTextColor(51, 102, 204);
-	    $this->Write(4, 'Francesc Tosoni (Super nabla)', 'https://meta.wikimedia.org/wiki/Special:MyLanguage/User:Super_nabla');
-	    $this->SetTextColor(120);
-	    $this->Write(4, '. Licence: ');
-	    $this->SetTextColor(51, 102, 204);
-	    $this->Write(4, 'GNU GPL 2.0', 'https://github.com/ftosoni/mediawiki-accessibility-checker/blob/main/LICENSE');
-	    $this->Ln(4);
-	    
-	    $this->SetTextColor(120);
-	    $this->Write(4, 'Powered by ');
-	    $this->SetTextColor(51, 102, 204);
-	    $this->Write(4, 'AChecker', 'https://github.com/cg-a11y/AChecker');
-	    $this->SetTextColor(120);
-	    $this->Write(4, ' by the ');
-	    $this->SetTextColor(51, 102, 204);
-	    $this->Write(4, 'Inclusive Design Institute', 'https://idrc.ocadu.ca/');
-	    $this->SetTextColor(120);
-	    $this->Write(4, '.');
-
 	    // page number
 	    $this->SetY(-15);
 	    $this->SetFont('DejaVu','',8);
-	    $this->SetTextColor(0);
+	    $this->SetTextColor(120);
 	    $this->Cell(0,10,'Page '.$this->PageNo().'/{nb}',0,0,'C');
 	}
 
