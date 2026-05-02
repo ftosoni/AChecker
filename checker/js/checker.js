@@ -75,6 +75,13 @@ AChecker.output = AChecker.output || {};
      */
     var disableClickablesAndShowSpinner = function (spinnerID) {
         $('.cdx-button, .cdx-text-input').attr('disabled', 'disabled').addClass('cdx-button--disabled');
+        
+        for (var key in inputDivMapping) {
+            if ($('#' + inputDivMapping[key].menuID).length) {
+                $('#' + inputDivMapping[key].menuID).addClass(disableClass);
+            }
+        }
+        
         $('#' + spinnerID).css('display', 'inline-flex');
     };
 
@@ -83,6 +90,13 @@ AChecker.output = AChecker.output || {};
      */
     var enableClickablesAndHideSpinner = function (spinnerID) {
         $('.cdx-button, .cdx-text-input').removeAttr('disabled').removeClass('cdx-button--disabled');
+        
+        for (var key in inputDivMapping) {
+            if ($('#' + inputDivMapping[key].menuID).length) {
+                $('#' + inputDivMapping[key].menuID).removeClass(disableClass);
+            }
+        }
+        
         $('#' + spinnerID).hide();
     };
     
@@ -135,24 +149,7 @@ AChecker.output = AChecker.output || {};
         return false;
     };
 
-    var disableClickablesAndShowSpinner = function (spinnerID) {
-        // disable the tabs on the input form by adding css class "AC_disabled"
-        // which is detected and processed in AChecker.input.onClickTab()
-        for (var key in inputDivMapping) {
-            $('#' + inputDivMapping[key].menuID).addClass(disableClass);
-        }
-        
-        $("#" + spinnerID).show();
-        document.getElementById(spinnerID).focus();
-    };
-    
-    var enableClickablesAndHideSpinner = function (spinnerID) {
-        for (var key in inputDivMapping) {
-            $('#' + inputDivMapping[key].menuID).removeClass(disableClass);
-        }
-        
-        $("#" + spinnerID).hide();
-    };
+
     
     /**
      * Validates if a uri is provided

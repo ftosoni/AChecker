@@ -1,5 +1,18 @@
 /* Fonts imported via header.tmpl.php */
 
+/* Global accessibility and wrapping fixes */
+.AC_problem_detail, 
+.gd_msg, 
+.cdx-message__content, 
+.msg,
+.gd_question_section,
+code.input,
+pre {
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+    white-space: pre-wrap !important; /* Ensure code and pre wrap as well */
+}
+
 :root {
     /* Primary — a deeper, more confident blue (Blue 600 from a structured ramp) */
     --cdx-color-primary: #185FA5;
@@ -398,4 +411,27 @@ footer.cdx-footer {
         opacity: 1;
         transform: scale(1);
     }
+}
+
+/* Codex Spinner */
+.cdx-spinner {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.cdx-spinner__dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--cdx-color-primary);
+    border-radius: 50%;
+    animation: cdx-spinner-animation 1.4s infinite ease-in-out both;
+}
+
+.cdx-spinner__dot:nth-child(1) { animation-delay: -0.32s; }
+.cdx-spinner__dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes cdx-spinner-animation {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1.0); }
 }

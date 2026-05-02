@@ -466,7 +466,7 @@ class HTMLByGuidelineRpt extends AccessibilityRpt {
 			}
 
 			// generate individual problem string
-		                   array("{MARKER_TYPE}",
+			$problem_cell = str_replace(array("{MARKER_TYPE}",
 		                         "{EMOJI}",
 		                         "{IMG_TYPE}",
 		                         "{LINE_TEXT}",

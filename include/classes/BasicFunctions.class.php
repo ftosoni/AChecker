@@ -158,7 +158,7 @@ class BasicFunctions {
 				if ($image == $file) {
 					$file_size_checked = true;
 					if (!$info["is_exist"]) {
-						return false;
+						return array(false, false);
 					} else {
 						return array($info["width"], $info["height"]);
 					}
@@ -179,7 +179,7 @@ class BasicFunctions {
 				return array($dimensions[0], $dimensions[1]);
 			} else {
 				$global_array_image_sizes[$file] = array("is_exist"=>false, "width"=>NULL, "height"=>NULL);
-				return false;
+				return array(false, false);
 			}
 		}
 	}

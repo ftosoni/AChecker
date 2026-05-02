@@ -22,6 +22,7 @@ require (AC_INCLUDE_PATH.'constants.inc.php');
 	$pattern_rdf = '/achecker_(.*?)\.rdf/';
 	$pattern_pdf = '/achecker_(.*?)\.pdf/';
 	$pattern_html = '/achecker_(.*?)\.html/';
+	$pattern_txt = '/achecker_(.*?)\.txt/';
 	if (preg_match($pattern_csv, $path, $match)) {
 		$filename = $match[0];
 	} else if (preg_match($pattern_rdf, $path, $match)) {
@@ -29,6 +30,8 @@ require (AC_INCLUDE_PATH.'constants.inc.php');
 	} else if (preg_match($pattern_pdf, $path, $match)) {
 		$filename = $match[0];
 	} else if (preg_match($pattern_html, $path, $match)) {
+		$filename = $match[0];
+	} else if (preg_match($pattern_txt, $path, $match)) {
 		$filename = $match[0];
 	}
 
