@@ -304,8 +304,13 @@ class simple_html_dom_node {
         list($tag, $key, $val, $exp) = $selector;
 
         $end = $this->info[HDOM_INFO_END];
-        if ($end==0)
-            $end = $this->parent->info[HDOM_INFO_END]-1;
+        if ($end==0) {
+            if (isset($this->parent) && is_object($this->parent) && isset($this->parent->info[HDOM_INFO_END])) {
+                $end = $this->parent->info[HDOM_INFO_END]-1;
+            } else {
+                $end = $this->dom->index;
+            }
+        }
 
         for($i=$this->info[HDOM_INFO_BEGIN]+1; $i<$end; ++$i) {
             $node = $this->dom->nodes[$i];
@@ -531,7 +536,7 @@ class simple_html_dom {
         $this->root->nodetype = HDOM_TYPE_ROOT;
         $this->parent = $this->root;
         // set the length of content
-        $this->size = strlen($str);
+        $this->size = strlen((string)$str);
         if ($this->size>0) $this->char = $this->html[0];
     }
 
@@ -857,7 +862,7 @@ class simple_html_dom {
 
     // remove noise from html content
     function remove_noise($pattern, $remove_tag=true, $remove_contents=true) {
-        $count = preg_match_all($pattern, $this->html, $matches, PREG_SET_ORDER|PREG_OFFSET_CAPTURE);
+        $count = preg_match_all($pattern, (string)$this->html, $matches, PREG_SET_ORDER|PREG_OFFSET_CAPTURE);
         for ($i=$count-1; $i>-1; --$i) {
             $key = '___noise___'.sprintf('% 3d', count($this->noise));
             $idx = ($remove_tag) ? 0 : 1;
@@ -871,7 +876,7 @@ class simple_html_dom {
         }
 
         // reset the length of content
-        $this->size = strlen($this->html);
+        $this->size = strlen((string)$this->html);
         if ($this->size>0)
             $this->char = $this->html[0];
     }

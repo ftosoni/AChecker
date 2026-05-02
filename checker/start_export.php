@@ -48,16 +48,16 @@ if ($handle = @opendir(AC_EXPORT_RPT_DIR)) {
     closedir($handle); 
 }
 
-// get user choise on file format
-if (isset($_POST['file']) && isset($_POST['problem'])) {
-	$file = $_POST['file'];
-	$problem = $_POST['problem'];
-} 
+// get user choice on file format
+$file    = $_POST['file'] ?? 'pdf';
+$problem = $_POST['problem'] ?? 'all';
 	
 // content to validate	
-$uri = '';
-if (isset($_SESSION['input_form']['uri'])) {
-	$uri = $_SESSION['input_form']['uri'];
+$uri = $_SESSION['input_form']['uri'] ?? '';
+$validate_content = '';
+$input_content_type = '';
+
+if ($uri != '') {
 	if (isset($_SESSION['input_form']['content']) && $_SESSION['input_form']['content'] != '') {
 		$validate_content = $_SESSION['input_form']['content'];
 	} else {
@@ -65,26 +65,22 @@ if (isset($_SESSION['input_form']['uri'])) {
 		$validate_content = Utility::getURLContents($uri);
 	}
 	$input_content_type = $uri;
-}
-
-if (isset($_SESSION['input_form']['file'])) {
+} else if (isset($_SESSION['input_form']['file'])) {
 	$validate_content = $_SESSION['input_form']['file'];
 	$input_content_type = 'file';
-}
-
-if (isset($_SESSION['input_form']['paste'])) {
+} else if (isset($_SESSION['input_form']['paste'])) {
 	$validate_content = $_SESSION['input_form']['paste'];
 	$input_content_type = 'paste';
 }
 
 // guidelines	
-if (isset($_SESSION['input_form']['gids'])) 		$_gids = $_SESSION['input_form']['gids'];
+$_gids = $_SESSION['input_form']['gids'] ?? array(DEFAULT_GUIDELINE);
 
 // report mode
-if (isset($_SESSION['input_form']['mode'])) 		$mode = $_SESSION['input_form']['mode'];
+$mode = $_SESSION['input_form']['mode'] ?? 'guideline';
 
 // user link id
-if (isset($_SESSION['input_form']['user_link_id'])) $user_link_id = $_SESSION['input_form']['user_link_id'];
+$user_link_id = $_SESSION['input_form']['user_link_id'] ?? 0;
 
 $html = '';
 $error_nr_html = -1;
@@ -166,11 +162,14 @@ $error_nr_potential = 0;
 // create file depending on user choice
 if ($file == 'pdf') {	
 	if ($problem != 'html' && $problem != 'css') {
+		$a_rpt = null;
 		if ($mode == 'guideline') $a_rpt = new FileExportRptGuideline($errors, $_gids[0], $user_link_id);
 		else if ($mode == 'line') $a_rpt = new FileExportRptLine($errors, $user_link_id);
 	
-		list($known, $likely, $potential) = $a_rpt->generateRpt();
-		list($error_nr_known, $error_nr_likely, $error_nr_potential) = $a_rpt->getErrorNr();
+		if ($a_rpt) {
+			list($known, $likely, $potential) = $a_rpt->generateRpt();
+			list($error_nr_known, $error_nr_likely, $error_nr_potential) = $a_rpt->getErrorNr();
+		}
 	}
 	include_once(AC_INCLUDE_PATH. 'classes/exportRpt/exportTFPDF.class.php');
 	
