@@ -352,27 +352,68 @@ pre code.input {
 
 /* Footer */
 footer.cdx-footer {
-    margin-top: 48px !important;
-    padding: 24px 32px !important;
-    background: #fff !important;
-    border-top: 0.5px solid var(--cdx-border-color) !important;
-    text-align: center !important;
+    margin: 3rem auto 2rem !important;
+    width: 100% !important;
+    max-width: 900px !important;
+    padding: 2rem 1.5rem 0 !important;
+    border-top: 1px solid var(--cdx-border-color-subtle) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 1rem !important;
     color: var(--cdx-color-subtle) !important;
-    font-size: 12.5px !important;
+    font-size: 13px !important;
+    text-align: center !important;
+    background: transparent !important;
+}
+
+.cdx-footer__row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
     width: 100% !important;
 }
 
-.cdx-footer p {
-    margin: 6px 0 !important;
+.cdx-footer__links {
+    margin-bottom: 0.5rem !important;
+}
+
+.cdx-footer__info {
+    width: 100% !important;
+    margin-top: 0.5rem !important;
+    padding-top: 1rem !important;
+    border-top: 1px solid var(--cdx-border-color-subtle) !important;
+    display: flex !important;
+    justify-content: center !important;
+    gap: 0.75rem !important;
+    color: #54595d !important; /* Darker for better contrast */
+    font-weight: 400 !important;
+}
+
+.cdx-footer__pipe {
+    color: var(--cdx-border-color) !important;
+    font-weight: 300 !important;
+    margin: 0 4px !important;
 }
 
 .cdx-footer a {
     color: var(--cdx-color-primary) !important;
     text-decoration: none !important;
+    font-weight: 500 !important;
 }
 
 .cdx-footer a:hover {
     text-decoration: underline !important;
+}
+
+.cdx-footer__links a {
+    color: #54595d !important; /* Higher contrast for secondary links */
+}
+
+.cdx-footer__links a:hover {
+    color: var(--cdx-color-primary) !important;
 }
 
 /* Spinner */

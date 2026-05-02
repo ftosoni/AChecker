@@ -28,7 +28,7 @@
 
 <header class="cdx-header">
 	<div class="cdx-header__logo">
-		<a href="checker/index.php" style="text-decoration: none; font-weight: bold; font-size: 1.2em; color: var(--cdx-color-primary);">
+		<a href="<?php echo AC_BASE_HREF; ?>" style="text-decoration: none; font-weight: bold; font-size: 1.2em; color: var(--cdx-color-primary);">
 			MediaWiki Accessibility Checker
 		</a>
 	</div>
