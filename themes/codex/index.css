@@ -352,19 +352,19 @@ pre code.input {
 
 /* Footer */
 footer.cdx-footer {
-    margin: 3rem auto 2rem !important;
+    background: #fff !important;
+    border-top: 1px solid var(--cdx-border-color) !important;
+    padding: 40px 24px !important;
+    margin-top: 64px !important;
     width: 100% !important;
-    max-width: 900px !important;
-    padding: 2rem 1.5rem 0 !important;
-    border-top: 1px solid var(--cdx-border-color-subtle) !important;
+    max-width: none !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    gap: 1rem !important;
+    gap: 1.5rem !important;
     color: var(--cdx-color-subtle) !important;
     font-size: 13px !important;
     text-align: center !important;
-    background: transparent !important;
 }
 
 .cdx-footer__row {

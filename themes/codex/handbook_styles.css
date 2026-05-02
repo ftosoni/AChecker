@@ -1,14 +1,3 @@
-/************************************************************************/
-/* AChecker                                                             */
-/************************************************************************/
-/* Copyright (c) 2008 - 2018                                            */
-/* Inclusive Design Institute                                           */
-/*                                                                      */
-/* This program is free software. You can redistribute it and/or        */
-/* modify it under the terms of the GNU General Public License          */
-/* as published by the Free Software Foundation.                        */
-/************************************************************************/
-
 .handbook-container {
     display: flex;
     min-height: 80vh;
@@ -56,7 +45,7 @@
     color: #3366cc;
 }
 
-.handbook-sidebar-item--active > a {
+.handbook-sidebar-item--active>a {
     background: #eaf3ff;
     color: #3366cc;
     font-weight: bold;
