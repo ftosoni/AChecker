@@ -173,14 +173,18 @@ if ($file == 'pdf') {
 	}
 	include_once(AC_INCLUDE_PATH. 'classes/exportRpt/exportTFPDF.class.php');
 	
-	$pdf = new acheckerTFPDF($known, $likely, $potential, $html, $css, 
-		$error_nr_known, $error_nr_likely, $error_nr_potential, $error_nr_html, $error_nr_css, $css_error, $html_error);
-	$path = $pdf->getPDF($title, $uri, $problem, $mode, $_gids);
+	try {
+		$pdf = new acheckerTFPDF($known, $likely, $potential, $html, $css, 
+			$error_nr_known, $error_nr_likely, $error_nr_potential, $error_nr_html, $error_nr_css, $css_error, $html_error);
+		$path = $pdf->getPDF($title, $uri, $problem, $mode, $_gids);
 
-	if (!$path || $path == '') {
-		// handle failure
-		error_log("AChecker Error: PDF generation failed for URI: " . $uri);
-		echo _AC('error_occurred');
+		if (!$path || $path == '') {
+			throw new Exception("PDF path is empty");
+		}
+	} catch (Throwable $e) {
+		error_log("AChecker Error: PDF generation failed: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+		header("HTTP/1.1 500 Internal Server Error");
+		echo "PDF Generation Error: " . $e->getMessage();
 		exit;
 	}
 			
