@@ -68,7 +68,7 @@ class HTMLRpt extends AccessibilityRpt {
 ';
 	
 	var $html_decision_not_made = 
-'<table>
+'<table class="cdx-table cdx-decision-table">
   <tr>
     <td>
       {QUESTION}
@@ -96,7 +96,7 @@ class HTMLRpt extends AccessibilityRpt {
 ';
 
 	var $html_decision_made = 
-'<table class="form-data">
+'<table class="cdx-table cdx-decision-table">
   <tr>
     <th align="left">{LABEL_QUESTION}:</th>
     <td>{QUESTION}</td>

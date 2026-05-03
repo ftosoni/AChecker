@@ -164,6 +164,10 @@ AChecker.output = AChecker.output || {};
         // check if the div is disabled
         if (!$('#' + inputDivMapping[divId].menuID).hasClass(disableClass)) {
             AChecker.showDivOutof(divId, inputDivMapping);
+            
+            // Fix Codex tab highlighting
+            $('.cdx-tabs__header-item').removeClass('cdx-tabs__header-item--active');
+            $('#' + inputDivMapping[divId].menuID).addClass('cdx-tabs__header-item--active');
         }
         return false;
     };

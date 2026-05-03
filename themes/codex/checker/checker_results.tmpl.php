@@ -80,10 +80,10 @@ if (isset($aValidator) && $a_rpt->getAllowSetDecisions() == 'true')
 }
 ?>
 
-	<section class="cdx-card" style="padding: 24px; border: 1px solid #a2a9b1; background: #fff;">
+	<section class="cdx-card">
 		<a name="report"></a>
-		<h2 class="cdx-typography-h2" style="margin-top: 0; font-size: 1.3em; color: #202122; border-bottom: 1px solid #eaecf0; padding-bottom: 8px;">
-			<?php echo _AC("accessibility_review"); ?> (<?php echo _AC("guidelines"); ?>: <span style="font-weight: normal; color: #72777d;"><?php echo $guidelines_text; ?></span>)
+		<h2 class="cdx-typography-h2">
+			<?php echo _AC("accessibility_review"); ?> (<?php echo _AC("guidelines"); ?>: <span class="guidelines-label"><?php echo $guidelines_text; ?></span>)
 		</h2>
 
 		<!-- Export Options -->
@@ -143,8 +143,8 @@ if (isset($aValidator) && $a_rpt->getAllowSetDecisions() == 'true')
 
 		<div id="AC_errors" style="padding-top: 24px;">
 			<?php if (isset($aValidator) && $num_of_errors == 0): ?>
-				<div class="cdx-message cdx-message--success" style="padding: 16px; background: #eaf3ff; border: 1px solid #3366cc; border-radius: 2px;">
-					<span class="cdx-report-marker cdx-report-marker--success" style="margin-right: 8px;">✅</span>
+				<div class="cdx-message cdx-message--success">
+					<span class="cdx-report-marker cdx-report-marker--success">✅</span>
 					<?php echo _AC("congrats_no_known"); ?>
 				</div>
 			<?php elseif (isset($aValidator)): ?>
@@ -154,7 +154,7 @@ if (isset($aValidator) && $a_rpt->getAllowSetDecisions() == 'true')
 
 		<div id="AC_likely_problems" style="display:none; padding-top: 24px;">
 			<?php if (isset($aValidator) && $num_of_likely_problems_no_decision == 0): ?>
-				<div class="cdx-message cdx-message--success" style="padding: 16px; background: #eaf3ff; border: 1px solid #3366cc; border-radius: 2px;">
+				<div class="cdx-message cdx-message--success">
 					<?php echo $congrats_msg_for_likely; ?>
 				</div>
 			<?php elseif (isset($aValidator)): ?>
@@ -164,7 +164,7 @@ if (isset($aValidator) && $a_rpt->getAllowSetDecisions() == 'true')
 
 		<div id="AC_potential_problems" style="display:none; padding-top: 24px;">
 			<?php if (isset($aValidator) && $num_of_potential_problems_no_decision == 0): ?>
-				<div class="cdx-message cdx-message--success" style="padding: 16px; background: #eaf3ff; border: 1px solid #3366cc; border-radius: 2px;">
+				<div class="cdx-message cdx-message--success">
 					<?php echo $congrats_msg_for_potential; ?>
 				</div>
 			<?php elseif (isset($aValidator)): ?>
@@ -180,7 +180,7 @@ if (isset($aValidator) && $a_rpt->getAllowSetDecisions() == 'true')
 				<?php elseif ($num_of_html_errors > 0): ?>
 					<?php echo $htmlValidator->getValidationRpt(); ?>
 				<?php else: ?>
-					<div class="cdx-message cdx-message--success" style="padding: 16px; background: #eaf3ff; border: 1px solid #3366cc; border-radius: 2px;">
+					<div class="cdx-message cdx-message--success">
 						<?php echo _AC("congrats_html_validation"); ?>
 					</div>
 				<?php endif; ?>
@@ -199,7 +199,7 @@ if (isset($aValidator) && $a_rpt->getAllowSetDecisions() == 'true')
 				<?php elseif ($num_of_css_errors > 0): ?>
 					<?php echo $cssValidator->getValidationRpt(); ?>
 				<?php else: ?>
-					<div class="cdx-message cdx-message--success" style="padding: 16px; background: #eaf3ff; border: 1px solid #3366cc; border-radius: 2px;">
+					<div class="cdx-message cdx-message--success">
 						<?php echo _AC("congrats_css_validation"); ?>
 					</div>
 				<?php endif; ?>
@@ -218,8 +218,8 @@ if (isset($aValidator) && $a_rpt->getAllowSetDecisions() == 'true')
 	</section>
 
 	<?php if (isset($_POST['show_source']) && isset($aValidator)): ?>
-		<section class="cdx-card" style="margin-top: 24px; padding: 24px; border: 1px solid #a2a9b1; background: #fff;">
-			<h2 class="cdx-typography-h2" style="margin-top: 0;"><?php echo _AC('source');?></h2>
+		<section class="cdx-card">
+			<h2 class="cdx-typography-h2"><?php echo _AC('source');?></h2>
 			<p style="color: #72777d; margin-bottom: 16px;"><?php echo _AC('source_note');?></p>
 			<div style="background: #f8f9fa; padding: 16px; border: 1px solid #eaecf0; border-radius: 2px;">
 				<?php echo $a_rpt->getSourceRpt();?>
@@ -228,8 +228,8 @@ if (isset($aValidator) && $a_rpt->getAllowSetDecisions() == 'true')
 	<?php endif; ?>
 
 	<?php if (isset($seals) && is_array($seals)): ?>
-		<section class="cdx-card" style="margin-top: 24px; padding: 24px; border: 1px solid #a2a9b1; background: #fff;">
-			<h3 class="cdx-typography-h3" style="margin-top: 0;"><?php echo _AC('valid_icons');?></h3>
+		<section class="cdx-card">
+			<h3 class="cdx-typography-h3"><?php echo _AC('valid_icons');?></h3>
 			<p style="color: #72777d; margin-bottom: 16px;"><?php echo _AC('valid_icons_text');?></p>
 			<div style="display: flex; flex-wrap: wrap; gap: 24px;">
 				<?php foreach ($seals as $seal): ?>

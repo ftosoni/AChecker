@@ -108,33 +108,42 @@ class AccessibilityValidator {
 	 */
 	private function prepare_global_vars()
 	{
-		global $header_array, $base_href, $has_duplicate_attribute, $is_data_table, $is_radio_buttons_grouped, $label_array, $label_for_map;
+		global $header_array, $base_href, $has_duplicate_attribute, $is_data_table, $is_radio_buttons_grouped, $label_array, $label_for_map, $duplicate_id_map;
 
-		$header_array = $this->content_dom->find("h1, h2, h3, h4, h5, h6, h7");
-		$label_array = $this->content_dom->find("label");
+		$all_elements = $this->content_dom->find("*");
+		$header_array = array();
+		$label_array = array();
 		$label_for_map = array();
-		if (is_array($label_array)) {
-			foreach ($label_array as $label) {
-				if (isset($label->attr['for'])) {
-					$label_for_map[strtolower(trim($label->attr['for']))] = true;
+		$id_counts = array();
+		$duplicate_id_map = array();
+
+		foreach ($all_elements as $e) {
+			// Headers
+			if (strlen($e->tag) == 2 && $e->tag[0] == 'h' && is_numeric($e->tag[1])) {
+				$header_array[] = $e;
+			}
+			// Labels
+			if ($e->tag == 'label') {
+				$label_array[] = $e;
+				if (isset($e->attr['for'])) {
+					$label_for_map[strtolower(trim($e->attr['for']))] = true;
 				}
+			}
+			// Duplicate IDs
+			$id = strtolower(trim((string)($e->attr['id'] ?? '')));
+			if ($id !== "") {
+				if (isset($id_counts[$id])) {
+					$duplicate_id_map[$id] = true;
+				}
+				$id_counts[$id] = true;
 			}
 		}
+
 		$base_href = '';
-
 		// find base href, used to check image size
-		$all_base_elements = $this->content_dom->find("base");
-
-		if (is_array($all_base_elements))
-		{
-			foreach ($all_base_elements as $base)
-			{
-				if (isset($base->attr['href']))
-				{
-					$base_href = $base->attr['href'];
-					break;
-				}
-			}
+		$base_node = $this->content_dom->find("base", 0);
+		if ($base_node && isset($base_node->attr['href'])) {
+			$base_href = $base_node->attr['href'];
 		}
 
 		$has_duplicate_attribute = array();
@@ -151,7 +160,19 @@ class AccessibilityValidator {
 		if (is_array($rows))
 		{
 			foreach ($rows as $row) {
-				$this->check_func_array[$row['check_id']] = CheckFuncUtility::convertCode($row['func']);
+				$code = CheckFuncUtility::convertCode($row['func']);
+				// Pre-compile the check into a closure for performance
+				try {
+					$func = eval("return function(\$e, \$check_id) { $code \n};");
+					if (is_callable($func)) {
+						$this->check_func_array[$row['check_id']] = $func->bindTo($this, get_class($this));
+					} else {
+						$this->check_func_array[$row['check_id']] = $code; // Fallback to raw code
+					}
+				} catch (Throwable $t) {
+					error_log("AChecker Error compiling check " . $row['check_id'] . ": " . $t->getMessage());
+					$this->check_func_array[$row['check_id']] = $code; // Fallback
+				}
 				$this->checks_data[$row['check_id']] = $row; // Cache the whole row
 			}
 		}
@@ -179,6 +200,7 @@ class AccessibilityValidator {
 		}
 		
 		$dom = str_get_dom($content);
+		unset($content);
 		return $dom;
 	}
 	
@@ -368,15 +390,17 @@ class AccessibilityValidator {
 		// has not been checked
 		if (!$result)
 		{
-					try {
-						// error_log("AChecker Debug: Evaluating check $check_id on element " . $e->tag);
-						$check_result = eval($this->check_func_array[$check_id]);
-					} catch (Throwable $e_eval) {
-						// Log the error and the code that caused it
-						error_log("AChecker Error in check $check_id: " . $e_eval->getMessage() . " at " . $e_eval->getFile() . ":" . $e_eval->getLine());
-						error_log("AChecker Failing code for check $check_id:\n" . $this->check_func_array[$check_id]);
-						$check_result = null;
-					}
+			try {
+				$func = $this->check_func_array[$check_id];
+				if (is_callable($func)) {
+					$check_result = $func($e, $check_id);
+				} else {
+					$check_result = eval($func);
+				}
+			} catch (Throwable $e_eval) {
+				error_log("AChecker Error in check $check_id: " . $e_eval->getMessage());
+				$check_result = null;
+			}
 			
 			//CSS code variable
 			$css_code = BasicChecks::getCssOutput();
@@ -385,27 +409,20 @@ class AccessibilityValidator {
 			
 			if (is_null($check_result))
 			{ // when $check_result is not true/false, must be something wrong with the check function.
-			  // show warning message and skip this check
 				$msg->addError(array('CHECK_FUNC', $row['html_tag'].': '._AC($row['name'])));
-				
-				// skip this check
-				$check_result = true;
+				$check_result = true; // skip
 			}
 			
-			if ($check_result===true)  // success
-			{
-				$result = SUCCESS_RESULT;
-				
-				//MB 
-				// number of success checks
+			$result = ($check_result === true) ? SUCCESS_RESULT : FAIL_RESULT;
+
+			if ($result === SUCCESS_RESULT) {
 				if(isset($this->num_success[$check_id]))
 					$this->num_success[$check_id]++;
 				else 
 					$this->num_success[$check_id]=1;
-			} 
-			else
-			{
-				$result = FAIL_RESULT;
+				
+				// CRITICAL: Cache success results too!
+				$this->save_result($line_number, $col_number, '', $check_id, $result, '', '', $css_code);
 			}
 			
 			if ($result == FAIL_RESULT)
@@ -492,9 +509,12 @@ class AccessibilityValidator {
 			return true;
 		}
 
-		array_push($this->result, array("line_number"=>$line_number, "col_number"=>$col_number, "html_code"=>$html_code, "check_id"=>$check_id, "result"=>$result, "image"=>$image, "image_alt"=>$image_alt, "css_code"=>$css_code));
+		// Only save details for failures in the result array (for reports)
+		if ($result === FAIL_RESULT) {
+			array_push($this->result, array("line_number"=>$line_number, "col_number"=>$col_number, "html_code"=>$html_code, "check_id"=>$check_id, "result"=>$result, "image"=>$image, "image_alt"=>$image_alt, "css_code"=>$css_code));
+		}
 		
-		// Update lookup map
+		// ALWAYS update lookup map (including successes) to avoid re-validation
 		$this->result_map[$key] = $result;
 
 		return true;

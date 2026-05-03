@@ -34,22 +34,23 @@ class BasicFunctions {
 	*/
 	public static function associatedLabelHasText()
 	{
-		global $global_e, $global_content_dom;
-
+		global $global_e, $global_content_dom, $label_array;
 		// 1. The element $global_e has a "title" or "aria-label" attribute
 		if (!empty(is_array($global_e->attr) && isset($global_e->attr["title"]) ? $global_e->attr["title"] : '') || !empty(is_array($global_e->attr) && isset($global_e->attr["aria-label"]) ? $global_e->attr["aria-label"] : '')) return true;
 
 		// 2. The element $global_e is contained by a "label" element
 		$parent = $global_e->parent();
-		if ($parent && $parent->tag == "label")
-		{
-			// Find text before $global_e within the label
-			foreach ($parent->nodes as $node) {
-				if ($node === $global_e) break;
-				if ($node->nodetype == HDOM_TYPE_TEXT && strlen(trim($node->plaintext)) > 0) return true;
-				// Also check if previous elements have alt text or content
-				if ($node->nodetype == HDOM_TYPE_ELEMENT && strlen(trim($node->plaintext)) > 0) return true;
+		while ($parent) {
+			if ($parent->tag == "label") {
+				// Check if label contains any text besides tags
+				foreach ($parent->nodes as $node) {
+					if ($node === $global_e) continue;
+					if ($node->nodetype == HDOM_TYPE_TEXT && strlen(trim($node->plaintext)) > 0) return true;
+					if ($node->nodetype == HDOM_TYPE_ELEMENT && strlen(trim($node->plaintext)) > 0) return true;
+				}
+				break;
 			}
+			$parent = $parent->parent();
 		}
 
 		// 3. The element $global_e has an "id" attribute value that matches the "for" attribute value of a "label" element
@@ -57,22 +58,21 @@ class BasicFunctions {
 
 		if ($input_id == "") return false;  // attribute "id" must exist
 
-		foreach ($global_content_dom->find("label") as $e_label)
-		{
-			if ((is_array($e_label->attr) && isset($e_label->attr["for"]) ? (string)$e_label->attr["for"] : '') == $input_id)
+		if (is_array($label_array)) {
+			foreach ($label_array as $e_label)
 			{
-				// label contains text
-				if (trim($e_label->plaintext) <> "") return true;
+				if ((is_array($e_label->attr) && isset($e_label->attr["for"]) ? (string)$e_label->attr["for"] : '') == $input_id)
+				{
+					// label contains text
+					if (trim($e_label->plaintext) <> "") return true;
 
-				// label contains an image with alt text
-				foreach ($e_label->children as $e_label_child)
-					if ($e_label_child->tag == "img" && strlen(trim(is_array($e_label_child->attr) && isset($e_label_child->attr["alt"]) ? (string)$e_label_child->attr["alt"] : '')) > 0)
-						return true;
+					// label contains an image with alt text
+					foreach ($e_label->children as $e_label_child)
+						if ($e_label_child->tag == "img" && strlen(trim(is_array($e_label_child->attr) && isset($e_label_child->attr["alt"]) ? (string)$e_label_child->attr["alt"] : '')) > 0)
+							return true;
+				}
 			}
 		}
-
-		return false;
-	}
 
 	/**
 	* return the length of the trimed value of specified attribute
@@ -410,9 +410,15 @@ class BasicFunctions {
 	*/
 	public static function getNumOfTagInWholeContent($tag)
 	{
-		global $global_content_dom;
+		global $global_content_dom, $tag_count_cache;
+		
+		if (!isset($tag_count_cache)) $tag_count_cache = array();
+		
+		if (!isset($tag_count_cache[$tag])) {
+			$tag_count_cache[$tag] = count($global_content_dom->find($tag));
+		}
 
-		return count($global_content_dom->find($tag));
+		return $tag_count_cache[$tag];
 	}
 
 	/**
@@ -478,24 +484,25 @@ class BasicFunctions {
 	*/
 	public static function hasAssociatedLabel()
 	{
-		global $global_e, $global_content_dom;
+		global $global_e, $global_content_dom, $label_array, $label_for_map;
 
 		// 1. The element $global_e is contained by a "label" element
 		// 2. The element $global_e has a "title" attribute
 		// 3. The element $global_e has a "aria-label" attribute
 		$parent = $global_e->parent();
-		if (($parent && $parent->tag == "label") || (is_array($global_e->attr) && isset($global_e->attr["title"])) || (is_array($global_e->attr) && isset($global_e->attr["aria-label"]))) return true;
+		while ($parent) {
+			if ($parent->tag == "label") return true;
+			$parent = $parent->parent();
+		}
+		
+		if ((is_array($global_e->attr) && (isset($global_e->attr["title"]) || isset($global_e->attr["aria-label"])))) return true;
 
 		// 3. The element $global_e has an "id" attribute value that matches the "for" attribute value of a "label" element
-		$input_id = is_array($global_e->attr) && isset($global_e->attr["id"]) ? (string)$global_e->attr["id"] : '';
+		$input_id = strtolower(trim((string)($global_e->attr['id'] ?? '')));
 
-		if ($input_id == "") return false;  // attribute "id" must exist
+		if ($input_id !== "" && isset($label_for_map[$input_id])) return true;
 
-		foreach ($global_content_dom->find("label") as $global_e_label)
-		  if (strtolower(trim(is_array($global_e_label->attr) && isset($global_e_label->attr["for"]) ? (string)$global_e_label->attr["for"] : '')) == strtolower(trim(is_array($global_e->attr) && isset($global_e->attr["id"]) ? (string)$global_e->attr["id"] : '')))
-			return true;
-
-	  return false;
+	    return false;
 	}
 
 	/**
@@ -515,13 +522,23 @@ class BasicFunctions {
 	*/
 	public static function hasDuplicateAttribute($attr)
 	{
-		global $has_duplicate_attribute, $global_e;
+		global $has_duplicate_attribute, $global_e, $duplicate_id_map;
 
-		$has_duplicate_attribute = array();
-		$id_array = array();
+		if ($attr !== 'id') {
+			// Fallback for non-id attributes (rare)
+			$has_duplicate_attribute = array();
+			$id_array = array();
+			BasicChecks::hasDuplicateAttribute($global_e, $attr, $id_array);
+			return (is_array($has_duplicate_attribute) && count($has_duplicate_attribute) > 0);
+		}
 
-		BasicChecks::hasDuplicateAttribute($global_e, $attr, $id_array);
-		return (is_array($has_duplicate_attribute) && count($has_duplicate_attribute) > 0);
+		$id = strtolower(trim((string)($global_e->attr['id'] ?? '')));
+		if ($id !== "" && isset($duplicate_id_map[$id])) {
+			$has_duplicate_attribute = array($global_e->linenumber, $id);
+			return true;
+		}
+		
+		return false;
 	}
 
 	/**
