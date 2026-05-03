@@ -40,7 +40,8 @@ class Utility {
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); // follow redirects
 		curl_setopt($ch, CURLOPT_AUTOREFERER, 1); // set referer on redirect
 		curl_setopt($ch, CURLOPT_USERAGENT, 'MediaWiki Accessibility Checker (https://accessibility-checker.toolforge.org/; Contact: https://meta.wikimedia.org/wiki/User_talk:Super_nabla)');
-		curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_exec($ch);
 		$target = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
@@ -59,7 +60,8 @@ class Utility {
 		curl_setopt($ch, CURLOPT_USERAGENT, 'MediaWiki Accessibility Checker (https://accessibility-checker.toolforge.org/; Contact: https://meta.wikimedia.org/wiki/User_talk:Super_nabla)');
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_setopt($ch, CURLOPT_ENCODING, ""); // handle compressed responses
@@ -85,59 +87,26 @@ class Utility {
 	 */
 	public static function getValidURI($uri)
 	{
-
-		$url = Utility::getRedirectFinalTarget( $uri );
-		if ( !$url )
-		{
-			$url = trim( $uri );
-		}
-		$uri = $url;
-
-		$uri_prefixes = array('http://', 'https://', 'http://www.', 'https://www.');
-		$already_a_uri = false;
-		
 		$uri = trim($uri);
-		
-		// Check whether the URI prefixes are already in place
-		foreach($uri_prefixes as $prefix)
-		{
-			if (substr($uri, 0, strlen($prefix)) == $prefix)
-			{
-				$already_a_uri = true;
-				break;
-			}
-		}
-		if (!$already_a_uri)
-		{
-			// try adding uri prefixes in front of given uri
-			foreach($uri_prefixes as $prefix)
-			{
-				if (substr($uri, 0, strlen($prefix)) <> $prefix)
-				{
-					$prefixed_uri = $prefix.$uri;
-					$connection = Utility::getURLContents($prefixed_uri);
-					
-					if (!$connection)
-					{
-						continue;
-					}
-					else
-					{
-						return $prefixed_uri;
-					}
+		if (empty($uri)) return false;
+
+		// If it doesn't start with a protocol, try to find one
+		if (!preg_match('/^https?:\/\//i', $uri)) {
+			$uri_prefixes = array('https://', 'http://', 'https://www.', 'http://www.');
+			foreach($uri_prefixes as $prefix) {
+				$test_uri = $prefix . $uri;
+				// We don't fetch content here, just check if it's a valid format and follow redirects
+				$final_url = Utility::getRedirectFinalTarget($test_uri);
+				if ($final_url) {
+					return $final_url;
 				}
 			}
+			return false;
 		}
-		else
-		{
-			$connection = Utility::getURLContents($uri);
-			
-			if ($connection) return $uri;
-			else return $uri;
-		}
-		
-		// no matching valid uri
-		return false;
+
+		// It already has a protocol, just resolve redirects
+		$final_url = Utility::getRedirectFinalTarget($uri);
+		return $final_url ? $final_url : $uri;
 	}
 
 	/**

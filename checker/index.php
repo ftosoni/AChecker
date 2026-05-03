@@ -14,6 +14,8 @@
 define('AC_INCLUDE_PATH', '../include/');
 
 @ini_set('memory_limit', '1024M');
+@set_time_limit(0);
+@ini_set('max_execution_time', 300);
 
 include(AC_INCLUDE_PATH . 'vitals.inc.php');
 include_once(AC_INCLUDE_PATH . 'classes/Utility.class.php');

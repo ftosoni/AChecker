@@ -49,9 +49,8 @@ class AccessibilityValidator {
 	private $checks_data;           // cache for check definitions
 	var $check_for_tag_array = array();          // array of the to-be-checked check_ids 
 	var $prerequisite_check_array = array();     // array of prerequisite check_ids of the to-be-checked check_ids 
-	var $check_func_array = array();         // array of all the check functions 
-		
 	var $content_dom;                    // dom of $validate_content
+	private $merged_check_cache = array(); // cache for tag-specific + all-elements check arrays
 
 	var $line_offset;                    // 1. ignore the problems on the lines before the line of $line_offset
 	                                     // 2. report line_number = real_line_number - $line_offset
@@ -284,6 +283,17 @@ class AccessibilityValidator {
 			}
 			$this->prerequisite_check_array = $prerequisite_check_array;
 
+			// Pre-calculate merged check arrays for each tag we have checks for
+			$tags = array_keys($this->check_for_tag_array);
+			foreach ($tags as $tag) {
+				$this->merged_check_cache[$tag] = array_unique(array_merge(
+					$this->check_for_tag_array[$tag], 
+					$this->check_for_all_elements_array
+				));
+			}
+			// Default for tags with no specific checks
+			$this->merged_check_cache['__default__'] = array_unique($this->check_for_all_elements_array);
+
 			return true;
 		}
 	}
@@ -296,24 +306,19 @@ class AccessibilityValidator {
 	{
 		foreach($element_array as $e)
 		{
-			// generate array of checks for the html tag of this element
-			if (isset($this->check_for_tag_array[$e->tag]) && is_array($this->check_for_tag_array[$e->tag]))
-				$check_array[$e->tag] = array_unique(array_merge($this->check_for_tag_array[$e->tag], $this->check_for_all_elements_array));
-			else
-				$check_array[$e->tag] = array_unique($this->check_for_all_elements_array);
+			// Use pre-calculated merged check array
+			$tag_checks = isset($this->merged_check_cache[$e->tag]) ? $this->merged_check_cache[$e->tag] : $this->merged_check_cache['__default__'];
 				
-			foreach ($check_array[$e->tag] as $check_id)
+			foreach ($tag_checks as $check_id)
 			{
 				// check prerequisite ids first, if fails, report failure and don't need to proceed with $check_id
 				$prerequisite_failed = false;
 
-				if (isset($this->prerequisite_check_array[$check_id]) && is_array($this->prerequisite_check_array[$check_id]))
+				if (isset($this->prerequisite_check_array[$check_id]))
 				{
 					foreach ($this->prerequisite_check_array[$check_id] as $prerequisite_check_id)
 					{
-						$check_result = $this->check($e, $prerequisite_check_id);
-						
-						if ($check_result == FAIL_RESULT)
+						if ($this->check($e, $prerequisite_check_id) == FAIL_RESULT)
 						{
 							$prerequisite_failed = true;
 							break;
@@ -324,7 +329,7 @@ class AccessibilityValidator {
 				// if prerequisite check passes, proceed with current check_id
 				if (!$prerequisite_failed)
 				{
-					$check_result = $this->check($e, $check_id);
+					$this->check($e, $check_id);
 				}
 			}
 			
