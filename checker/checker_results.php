@@ -110,6 +110,7 @@ if (isset($aValidator))
 		$a_rpt = new HtmlRpt($errors, $user_link_id);
 		$_SESSION['input_form']['mode'] = 'line';
 	}
+	$a_rpt->setChecksData($aValidator->getChecksData());
 	$a_rpt->setAllowSetDecisions($allow_set_decision);
 	$a_rpt->setFromReferer($from_referer);
 	if (isset($_REQUEST['show_source'])) $a_rpt->setShowSource('true', $source_array);

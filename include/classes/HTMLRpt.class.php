@@ -164,10 +164,9 @@ class HTMLRpt extends AccessibilityRpt {
 			return false;
 		}
 		
-		// initialize each section
-		$this->rpt_errors = "<ul>\n";
-		$this->rpt_likely_problems = "<ul>\n";
-		$this->rpt_potential_problems = "<ul>\n";
+		$this->rpt_errors_list = array();
+		$this->rpt_likely_problems_list = array();
+		$this->rpt_potential_problems_list = array();
 		
 		// Pre-fetch all decisions for this user link to avoid N+1 queries
 		if ($this->user_link_id != '') {
@@ -185,19 +184,21 @@ class HTMLRpt extends AccessibilityRpt {
 		// generate section details
 		foreach ($this->errors as $error)
 		{
-			$row = $checksDAO->getCheckByID($error["check_id"]);
+			$check_id = $error["check_id"];
+			$row = isset($this->checks_data[$check_id]) ? $this->checks_data[$check_id] : $checksDAO->getCheckByID($check_id);
+			
 			if ($row["confidence"] == KNOWN )
 			{ // no decision to make on known problems
 				$this->num_of_errors++;
 				
-				$this->rpt_errors .= $this->generate_problem_section($error["check_id"], $error["line_number"], $error["col_number"], $error["html_code"], $error["image"], $error["image_alt"], $error["css_code"], _AC($row["err"]), _AC($row["how_to_repair"]), '', IS_ERROR);
+				$this->rpt_errors_list[] = $this->generate_problem_section($error["check_id"], $error["line_number"], $error["col_number"], $error["html_code"], $error["image"], $error["image_alt"], $error["css_code"], _AC($row["err"]), _AC($row["how_to_repair"]), '', IS_ERROR);
 			}
 			else if ($row["confidence"] == LIKELY )
 			{
 				$this->num_of_likely_problems++;
 				if ($this->allow_set_decision == 'false' && !($this->from_referer == 'true' && $this->user_link_id > 0))
 				{
-					$this->rpt_likely_problems .= $this->generate_problem_section($error["check_id"], $error["line_number"], $error["col_number"], $error["html_code"], $error["image"], $error["image_alt"], $error["css_code"],_AC($row["err"]), _AC($row["how_to_repair"]), '', IS_WARNING);
+					$this->rpt_likely_problems_list[] = $this->generate_problem_section($error["check_id"], $error["line_number"], $error["col_number"], $error["html_code"], $error["image"], $error["image_alt"], $error["css_code"],_AC($row["err"]), _AC($row["how_to_repair"]), '', IS_WARNING);
 					$this->num_of_likely_problems_fail++;
 				}
 				else
@@ -210,7 +211,7 @@ class HTMLRpt extends AccessibilityRpt {
 				$this->num_of_potential_problems++;
 				if ($this->allow_set_decision == 'false' && !($this->from_referer == 'true' && $this->user_link_id > 0))
 				{
-					$this->rpt_potential_problems .= $this->generate_problem_section($error["check_id"], $error["line_number"], $error["col_number"], $error["html_code"], $error["image"], $error["image_alt"],$error["css_code"], _AC($row["err"]), _AC($row["how_to_repair"]), '', IS_INFO);
+					$this->rpt_potential_problems_list[] = $this->generate_problem_section($error["check_id"], $error["line_number"], $error["col_number"], $error["html_code"], $error["image"], $error["image_alt"],$error["css_code"], _AC($row["err"]), _AC($row["how_to_repair"]), '', IS_INFO);
 					$this->num_of_potential_problems_fail++;
 				}
 				else
@@ -220,16 +221,17 @@ class HTMLRpt extends AccessibilityRpt {
 			}
 		}
 		
+		$this->rpt_errors = "<ul>\n" . implode("\n", $this->rpt_errors_list) . "</ul>";
+		
 		if ($this->allow_set_decision == 'true' || 
 		    ($this->allow_set_decision == 'false' && $this->from_referer == 'true' && $this->user_link_id > 0))
 		{
-			$this->rpt_likely_problems .= $this->rpt_likely_decision_not_made.$this->rpt_likely_decision_made;
-			$this->rpt_potential_problems .= $this->rpt_potential_decision_not_made.$this->rpt_potential_decision_made;
+			$this->rpt_likely_problems = "<ul>\n" . $this->rpt_likely_decision_not_made . $this->rpt_likely_decision_made . "</ul>";
+			$this->rpt_potential_problems = "<ul>\n" . $this->rpt_potential_decision_not_made . $this->rpt_potential_decision_made . "</ul>";
+		} else {
+			$this->rpt_likely_problems = "<ul>\n" . implode("\n", $this->rpt_likely_problems_list) . "</ul>";
+			$this->rpt_potential_problems = "<ul>\n" . implode("\n", $this->rpt_potential_problems_list) . "</ul>";
 		}
-		
-		$this->rpt_errors .= "</ul>";
-		$this->rpt_likely_problems .= "</ul>";
-		$this->rpt_potential_problems .= "</ul>";
 		
 		if ($this->show_source == 'true')
 		{

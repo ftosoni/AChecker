@@ -46,7 +46,7 @@ class AccessibilityValidator {
 	private $result_map = array();       // optimized lookup map for results
 	
 	var $check_for_all_elements_array = array(); // array of the to-be-checked check_ids 
-	private $checks_data;           // cache for check definitions
+	public $checks_data = array();           // cache for check definitions
 	var $check_for_tag_array = array();          // array of the to-be-checked check_ids 
 	var $prerequisite_check_array = array();     // array of prerequisite check_ids of the to-be-checked check_ids 
 	var $content_dom;                    // dom of $validate_content
@@ -61,6 +61,15 @@ class AccessibilityValidator {
 	public $check_func_array = array();
 	private $all_elements_cache = array();
 	
+	/**
+	* public
+	* return checks data cache
+	*/
+	public function getChecksData()
+	{
+		return $this->checks_data;
+	}
+
 	/**
 	 * public
 	 * $content: string, html content to check
