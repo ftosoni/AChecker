@@ -455,6 +455,11 @@ class simple_html_dom {
         'p'=>array('p'=>1),
     );
     protected $new_line = "\n";
+    
+    /* Incremental tracking for performance */
+    protected $last_pos = 0;
+    protected $last_line = 1;
+    protected $last_col = 1;
 
     // load html from string
     function load($str, $lowercase=true) {
@@ -543,6 +548,11 @@ class simple_html_dom {
         // set the length of content
         $this->size = strlen((string)$str);
         if ($this->size>0) $this->char = $this->html[0];
+        
+        /* Reset tracking */
+        $this->last_pos = 0;
+        $this->last_line = 1;
+        $this->last_col = 1;
     }
 
     // clean up memory due to php5 circular references memory leak...
@@ -745,27 +755,26 @@ class simple_html_dom {
         return $node;
     }
 
-    /* customized by UOT, ATRC, cindy Li */
-    // return the number of all new line characters in given $text
+    // incremental line number tracking for O(N) performance
     protected function count_line_number($text)
     {
-        return substr_count($text, $this->new_line)+1;
+        $new_pos = $this->pos;
+        if ($new_pos > $this->last_pos) {
+            $delta = substr($this->html, $this->last_pos, $new_pos - $this->last_pos);
+            $this->last_line += substr_count($delta, $this->new_line);
+            $this->last_pos = $new_pos;
+        }
+        return $this->last_line;
     }
 
     // return the position of the last characters in its line
     protected function count_col_number($text)
     {
         $last_new_line_pos = strrpos($text, $this->new_line);
-        if ($last_new_line_pos !== false)
-        	$last_line = substr($text, $last_new_line_pos);
-        else
-        	$last_line = $text;
-        
-        $col_num = strrpos($last_line, '<');
-        if ($col_num == 0)
-        	return 1;
-        else
-        	return $col_num;
+        if ($last_new_line_pos !== false) {
+            return $this->pos - $last_new_line_pos;
+        }
+        return $this->pos + 1;
     }
     
     /* end of customized by UOT, ATRC, cindy Li */

@@ -57,6 +57,8 @@ class AccessibilityValidator {
 	                                     
 	var $col_offset;                     // The number of characters that are added internally at the first line to deal with the 
 	                                     // partial html. Fully private, cannot be set or get from outside
+	public $is_mediawiki = false;
+	public $check_func_array = array();
 	
 	/**
 	 * public

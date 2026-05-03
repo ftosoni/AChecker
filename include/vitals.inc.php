@@ -75,7 +75,8 @@ if (!defined('AC_INSTALL') || !AC_INSTALL) {
 require_once(AC_INCLUDE_PATH.'constants.inc.php');
 
 /*** 2. initilize session ***/
-	@set_time_limit(0);
+	@ini_set('memory_limit', '512M');
+	@set_time_limit(300);
 	@ini_set('session.gc_maxlifetime', '36000'); /* 10 hours */
 	@session_cache_limiter('private, must-revalidate');
 
