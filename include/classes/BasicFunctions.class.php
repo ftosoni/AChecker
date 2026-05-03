@@ -73,6 +73,8 @@ class BasicFunctions {
 				}
 			}
 		}
+		return false;
+	}
 
 	/**
 	* return the length of the trimed value of specified attribute
@@ -184,6 +186,7 @@ class BasicFunctions {
 				return array(false, false);
 			}
 		}
+		return false;
 	}
 
 	/**
