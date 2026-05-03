@@ -138,10 +138,11 @@ class simple_html_dom_node {
             case HDOM_TYPE_UNKNOWN: return $this->dom->restore_noise($this->info[HDOM_INFO_TEXT]);
         }
 
-        $ret = '';
+        if (count($this->nodes)===0) return '';
+        $ret = array();
         foreach($this->nodes as $n)
-            $ret .= $n->outertext();
-        return $ret;
+            $ret[] = $n->outertext();
+        return implode('', $ret);
     }
 
     // get dom node's outer text (with tag)
@@ -150,20 +151,21 @@ class simple_html_dom_node {
         if (isset($this->info[HDOM_INFO_OUTER])) return $this->info[HDOM_INFO_OUTER];
 
         // render begin tag
-        $ret = $this->dom->nodes[$this->info[HDOM_INFO_BEGIN]]->makeup();
+        $ret = array();
+        $ret[] = $this->dom->nodes[$this->info[HDOM_INFO_BEGIN]]->makeup();
 
         // render inner text
         if (isset($this->info[HDOM_INFO_INNER]))
-            $ret .= $this->info[HDOM_INFO_INNER];
+            $ret[] = $this->info[HDOM_INFO_INNER];
         else {
             foreach($this->nodes as $n)
-                $ret .= $n->outertext();
+                $ret[] = $n->outertext();
         }
         // render end tag
         if($this->info[HDOM_INFO_END])
-            $ret .= $this->dom->nodes[$this->info[HDOM_INFO_END]]->makeup($this->tag);
+            $ret[] = $this->dom->nodes[$this->info[HDOM_INFO_END]]->makeup($this->tag);
 
-        return $ret;
+        return implode('', $ret);
     }
 
     // get dom node's plain text
@@ -176,12 +178,13 @@ class simple_html_dom_node {
         }
         if (strcasecmp($this->tag, 'script')==0) return '';
         if (strcasecmp($this->tag, 'style')==0) return '';
-        $ret = '';
 
+        if (count($this->nodes)===0) return '';
+        $ret = array();
         foreach($this->nodes as $n)
-            $ret .= $n->plaintext();
+            $ret[] = $n->plaintext();
 
-        return $ret;
+        return implode('', $ret);
     }
 
     // build node's text with tag
@@ -888,11 +891,12 @@ class simple_html_dom {
     // restore noise to html content
     function restore_noise($text) {
         if (empty($this->noise)) return $text;
-        if ($this->noise_keys === null) {
-            $this->noise_keys = array_keys($this->noise);
-            $this->noise_values = array_values($this->noise);
-        }
-        return str_replace($this->noise_keys, $this->noise_values, $text);
+        if (strpos($text, '___noise___') === false) return $text;
+        
+        return preg_replace_callback('/___noise___(\s*\d+)/', function($m) {
+            $key = '___noise___' . $m[1];
+            return isset($this->noise[$key]) ? $this->noise[$key] : $m[0];
+        }, $text);
     }
 
     function __toString() {

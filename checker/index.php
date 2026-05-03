@@ -13,12 +13,14 @@
 
 define('AC_INCLUDE_PATH', '../include/');
 
-include(AC_INCLUDE_PATH.'vitals.inc.php');
-include_once(AC_INCLUDE_PATH. 'classes/Utility.class.php');
-include_once(AC_INCLUDE_PATH. 'classes/DAO/GuidelinesDAO.class.php');
-include_once(AC_INCLUDE_PATH. 'classes/DAO/ChecksDAO.class.php');
-include_once(AC_INCLUDE_PATH. 'classes/DAO/UserLinksDAO.class.php');
-include_once(AC_INCLUDE_PATH. 'classes/Decision.class.php');
+@ini_set('memory_limit', '1024M');
+
+include(AC_INCLUDE_PATH . 'vitals.inc.php');
+include_once(AC_INCLUDE_PATH . 'classes/Utility.class.php');
+include_once(AC_INCLUDE_PATH . 'classes/DAO/GuidelinesDAO.class.php');
+include_once(AC_INCLUDE_PATH . 'classes/DAO/ChecksDAO.class.php');
+include_once(AC_INCLUDE_PATH . 'classes/DAO/UserLinksDAO.class.php');
+include_once(AC_INCLUDE_PATH . 'classes/Decision.class.php');
 
 error_log("AChecker Debug: Request URI: " . $_SERVER['REQUEST_URI']);
 error_log("AChecker Debug: POST: " . print_r($_POST, true));
@@ -35,51 +37,48 @@ unset($_SESSION['input_form']);
 $guidelinesDAO = new GuidelinesDAO();
 
 // process to make decision
-if (isset($_POST['make_decision']) || isset($_POST['reverse']))
-{
+if (isset($_POST['make_decision']) || isset($_POST['reverse'])) {
 	$decision = new Decision($_SESSION['user_id'], $_POST['uri'], $_POST['output'], $_POST['jsessionid']);
 
-	if ($decision->hasError())
-	{
+	if ($decision->hasError()) {
 		$decision_error = $decision->getErrorRpt();  // displays in checker_input_form.tmpl.php
-	}
-	else
-	{
+	} else {
 		// make decsions
-		if (isset($_POST['make_decision'])) $decision->makeDecisions($_POST['d']);
+		if (isset($_POST['make_decision']))
+			$decision->makeDecisions($_POST['d']);
 
 		// reverse decision
-		if (isset($_POST['reverse']))
-		{
+		if (isset($_POST['reverse'])) {
 			foreach ($_POST['reverse'] as $sequenceID => $garbage)
-				$decision->makeDecisions(array($sequenceID=>AC_NO_DECISION));
+				$decision->makeDecisions(array($sequenceID => AC_NO_DECISION));
 		}
 	}
 }
 // end of process to made decision
 // validate referer URIs that has passed validation and received seal. The click on the seal triggers
 // the if - else below.
-if (isset($_GET['uri']) && $_GET['uri'] == 'referer')
-{
+if (isset($_GET['uri']) && $_GET['uri'] == 'referer') {
 	// validate if the URI from referer matches the URI defined in user_links.user_link_id
-	if (isset($_GET['id']))
-	{
+	if (isset($_GET['id'])) {
 		$userLinksDAO = new UserLinksDAO();
 		$row = $userLinksDAO->getByUserLinkID($_GET['id']);
 
 		$pos_user_link_uri = strpos($row['URI'], '?');
-		if ($pos_user_link_uri > 0) $user_link_uri = substr($row['URI'], 0, $pos_user_link_uri);
-		else $user_link_uri = $row['URI'];
+		if ($pos_user_link_uri > 0)
+			$user_link_uri = substr($row['URI'], 0, $pos_user_link_uri);
+		else
+			$user_link_uri = $row['URI'];
 
 		$pos_referer_uri = strpos($_SERVER['HTTP_REFERER'], '?');
-		if ($pos_referer_uri > 0) $referer_uri = substr($_SERVER['HTTP_REFERER'], 0, $pos_referer_uri);
-		else $referer_uri = $_SERVER['HTTP_REFERER'];
+		if ($pos_referer_uri > 0)
+			$referer_uri = substr($_SERVER['HTTP_REFERER'], 0, $pos_referer_uri);
+		else
+			$referer_uri = $_SERVER['HTTP_REFERER'];
 
 		// guideline id must be given if the request is to check referer URI
-		 if (!isset($_GET['gid']))
+		if (!isset($_GET['gid']))
 			$msg->addError('EMPTY_GID');
-		else
-		{
+		else {
 			$grow = $guidelinesDAO->getGuidelineByAbbr($_GET['gid']);
 			if (!is_array($grow))
 				$msg->addError('INVALID_GID');
@@ -92,8 +91,7 @@ if (isset($_GET['uri']) && $_GET['uri'] == 'referer')
 			$msg->addError('USER_NOT_MATCH');
 	}
 
-	if (!$msg->containsErrors())
-	{
+	if (!$msg->containsErrors()) {
 		$_POST['validate_uri'] = 1;
 		$_POST['uri'] = $_SERVER['HTTP_REFERER'];
 		$_gids = array($grow[0]['guideline_id']);
@@ -107,13 +105,13 @@ $error_happen = false;
 
 // CSS Validation
 if (isset($_POST["enable_css_validation"])) {
-	include(AC_INCLUDE_PATH. "classes/CSSValidator.class.php");
+	include(AC_INCLUDE_PATH . "classes/CSSValidator.class.php");
 	$_SESSION['input_form']['enable_css_validation'] = true;
 }
 
 // validate html
 if (isset($_POST["enable_html_validation"])) {
-	include(AC_INCLUDE_PATH. "classes/HTMLValidator.class.php");
+	include(AC_INCLUDE_PATH . "classes/HTMLValidator.class.php");
 	$_SESSION['input_form']['enable_html_validation'] = true;
 }
 
@@ -129,27 +127,23 @@ if (!is_array($_gids)) { // $_gids hasn't been set at validating referer URIs
 	$_SESSION['input_form']['gids'] = $_gids;
 }
 
-if (isset($_POST["validate_uri"]))
-{
+if (isset($_POST["validate_uri"]) || isset($_POST["validate_mediawiki"])) {
 	$_POST['uri'] = htmlentities($_POST['uri']);
 
 	$uri = Utility::getValidURI(filter_var($_POST["uri"], FILTER_SANITIZE_URL));
 	$_SESSION['input_form']['uri'] = $uri;
 
 	// Check if the given URI is connectable
-	if ($uri === false)
-	{
+	if ($uri === false) {
 		$msg->addError(array('CANNOT_CONNECT', $_POST['uri']));
 	}
 
 	// don't accept localhost URI
-	if (stripos($uri, '://localhost') > 0)
-	{
+	if (stripos($uri, '://localhost') > 0) {
 		$msg->addError('NOT_LOCALHOST');
 	}
 
-	if (!$msg->containsErrors())
-	{
+	if (!$msg->containsErrors()) {
 		$_POST['uri'] = $_REQUEST['uri'] = $uri;
 		$validate_content = Utility::getURLContents($uri);
 
@@ -160,13 +154,14 @@ if (isset($_POST["validate_uri"]))
 		if (isset($_POST["enable_css_validation"]))
 			$cssValidator = new CSSValidator("uri", $uri);
 
-		if (isset($_POST["show_source"]))
-			$source_array = file($uri);
+		if (isset($_POST["show_source"])) {
+			$source_content = Utility::getURLContents($uri);
+			$source_array = explode("\n", $source_content);
+		}
 	}
 }
 
-if (isset($_POST["validate_file"]))
-{
+if (isset($_POST["validate_file"])) {
 	$allowed_file_extensions = ["html", "htm"];
 
 	if (!Utility::is_extension_in_list($_FILES['uploadfile']['name'], $allowed_file_extensions)) {
@@ -185,8 +180,7 @@ if (isset($_POST["validate_file"]))
 	}
 }
 
-if (isset($_POST["validate_paste"]))
-{
+if (isset($_POST["validate_paste"])) {
 	$validate_content = $_POST["pastehtml"] = stripslashes($_POST["pastehtml"]);
 	$_SESSION['input_form']['paste'] = $validate_content;
 
@@ -197,8 +191,7 @@ if (isset($_POST["validate_paste"]))
 		$source_array = preg_split("/(?:\r\n?|\n)/", $validate_content);
 }
 
-if (isset($_POST["validate_content"]) && $_POST["validate_content"] <> '')
-{
+if (isset($_POST["validate_content"]) && $_POST["validate_content"] <> '') {
 	$validate_content = $_POST["validate_content"];
 	if (isset($_POST["show_source"]))
 		$source_array = explode("\n", $_POST["validate_content"]);
@@ -206,28 +199,25 @@ if (isset($_POST["validate_content"]) && $_POST["validate_content"] <> '')
 // end of validating html
 
 $has_enough_memory = true;
-if (isset($validate_content) && !Utility::hasEnoughMemory(strlen($validate_content)))
-{
+if (isset($validate_content) && !Utility::hasEnoughMemory(strlen($validate_content))) {
 	$msg->addError('NO_ENOUGH_MEMORY');
 	$has_enough_memory = false;
 }
 
 // validation and display result
-if (isset($_POST["validate_uri"]) || isset($_POST["validate_file"]) || isset($_POST["validate_content"]) || isset($_POST["validate_paste"]))
-{
+if (isset($_POST["validate_uri"]) || isset($_POST["validate_file"]) || isset($_POST["validate_content"]) || isset($_POST["validate_paste"]) || isset($_POST["validate_mediawiki"])) {
 	// check accessibility
-	include(AC_INCLUDE_PATH. "classes/AccessibilityValidator.class.php");
+	include(AC_INCLUDE_PATH . "classes/AccessibilityValidator.class.php");
 
-	if (isset($_POST["validate_uri"])) $check_uri = $_POST['uri'];
+	if (isset($_POST["validate_uri"]) || isset($_POST["validate_mediawiki"]))
+		$check_uri = $_POST['uri'];
 
-	if (isset($validate_content) && $has_enough_memory)
-	{
+	if (isset($validate_content) && $has_enough_memory) {
 		error_log("AChecker Debug: Initializing AccessibilityValidator");
 		$aValidator = new AccessibilityValidator($validate_content, $_gids, $check_uri);
 		$aValidator->validate();
 		error_log("AChecker Debug: Validation complete. Errors: " . $aValidator->getNumOfValidateError());
-	}
-	else {
+	} else {
 		error_log("AChecker Debug: Validation skipped. Content set: " . (isset($validate_content) ? 'yes' : 'no') . ", Memory: " . ($has_enough_memory ? 'ok' : 'low'));
 	}
 	// end of checking accessibility
@@ -240,19 +230,18 @@ if ($msg->containsErrors()) {
 }
 
 // display initial validation form: input URI or upload a html file
-include ("checker_input_form.php");
+include("checker_input_form.php");
 
 // display validation results
 error_log("AChecker Debug: Checking results inclusion. has_errors: " . ($has_errors ? 'yes' : 'no') . ", aValidator: " . (isset($aValidator) ? 'set' : 'not set') . ", htmlValidator: " . (isset($htmlValidator) ? 'set' : 'not set'));
-if (!$has_errors && (isset($aValidator) || isset($htmlValidator)))
-{
+if (!$has_errors && (isset($aValidator) || isset($htmlValidator))) {
 	error_log("AChecker Debug: Including checker_results.php");
-	include ("checker_results.php");
+	include("checker_results.php");
 }
 
 
 // display footer
 error_log("AChecker Debug: Script reaching end of index.php");
-include(AC_INCLUDE_PATH.'footer.inc.php');
+include(AC_INCLUDE_PATH . 'footer.inc.php');
 error_log("AChecker Debug: Script finished");
 ?>

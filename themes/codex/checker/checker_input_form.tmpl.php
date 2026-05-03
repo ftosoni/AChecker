@@ -17,8 +17,12 @@ if (isset($_POST["validate_file"])) {
 	$init_tab = "AC_by_upload";
 } else if (isset($_POST["validate_paste"])) {
 	$init_tab = "AC_by_paste";
+} else if (isset($_POST["validate_uri"])) {
+    $init_tab = "AC_by_uri";
+} else if (isset($_POST["validate_mediawiki"])) {
+    $init_tab = "AC_by_mediawiki";
 } else {
-	$init_tab = "AC_by_uri";
+	$init_tab = "AC_by_mediawiki";
 }
 
 if ($_POST["rpt_format"] == REPORT_FORMAT_GUIDELINE) {
@@ -38,7 +42,8 @@ ob_end_clean();
 
 $_custom_head .= '	//-->' . "\n" .
 	'	</script>' . "\n" .
-	'	<script src="' . AC_BASE_HREF . 'checker/js/checker.js?v=1.3" type="text/javascript"></script>' . "\n";
+	'	<script src="' . AC_BASE_HREF . 'checker/js/mediawiki_projects.js" type="text/javascript"></script>' . "\n" .
+	'	<script src="' . AC_BASE_HREF . 'checker/js/checker.js?v=1.4" type="text/javascript"></script>' . "\n";
 
 include(AC_INCLUDE_PATH . 'header.inc.php');
 
@@ -112,8 +117,14 @@ function get_guideline_div($guideline_rows, $num_of_guidelines_per_row, $format 
 
 
 			<div class="cdx-tabs" style="margin-top: 24px;">
+				<a href="javascript:void(0)" id="AC_menu_by_mediawiki"
+					class="cdx-tabs__item <?php if ($init_tab == 'AC_by_mediawiki')
+						echo 'cdx-tabs__item--active'; ?>"
+					onclick="return AChecker.input.onClickTab('AC_by_mediawiki');">
+					MediaWiki Page
+				</a>
 				<a href="javascript:void(0)" id="AC_menu_by_uri"
-					class="cdx-tabs__item <?php if (!isset($_POST["validate_paste"]) && !isset($_POST["validate_file"]))
+					class="cdx-tabs__item <?php if ($init_tab == 'AC_by_uri')
 						echo 'cdx-tabs__item--active'; ?>"
 					onclick="return AChecker.input.onClickTab('AC_by_uri');">
 					<?php echo _AC("check_by_uri"); ?>
@@ -152,6 +163,46 @@ function get_guideline_div($guideline_rows, $num_of_guidelines_per_row, $format 
 						<?php echo _AC("check_it"); ?>
 					</button>
 					<span id="AC_spinner_by_uri" class="cdx-spinner" role="alert" aria-live="assertive"
+						style="display:none; margin-left: 12px;">
+						<span class="cdx-spinner__dot"></span><span class="cdx-spinner__dot"></span><span
+							class="cdx-spinner__dot"></span>
+					</span>
+				</div>
+			</div>
+
+			<div id="AC_by_mediawiki" class="input_tab"
+				style="<?php if ($init_tab == "AC_by_mediawiki")
+					echo "display:block";
+				else
+					echo "display:none"; ?>; padding: 24px 0;">
+				<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                    <div class="cdx-field">
+                        <label class="cdx-label" for="mw_project_input">MediaWiki Project:</label>
+                        <div class="cdx-lookup" id="mw_project_lookup">
+                            <input type="text" id="mw_project_input" class="cdx-text-input" 
+                                autocomplete="off" 
+                                placeholder="Search for a project (e.g. Wikipedia, Wikidata...)" 
+                                value="<?php echo htmlspecialchars($_POST['mw_project_name'] ?? ''); ?>" />
+                            <input type="hidden" name="mw_project" id="mw_project" 
+                                value="<?php echo htmlspecialchars($_POST['mw_project'] ?? ''); ?>" />
+                            <input type="hidden" name="mw_project_name" id="mw_project_name" 
+                                value="<?php echo htmlspecialchars($_POST['mw_project_name'] ?? ''); ?>" />
+                            <div class="cdx-lookup__menu" id="mw_project_menu"></div>
+                        </div>
+                    </div>
+                    <div class="cdx-field">
+                        <label class="cdx-label" for="mw_title">Page Title:</label>
+                        <input type="text" class="cdx-text-input" name="mw_title" id="mw_title"
+                            value="<?php echo htmlspecialchars($_POST['mw_title'] ?? ''); ?>"
+                            placeholder="e.g. Main Page" />
+                    </div>
+                </div>
+				<div style="display: flex; align-items: center; gap: 16px;">
+					<button class="cdx-button cdx-button--action-progressive cdx-button--weight-primary" type="submit"
+						name="validate_mediawiki" id="validate_mediawiki" value="1" onclick="return AChecker.input.validateMediaWiki();">
+						<?php echo _AC("check_it"); ?>
+					</button>
+					<span id="AC_spinner_by_mediawiki" class="cdx-spinner" role="alert" aria-live="assertive"
 						style="display:none; margin-left: 12px;">
 						<span class="cdx-spinner__dot"></span><span class="cdx-spinner__dot"></span><span
 							class="cdx-spinner__dot"></span>
@@ -265,3 +316,105 @@ function get_guideline_div($guideline_rows, $num_of_guidelines_per_row, $format 
 		</section>
 	</form>
 </div>
+
+<script type="text/javascript">
+(function($) {
+    $(document).ready(function() {
+        console.log("AChecker: Initializing MediaWiki Lookup (Legacy Mode)...");
+        var $input = $('#mw_project_input');
+        var $hiddenUrl = $('#mw_project');
+        var $hiddenName = $('#mw_project_name');
+        var $menu = $('#mw_project_menu');
+        
+        console.log("AChecker: $input length: " + $input.length);
+        if ($input.length > 0) {
+            var rawInput = $input[0];
+            console.log("AChecker: $input state: disabled=" + rawInput.disabled + ", readonly=" + rawInput.readOnly);
+        }
+        console.log("AChecker: $menu length: " + $menu.length);
+        
+        if (typeof AChecker_MW_Projects === 'undefined') {
+            console.error("AChecker: AChecker_MW_Projects is undefined!");
+            return;
+        }
+        
+        var projects = AChecker_MW_Projects;
+        console.log("AChecker: Loaded " + projects.length + " projects.");
+
+        function renderMenu(filter) {
+            console.log("AChecker: renderMenu called with filter: '" + filter + "'");
+            if (!$menu.length) {
+                console.error("AChecker: $menu element not found during render!");
+                return;
+            }
+            $menu.empty();
+            var search = (filter || '').toLowerCase();
+            var filtered = [];
+            
+            for (var i = 0; i < projects.length; i++) {
+                var p = projects[i];
+                var match = p.name.toLowerCase().indexOf(search) !== -1 || 
+                            (p.code && p.code.toLowerCase().indexOf(search) !== -1);
+                
+                if (!match && p.aliases) {
+                    for (var j = 0; j < p.aliases.length; j++) {
+                        if (p.aliases[j].toLowerCase().indexOf(search) !== -1) {
+                            match = true;
+                            break;
+                        }
+                    }
+                }
+                if (match) filtered.push(p);
+            }
+
+            console.log("AChecker: Found " + filtered.length + " matches for '" + search + "'");
+
+            if (filtered.length === 0) {
+                $menu.hide();
+                return;
+            }
+
+            // Sort results: matches starting with search string come first
+            filtered.sort(function(a, b) {
+                var aStarts = a.name.toLowerCase().indexOf(search) === 0 || (a.code && a.code.toLowerCase().indexOf(search) === 0);
+                var bStarts = b.name.toLowerCase().indexOf(search) === 0 || (b.code && b.code.toLowerCase().indexOf(search) === 0);
+                if (aStarts && !bStarts) return -1;
+                if (!aStarts && bStarts) return 1;
+                return 0;
+            });
+
+            filtered = filtered.slice(0, 50);
+
+            $.each(filtered, function(i, p) {
+                var $item = $('<div class="cdx-lookup__item">')
+                    .append($('<span class="cdx-lookup__item-title">').text(p.name))
+                    .append($('<span class="cdx-lookup__item-description">').text(p.url))
+                    .bind('mousedown', function(e) {
+                        console.log("AChecker: Selected project: " + p.name);
+                        $input.val(p.name);
+                        $hiddenUrl.val(p.url);
+                        $hiddenName.val(p.name);
+                        $menu.hide();
+                        e.preventDefault();
+                    });
+                $menu.append($item);
+            });
+            $menu.show();
+        }
+
+        // Use bind/delegate for jQuery 1.4.4
+        $input.bind('input keyup focus paste', function() {
+            console.log("AChecker: Event triggered on #mw_project_input");
+            renderMenu($(this).val());
+        });
+
+        $input.bind('blur', function() {
+            setTimeout(function() { $menu.hide(); }, 200);
+        });
+
+        $(document).bind('keydown', function(e) {
+            if (e.keyCode === 27) $menu.hide(); // 27 is Escape
+        });
+    });
+})(jQuery);
+</script>

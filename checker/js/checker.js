@@ -32,6 +32,10 @@ AChecker.output = AChecker.output || {};
         "AC_by_paste": {
             menuID: "AC_menu_by_paste",
             spinnerID: "AC_spinner_by_paste"
+        },
+        "AC_by_mediawiki": {
+            menuID: "AC_menu_by_mediawiki",
+            spinnerID: "AC_spinner_by_mediawiki"
         }
     };
 
@@ -127,8 +131,17 @@ AChecker.output = AChecker.output || {};
 
             // hide button "make decision" as tab "errors" are selected
             $("#" + AChecker.output.makeDecisionButtonId).hide();
-        } else { // no output yet, set focus on "check by uri" input box
-            document.getElementById("checkuri").focus();
+        } else { // no output yet, set focus on default input box
+            if (tab === "AC_by_mediawiki") {
+                var projectInput = document.getElementById("mw_project_input");
+                if (projectInput && projectInput.value === '') {
+                    projectInput.focus();
+                } else {
+                    document.getElementById("mw_title").focus();
+                }
+            } else if (tab === "AC_by_uri") {
+                document.getElementById("checkuri").focus();
+            }
         }
         
         // link click event on radio buttons on "options" => "report format"
@@ -190,16 +203,26 @@ AChecker.output = AChecker.output || {};
     };
 
     /**
-     * Validates if a html file (paste) is provided
+     * Validates if a mediawiki project and title are provided
      */
-    AChecker.input.validatePaste = function () {
-        // check file type
-        var paste_html = document.getElementById("checkpaste").value;
-        if (!paste_html || paste_html.trim() === '') {
-            alert(AChecker.lang.provide_html_input);
+    AChecker.input.validateMediaWiki = function () {
+        var project = document.getElementById("mw_project").value;
+        var title = document.getElementById("mw_title").value;
+        
+        if (!project || project === '') {
+            alert("Please select a MediaWiki project");
             return false;
         }
-        disableClickablesAndShowSpinner(inputDivMapping.AC_by_paste.spinnerID);
+        if (!title || title.trim() === '') {
+            alert("Please provide a page title");
+            return false;
+        }
+        
+        // Construct the URI
+        var fullUri = project + encodeURIComponent(title.replace(/ /g, '_'));
+        document.getElementById("checkuri").value = fullUri;
+        
+        disableClickablesAndShowSpinner(inputDivMapping.AC_by_mediawiki.spinnerID);
     };
     
     /**
