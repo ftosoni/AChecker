@@ -166,8 +166,8 @@ AChecker.output = AChecker.output || {};
             AChecker.showDivOutof(divId, inputDivMapping);
             
             // Fix Codex tab highlighting
-            $('.cdx-tabs__header-item').removeClass('cdx-tabs__header-item--active');
-            $('#' + inputDivMapping[divId].menuID).addClass('cdx-tabs__header-item--active');
+            $('.cdx-tabs__item').removeClass('cdx-tabs__item--active');
+            $('#' + inputDivMapping[divId].menuID).addClass('cdx-tabs__item--active');
         }
         return false;
     };
@@ -540,6 +540,38 @@ AChecker.output = AChecker.output || {};
             // clicking on "make decision" button
             $('input[id^="AC_btn_make_decision"]').click(function () {
                 makeDecision(this);
+            });
+
+            // Handle Enter key on all form inputs
+            $('form[name="input_form"] input').keypress(function (e) {
+                if (e.which == 13) { // Enter key
+                    e.preventDefault();
+                    
+                    // Identify which tab is currently visible
+                    var activeTab = $('.input_tab:visible').attr('id');
+                    
+                    if (activeTab === "AC_by_uri") {
+                        if (AChecker.input.validateURI() !== false) {
+                            $('<input>').attr({type: 'hidden', name: 'validate_uri', value: '1'}).appendTo('form[name="input_form"]');
+                            $('form[name="input_form"]').submit();
+                        }
+                    } else if (activeTab === "AC_by_mediawiki") {
+                        if (AChecker.input.validateMediaWiki() !== false) {
+                            $('<input>').attr({type: 'hidden', name: 'validate_mediawiki', value: '1'}).appendTo('form[name="input_form"]');
+                            $('form[name="input_form"]').submit();
+                        }
+                    } else if (activeTab === "AC_by_upload") {
+                        if (AChecker.input.validateUpload() !== false) {
+                            $('<input>').attr({type: 'hidden', name: 'validate_file', value: '1'}).appendTo('form[name="input_form"]');
+                            $('form[name="input_form"]').submit();
+                        }
+                    } else if (activeTab === "AC_by_paste") {
+                        if (AChecker.input.validatePaste() !== false) {
+                            $('<input>').attr({type: 'hidden', name: 'validate_paste', value: '1'}).appendTo('form[name="input_form"]');
+                            $('form[name="input_form"]').submit();
+                        }
+                    }
+                }
             });
         
         }
