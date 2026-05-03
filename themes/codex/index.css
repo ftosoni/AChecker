@@ -11,6 +11,8 @@ pre {
     word-break: break-word !important;
     overflow-wrap: anywhere !important;
     white-space: pre-wrap !important; /* Ensure code and pre wrap as well */
+    max-width: 100% !important;
+    overflow-x: auto !important;
 }
 
 :root {
@@ -594,6 +596,7 @@ pre code.input {
     white-space: pre !important;
     overflow-x: auto !important;
     word-break: normal !important;
+    max-width: 100% !important;
 }
 
 /* Line numbers color */
