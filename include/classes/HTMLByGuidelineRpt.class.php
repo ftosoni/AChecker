@@ -309,9 +309,9 @@ class HTMLByGuidelineRpt extends AccessibilityRpt {
 	{
 		if (!is_array($checks_array)) return NULL;
 
-		$known_problems_list = array();
-		$likely_problems_list = array();
-		$potential_problems_list = array();
+		$known_problems = "";
+		$likely_problems = "";
+		$potential_problems = "";
 
 		foreach ($checks_array as $check) {
 			$html_repair = "";
@@ -322,11 +322,11 @@ class HTMLByGuidelineRpt extends AccessibilityRpt {
 
 			// continue with the next check if there is no errors for this check
 			if (!array_key_exists($check_id, $this->errors_by_checks) ||
-			    (array_key_exists($check_id, $this->errors_by_checks) && !is_array($this->errors_by_checks[$check_id]))) {
+			    array_key_exists($check_id, $this->errors_by_checks) && !is_array($this->errors_by_checks[$check_id])) {
 			    	continue;
 			}
 
-			$row = isset($this->checks_data[$check_id]) ? $this->checks_data[$check_id] : $this->checksDAO->getCheckByID($check_id);
+			$row = $this->checksDAO->getCheckByID($check_id);
 
 			$repair = _AC($row['how_to_repair']);
 			if ($repair <> '') {
@@ -372,14 +372,14 @@ class HTMLByGuidelineRpt extends AccessibilityRpt {
 			                                $this->html_checks_table);
 
 			if ($row["confidence"] == KNOWN) {
-				$known_problems_list[] = $html_one_problem;
+				$known_problems .= $html_one_problem;
 			} else if ($row["confidence"] == LIKELY) {
-				$likely_problems_list[] = $html_one_problem;
+				$likely_problems .= $html_one_problem;
 			} else if ($row["confidence"] == POTENTIAL) {
-				$potential_problems_list[] = $html_one_problem;
+				$potential_problems .= $html_one_problem;
 			}
 		}
-		return array(implode("\n", $known_problems_list), implode("\n", $likely_problems_list), implode("\n", $potential_problems_list));
+		return array($known_problems, $likely_problems, $potential_problems);
 	}
 
 	/**
@@ -398,12 +398,12 @@ class HTMLByGuidelineRpt extends AccessibilityRpt {
 		}
 
 		$th_row = "";
-		$tr_rows_list = array();
+		$tr_rows = "";
 
 		// generate decision section
 		if ($this->allow_set_decision == 'true' && $confidence <> KNOWN) {
-			$th_row = str_replace(array("{PASS_TEXT}", "{SELECT_ALL_TEXT}", "{CHECK_ID}"),
-			                       array(_AC("pass_header"), _AC("select_all"), $check_id),
+			$th_row = str_replace(array("{PASS_TEXT}", "{SELECT_ALL_TEXT}", "{CHECK_ID}", "{SELECT_ALL_TEXT}"),
+			                       array(_AC("pass_header"), _AC("select_all"), $check_id, _AC("select_all")),
 			                       $this->html_tr_header);
 		}
 
@@ -411,16 +411,23 @@ class HTMLByGuidelineRpt extends AccessibilityRpt {
 			$html_image = "";
 			$msg_type = "";
 			$img_type = "";
+			$img_src = "";
 
 			if ($confidence == KNOWN) {
+				$this->num_of_errors++;
+
 				$img_type = _AC('error');
 				$marker_type = "error";
 				$emoji = "❌";
 			} else if ($confidence == LIKELY) {
+				$this->num_of_likely_problems++;
+
 				$img_type = _AC('warning');
 				$marker_type = "warning";
 				$emoji = "⚠️";
 			} else if ($confidence == POTENTIAL) {
+				$this->num_of_potential_problems++;
+
 				$img_type = _AC('manual_check');
 				$marker_type = "info";
 				$emoji = "ℹ️";
@@ -432,60 +439,105 @@ class HTMLByGuidelineRpt extends AccessibilityRpt {
 				$line_number_to_source = $error["line_number"];
 			}
 
-			// decision logic
-			$key = "{$error['line_number']}_{$error['col_number']}_{$check_id}";
-			$decision_row = isset($this->decisions_cache[$key]) ? $this->decisions_cache[$key] : false;
+			// only display first 100 chars of $html_code
+			if (strlen($error["html_code"]) > 100)
+			$html_code = substr($error["html_code"], 0, 100) . " ...";
 
-			if (!$decision_row || $decision_row['decision'] == AC_DECISION_FAIL) {
-				if ($confidence == LIKELY) $this->num_of_likely_problems_fail++;
-				if ($confidence == POTENTIAL) $this->num_of_potential_problems_fail++;
+			if ($error["image"] <> '')
+			{
+				$height = DISPLAY_PREVIEW_IMAGE_HEIGHT;
+
+				if ($error["image_alt"] == '_NOT_DEFINED') $alt = '';
+				else if ($error["image_alt"] == '_EMPTY') $alt = 'alt=""';
+				else $alt = 'alt="'.$error["image_alt"].'"';
+
+				$html_image = str_replace(array("{SRC}", "{HEIGHT}", "{ALT}"),
+				                          array($error["image"], $height, $alt),
+				                          $this->html_image);
 			}
 
-			if ($decision_row && $decision_row['decision'] == AC_DECISION_PASS) {
+			$key = "{$error['line_number']}_{$error['col_number']}_{$error['check_id']}";
+			$row = isset($this->decisions_cache[$key]) ? $this->decisions_cache[$key] : false;
+
+			if (!$row || $row['decision'] == AC_DECISION_FAIL) { // no decision or decision of fail
+				if ($confidence == LIKELY) {
+					$this->num_of_likely_problems_fail++;
+				}
+				if ($confidence == POTENTIAL) {
+					$this->num_of_potential_problems_fail++;
+				}
+			}
+
+			if ($row && $row['decision'] == AC_DECISION_PASS) { // pass decision has been made, display "congrats" icon
 				$msg_type = "msg_info";
 				$img_type = _AC('passed_decision');
 				$marker_type = "success";
 				$emoji = "✅";
 			}
 
-			// handle image
-			if ($error["image"] <> '') {
-				$height = DISPLAY_PREVIEW_IMAGE_HEIGHT;
-				$alt = ($error["image_alt"] == '_NOT_DEFINED') ? '' : (($error["image_alt"] == '_EMPTY') ? 'alt=""' : 'alt="'.$error["image_alt"].'"');
-				$html_image = str_replace(array("{SRC}", "{HEIGHT}", "{ALT}"), array($error["image"], $height, $alt), $this->html_image);
-			}
-
-			// limit html code
-			$html_code = $error["html_code"];
-			if (strlen($html_code) > 100) $html_code = substr($html_code, 0, 100) . " ...";
-
 			// generate individual problem string
-			$problem_cell = str_replace(array("{MARKER_TYPE}", "{EMOJI}", "{IMG_TYPE}", "{LINE_TEXT}", "{LINE_NUMBER}", "{LINE_NUMBER_TO_SOURCE}", "{COL_TEXT}", "{COL_NUMBER}", "{CHECK_ID}", "{HTML_CODE}", "{CSS_CODE}", "{BASE_HREF}", "{IMAGE}"),
-			                           array($marker_type, $emoji, $img_type, _AC('line'), $error['line_number'], $line_number_to_source, _AC('column'), $error["col_number"], $check_id, htmlentities($html_code, ENT_COMPAT, 'UTF-8'), $error['css_code'], AC_BASE_HREF, $html_image),
-			                           $this->html_problem);
-
-			$row_selected = "";
-			$checkbox_cell = "";
+			$problem_cell = str_replace(array("{MARKER_TYPE}",
+		                         "{EMOJI}",
+		                         "{IMG_TYPE}",
+		                         "{LINE_TEXT}",
+		                         "{LINE_NUMBER}",
+			                     "{LINE_NUMBER_TO_SOURCE}",
+		                         "{COL_TEXT}",
+		                         "{COL_NUMBER}",
+			                     "{CHECK_ID}",
+		                         "{HTML_CODE}",
+		                         "{CSS_CODE}",
+		                         "{BASE_HREF}",
+		                         "{IMAGE}"),
+		                   array($marker_type,
+		                         $emoji,
+		                         $img_type,
+		                         _AC('line'),
+		                         $error['line_number'],
+		                         $line_number_to_source,
+		                         _AC('column'),
+		                         $error["col_number"],
+		                         $check_id,
+		                         htmlentities($error["html_code"], ENT_COMPAT, 'UTF-8'),
+		                         $error['css_code'],
+		                         AC_BASE_HREF,
+		                         $html_image),
+		                   $this->html_problem);
+		    // compose all <tr> rows
+		    // checkboxes only appear
+		    // 1. when user is login. In other words, user can make decision.
+		    // 2. likely or potential reports, not error report
 			if ($this->allow_set_decision == "true" && $confidence <> KNOWN) {
 				$checkbox_name = "d[".$error["line_number"]."_".$error["col_number"]."_".$error["check_id"]."]";
 				$checkbox_html = '<input type="checkbox" class="AC_childCheckBox" id="'.$checkbox_name.'" name="'.$checkbox_name.'" value="1" ';
-				if ($decision_row && $decision_row['decision'] == AC_DECISION_PASS){
+
+				$row_selected = "";
+				if ($row && $row['decision'] == AC_DECISION_PASS){
 					$checkbox_html .= 'checked="checked" ';
 					$row_selected = ' class="selected"';
 				}
+
 				$checkbox_html .= '/>';
+
+				// associate checkbox label
 				$label_start = str_replace("{CHECKBOX_ID}", $checkbox_name, $this->label_start);
-				$problem_cell = str_replace(array("{LABEL_START}", "{LABEL_END}"), array($label_start, $this->label_end), $problem_cell);
-				
-				$tr_rows_list[] = str_replace(array("{ROW_SELECTED}", "{CHECKBOX}", "{PROBLEM_DETAIL}"),
+				$problem_cell = str_replace(array("{LABEL_START}", "{LABEL_END}"),
+				                            array($label_start, $this->label_end),
+				                            $problem_cell);
+
+				$tr_rows .= str_replace(array("{ROW_SELECTED}", "{CHECKBOX}", "{PROBLEM_DETAIL}"),
 				                       array($row_selected, $checkbox_html, $problem_cell), $this->html_tr_with_decision);
 			} else {
-				$problem_cell = str_replace(array("{LABEL_START}", "{LABEL_END}"), array("", ""), $problem_cell);
-				$tr_rows_list[] = str_replace(array("{PROBLEM_DETAIL}"), array($problem_cell), $this->html_tr_without_decision);
+				$problem_cell = str_replace(array("{LABEL_START}", "{LABEL_END}"),
+				                            array("", ""),
+				                            $problem_cell);
+
+				$tr_rows .= str_replace(array("{PROBLEM_DETAIL}"),
+				                       array($problem_cell), $this->html_tr_without_decision);
 			}
 		}
 
-		return str_replace("{ROWS}", $th_row . implode("\n", $tr_rows_list), $this->html_table);
+		return $th_row . $tr_rows;
 	}
 
 	// generate $this->rpt_source
@@ -494,16 +546,15 @@ class HTMLByGuidelineRpt extends AccessibilityRpt {
 		if (count($this->source_array) == 0) return;
 
 		$line_num = 1;
-		$source_list = array();
 		foreach ($this->source_array as $line)
 		{
-			$source_list[] = str_replace(array("{LINE_ID}","{LINE}"), 
-			                               array($line_num, htmlspecialchars($line)), 
+			$source_content .= str_replace(array("{LINE_ID}","{LINE}"),
+			                               array($line_num, htmlspecialchars($line)),
 			                               $this->html_source_line);
 			$line_num++;
 		}
-		
-		$this->rpt_source = str_replace("{SOURCE_CONTENT}", implode("", $source_list), $this->html_source);
+
+		$this->rpt_source = str_replace("{SOURCE_CONTENT}", $source_content, $this->html_source);
 	}
 
 	/**

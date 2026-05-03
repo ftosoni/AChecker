@@ -46,7 +46,7 @@ class AccessibilityValidator {
 	private $result_map = array();       // optimized lookup map for results
 	
 	var $check_for_all_elements_array = array(); // array of the to-be-checked check_ids 
-	public $checks_data = array();           // cache for check definitions
+	private $checks_data;           // cache for check definitions
 	var $check_for_tag_array = array();          // array of the to-be-checked check_ids 
 	var $prerequisite_check_array = array();     // array of prerequisite check_ids of the to-be-checked check_ids 
 	var $content_dom;                    // dom of $validate_content
@@ -61,15 +61,6 @@ class AccessibilityValidator {
 	public $check_func_array = array();
 	private $all_elements_cache = array();
 	
-	/**
-	* public
-	* return checks data cache
-	*/
-	public function getChecksData()
-	{
-		return $this->checks_data;
-	}
-
 	/**
 	 * public
 	 * $content: string, html content to check
@@ -159,7 +150,18 @@ class AccessibilityValidator {
 		{
 			foreach ($rows as $row) {
 				$code = CheckFuncUtility::convertCode($row['func']);
-				$this->check_func_array[$row['check_id']] = $code;
+				// Pre-compile the check into a closure for performance
+				try {
+					$func = eval("return function(\$e, \$check_id) { $code \n};");
+					if (is_callable($func)) {
+						$this->check_func_array[$row['check_id']] = $func->bindTo($this, get_class($this));
+					} else {
+						$this->check_func_array[$row['check_id']] = $code; // Fallback to raw code
+					}
+				} catch (Throwable $t) {
+					error_log("AChecker Error compiling check " . $row['check_id'] . ": " . $t->getMessage());
+					$this->check_func_array[$row['check_id']] = $code; // Fallback
+				}
 				$this->checks_data[$row['check_id']] = $row; // Cache the whole row
 			}
 			BasicChecks::preloadSearchStrings($this->checks_data);
@@ -243,6 +245,31 @@ class AccessibilityValidator {
 		
 		global $global_array_image_sizes;
 		$global_array_image_sizes = array();
+
+		// set all check functions
+		$checksDAO = new ChecksDAO();
+		$rows = $checksDAO->getAllOpenChecks();
+		
+		if (is_array($rows))
+		{
+			foreach ($rows as $row) {
+				$code = CheckFuncUtility::convertCode($row['func']);
+				// Pre-compile the check into a closure for performance
+				try {
+					$func = eval("return function(\$e, \$check_id) { $code \n};");
+					if (is_callable($func)) {
+						$this->check_func_array[$row['check_id']] = $func->bindTo($this, get_class($this));
+					} else {
+						$this->check_func_array[$row['check_id']] = $code; // Fallback to raw code
+					}
+				} catch (Throwable $t) {
+					error_log("AChecker Error compiling check " . $row['check_id'] . ": " . $t->getMessage());
+					$this->check_func_array[$row['check_id']] = $code; // Fallback
+				}
+				$this->checks_data[$row['check_id']] = $row; // Cache the whole row
+			}
+			BasicChecks::preloadSearchStrings($this->checks_data);
+		}
 	}
 	
 	/** private
@@ -411,14 +438,18 @@ class AccessibilityValidator {
 		
 		$line_number = $e->linenumber-$this->line_offset;
 		
-		$result = $this->get_check_result($e, $check_id);
+		$result = $this->get_check_result($line_number, $col_number, $check_id);
 
 		// has not been checked
 		if (!$result)
 		{
 			try {
-				$code = $this->check_func_array[$check_id];
-				$check_result = eval($code);
+				$func = $this->check_func_array[$check_id];
+				if (is_callable($func)) {
+					$check_result = $func($e, $check_id);
+				} else {
+					$check_result = eval($func);
+				}
 			} catch (Throwable $e_eval) {
 				error_log("AChecker Error in check $check_id: " . $e_eval->getMessage());
 				$check_result = null;
@@ -444,7 +475,7 @@ class AccessibilityValidator {
 					$this->num_success[$check_id]=1;
 				
 				// CRITICAL: Cache success results too!
-				$this->save_result($e, $line_number, $col_number, '', $check_id, $result, '', '', $css_code);
+				$this->save_result($line_number, $col_number, '', $check_id, $result, '', '', $css_code);
 			}
 			
 			if ($result == FAIL_RESULT)
@@ -480,7 +511,7 @@ class AccessibilityValidator {
 					$line_number = $has_duplicate_attribute[0];
 					$html_code .= "(".$has_duplicate_attribute[1].")";
 				}
-				$this->save_result($e, $line_number, $col_number, $html_code, $check_id, $result, $image, $image_alt, $css_code);
+				$this->save_result($line_number, $col_number, $html_code, $check_id, $result, $image, $image_alt, $css_code);
 			}
 		}
 		
@@ -504,9 +535,9 @@ class AccessibilityValidator {
 	 * $line_number: line number in the content for this check
 	 * $check_id: check id
 	 */
-	private function get_check_result($e, $check_id)
+	private function get_check_result($line_number, $col_number, $check_id)
 	{
-		$key = spl_object_hash($e) . "_{$check_id}";
+		$key = "{$line_number}_{$col_number}_{$check_id}";
 		if (isset($this->result_map[$key])) {
 			return $this->result_map[$key];
 		}
@@ -522,9 +553,9 @@ class AccessibilityValidator {
 	 * $check_id: check id
 	 * $result: result to save
 	 */
-	private function save_result($e, $line_number, $col_number, $html_code, $check_id, $result, $image, $image_alt, $css_code)
+	private function save_result($line_number, $col_number, $html_code, $check_id, $result, $image, $image_alt, $css_code)
 	{
-		$key = spl_object_hash($e) . "_{$check_id}";
+		$key = "{$line_number}_{$col_number}_{$check_id}";
 		
 		// Strict duplicate check
 		if (isset($this->result_map[$key])) {

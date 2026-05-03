@@ -47,7 +47,6 @@ class AccessibilityRpt {
 	var $rpt_likely_problems;            // <DIV> section of likely problems
 	var $rpt_potential_problems;         // <DIV> section of potential problems
 	var $rpt_source;                     // <DIV> section of source code used for validation
-	protected $checks_data = array();    // Cache for check definitions
 
 	/**
 	* public
@@ -110,15 +109,6 @@ class AccessibilityRpt {
 
 		$this->show_source = $showSource;
 		$this->source_array = $sourceArray;
-	}
-
-	/**
-	* public
-	* set checks data cache
-	*/
-	public function setChecksData($checksData)
-	{
-		$this->checks_data = $checksData;
 	}
 
 	/**
