@@ -144,7 +144,7 @@ function get_guideline_div($guideline_rows, $num_of_guidelines_per_row, $format 
 			</div>
 
 			<div id="AC_by_uri" class="input_tab"
-				style="<?php if (!isset($_POST["validate_file"]) && !isset($_POST["validate_paste"]))
+				style="<?php if ($init_tab == "AC_by_uri")
 					echo "display:block";
 				else
 					echo "display:none"; ?>; padding: 24px 0;">
@@ -181,7 +181,7 @@ function get_guideline_div($guideline_rows, $num_of_guidelines_per_row, $format 
                         <div class="cdx-lookup" id="mw_project_lookup">
                             <input type="text" id="mw_project_input" class="cdx-text-input" 
                                 autocomplete="off" 
-                                placeholder="Search for a project (e.g. Wikipedia, Wikidata...)" 
+                                placeholder="Search for a project (e.g. Italian Wikipedia, Wikidata...)" 
                                 value="<?php echo htmlspecialchars($_POST['mw_project_name'] ?? ''); ?>" />
                             <input type="hidden" name="mw_project" id="mw_project" 
                                 value="<?php echo htmlspecialchars($_POST['mw_project'] ?? ''); ?>" />
@@ -211,7 +211,7 @@ function get_guideline_div($guideline_rows, $num_of_guidelines_per_row, $format 
 			</div>
 
 			<div id="AC_by_upload" class="input_tab"
-				style="<?php if (isset($_POST["validate_file"]))
+				style="<?php if ($init_tab == "AC_by_upload")
 					echo "display:block";
 				else
 					echo "display:none"; ?>; padding: 24px 0;">
@@ -234,7 +234,7 @@ function get_guideline_div($guideline_rows, $num_of_guidelines_per_row, $format 
 			</div>
 
 			<div id="AC_by_paste" class="input_tab"
-				style="<?php if (isset($_POST["validate_paste"]))
+				style="<?php if ($init_tab == "AC_by_paste")
 					echo "display:block";
 				else
 					echo "display:none"; ?>; padding: 24px 0;">
@@ -348,47 +348,74 @@ function get_guideline_div($guideline_rows, $num_of_guidelines_per_row, $format 
                 return;
             }
             $menu.empty();
-            var search = (filter || '').toLowerCase();
+            var search = (filter || '').toLowerCase().trim();
             var filtered = [];
             
-            for (var i = 0; i < projects.length; i++) {
-                var p = projects[i];
-                var match = p.name.toLowerCase().indexOf(search) !== -1 || 
-                            (p.code && p.code.toLowerCase().indexOf(search) !== -1);
-                
-                if (!match && p.aliases) {
-                    for (var j = 0; j < p.aliases.length; j++) {
-                        if (p.aliases[j].toLowerCase().indexOf(search) !== -1) {
-                            match = true;
+            if (search === '') {
+                // Show default localized projects when empty
+                var defaults = [
+                    'itwikipedia',
+                    'hiwikipedia',
+                    'enwikipedia',
+                    'wikidata',
+                    'commons'
+                ];
+                $.each(defaults, function(i, code) {
+                    for (var j = 0; j < projects.length; j++) {
+                        if (projects[j].code === code) {
+                            filtered.push(projects[j]);
                             break;
                         }
                     }
+                });
+            } else {
+                for (var i = 0; i < projects.length; i++) {
+                    var p = projects[i];
+                    var match = p.name.toLowerCase().indexOf(search) !== -1 || 
+                                (p.code && p.code.toLowerCase().indexOf(search) !== -1);
+                    
+                    if (!match && p.aliases) {
+                        for (var j = 0; j < p.aliases.length; j++) {
+                            if (p.aliases[j].toLowerCase().indexOf(search) !== -1) {
+                                match = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (match) filtered.push(p);
                 }
-                if (match) filtered.push(p);
+
+                // Sort results: 
+                // 1. Matches starting with search string (in name or code)
+                // 2. Matches where search string is at the beginning of a word in the name
+                filtered.sort(function(a, b) {
+                    var sLower = search.toLowerCase();
+                    var aNameLower = a.name.toLowerCase();
+                    var bNameLower = b.name.toLowerCase();
+                    var aCodeLower = (a.code || '').toLowerCase();
+                    var bCodeLower = (b.code || '').toLowerCase();
+
+                    // Exact start match
+                    var aStarts = aNameLower.indexOf(sLower) === 0 || aCodeLower.indexOf(sLower) === 0;
+                    var bStarts = bNameLower.indexOf(sLower) === 0 || bCodeLower.indexOf(sLower) === 0;
+                    if (aStarts && !bStarts) return -1;
+                    if (!aStarts && bStarts) return 1;
+
+                    // Word start match
+                    var aWordStart = aNameLower.indexOf(' ' + sLower) !== -1;
+                    var bWordStart = bNameLower.indexOf(' ' + sLower) !== -1;
+                    if (aWordStart && !bWordStart) return -1;
+                    if (!aWordStart && bWordStart) return 1;
+
+                    return aNameLower.localeCompare(bNameLower);
+                });
             }
 
-            console.log("AChecker: Found " + filtered.length + " matches for '" + search + "'");
-
-            if (filtered.length === 0) {
-                $menu.hide();
-                return;
-            }
-
-            // Sort results: matches starting with search string come first
-            filtered.sort(function(a, b) {
-                var aStarts = a.name.toLowerCase().indexOf(search) === 0 || (a.code && a.code.toLowerCase().indexOf(search) === 0);
-                var bStarts = b.name.toLowerCase().indexOf(search) === 0 || (b.code && b.code.toLowerCase().indexOf(search) === 0);
-                if (aStarts && !bStarts) return -1;
-                if (!aStarts && bStarts) return 1;
-                return 0;
-            });
-
-            filtered = filtered.slice(0, 50);
+            filtered = filtered.slice(0, 5);
 
             $.each(filtered, function(i, p) {
                 var $item = $('<div class="cdx-lookup__item">')
                     .append($('<span class="cdx-lookup__item-title">').text(p.name))
-                    .append($('<span class="cdx-lookup__item-description">').text(p.url))
                     .bind('mousedown', function(e) {
                         console.log("AChecker: Selected project: " + p.name);
                         $input.val(p.name);
@@ -403,8 +430,12 @@ function get_guideline_div($guideline_rows, $num_of_guidelines_per_row, $format 
         }
 
         // Use bind/delegate for jQuery 1.4.4
-        $input.bind('input keyup focus paste', function() {
+        $input.bind('input keyup paste', function() {
             console.log("AChecker: Event triggered on #mw_project_input");
+            renderMenu($(this).val());
+        });
+        
+        $input.bind('focus', function() {
             renderMenu($(this).val());
         });
 

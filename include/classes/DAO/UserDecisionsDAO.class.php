@@ -106,6 +106,20 @@ class UserDecisionsDAO extends DAO {
 	}
 
 	/**
+	 * Return all rows by given user link id
+	 * @access  public
+	 * @param   user_link_id
+	 * @return  user rows
+	 * @author  Antigravity
+	 */
+	public function getByUserLinkID($user_link_id)
+	{
+		$user_link_id = intval($user_link_id);
+		$sql = "SELECT * FROM ".TABLE_PREFIX."user_decisions WHERE user_link_id = ".$user_link_id;
+		return $this->execute($sql);
+	}
+
+	/**
 	 * Validate fields for insert and update
 	 * @access  public
 	 * @param   $user_link_id: required

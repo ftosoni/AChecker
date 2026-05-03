@@ -42,6 +42,8 @@ class HTMLByGuidelineRpt extends AccessibilityRpt {
 	var $guidelineGroupsDAO;
 	var $guidelineSubgroupsDAO;
 
+	private $decisions_cache = array();  // Cache for user decisions to avoid N+1 queries
+
 	var $html_group =
 '<h3>{GROUP_NAME}</h3><br/>
 ';
@@ -175,6 +177,18 @@ class HTMLByGuidelineRpt extends AccessibilityRpt {
 		$guideline_level_known_problems = "";
 		$guideline_level_likely_problems = "";
 		$guideline_level_potential_problems = "";
+		
+		// Pre-fetch all decisions for this user link to avoid N+1 queries
+		if ($this->user_link_id != '') {
+			$userDecisionsDAO = new UserDecisionsDAO();
+			$rows = $userDecisionsDAO->getByUserLinkID($this->user_link_id);
+			if (is_array($rows)) {
+				foreach ($rows as $row) {
+					$key = "{$row['line_num']}_{$row['column_num']}_{$row['check_id']}";
+					$this->decisions_cache[$key] = $row;
+				}
+			}
+		}
 
 		$this->errors_by_checks = $this->rearrange_errors_array($this->errors);
 
@@ -442,8 +456,8 @@ class HTMLByGuidelineRpt extends AccessibilityRpt {
 				                          $this->html_image);
 			}
 
-			$userDecisionsDAO = new UserDecisionsDAO();
-			$row = $userDecisionsDAO->getByUserLinkIDAndLineNumAndColNumAndCheckID($this->user_link_id, $error["line_number"], $error["col_number"], $error['check_id']);
+			$key = "{$error['line_number']}_{$error['col_number']}_{$error['check_id']}";
+			$row = isset($this->decisions_cache[$key]) ? $this->decisions_cache[$key] : false;
 
 			if (!$row || $row['decision'] == AC_DECISION_FAIL) { // no decision or decision of fail
 				if ($confidence == LIKELY) {

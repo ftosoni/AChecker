@@ -38,6 +38,8 @@ class HTMLRpt extends AccessibilityRpt {
 	var $rpt_likely_decision_not_made;       // The output report of the likely problems which are the ones that no decisions have been made on
 	var $rpt_potential_decision_not_made;    // The output report of the likely problems which are the ones that no decisions have been made on
 	
+	private $decisions_cache = array();      // Cache for user decisions to avoid N+1 queries
+	
 	var $html_problem_achecker =
 '      <li class="{MSG_TYPE}">
          <span class="err_type"><span class="cdx-report-marker cdx-report-marker--{MARKER_TYPE}" title="{IMG_TYPE}">{EMOJI}</span></span>
@@ -162,6 +164,18 @@ class HTMLRpt extends AccessibilityRpt {
 		$this->rpt_likely_problems = "<ul>\n";
 		$this->rpt_potential_problems = "<ul>\n";
 		
+		// Pre-fetch all decisions for this user link to avoid N+1 queries
+		if ($this->user_link_id != '') {
+			$userDecisionsDAO = new UserDecisionsDAO();
+			$rows = $userDecisionsDAO->getByUserLinkID($this->user_link_id);
+			if (is_array($rows)) {
+				foreach ($rows as $row) {
+					$key = "{$row['line_num']}_{$row['column_num']}_{$row['check_id']}";
+					$this->decisions_cache[$key] = $row;
+				}
+			}
+		}
+		
 		$checksDAO = new ChecksDAO();
 		// generate section details
 		foreach ($this->errors as $error)
@@ -235,8 +249,8 @@ class HTMLRpt extends AccessibilityRpt {
 		$css_code = "";
 		
 		// generate decision section
-		$userDecisionsDAO = new UserDecisionsDAO();
-		$row = $userDecisionsDAO->getByUserLinkIDAndLineNumAndColNumAndCheckID($this->user_link_id, $line_number, $col_number, $check_row['check_id']);
+		$key = "{$line_number}_{$col_number}_{$check_row['check_id']}";
+		$row = isset($this->decisions_cache[$key]) ? $this->decisions_cache[$key] : false;
 		
 		if (!$row || $row['decision'] == AC_DECISION_FAIL) { // no decision or decision of fail
 			if ($error_type == IS_WARNING) $this->num_of_likely_problems_fail++;
