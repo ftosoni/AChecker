@@ -49,7 +49,12 @@ class HTMLRpt extends AccessibilityRpt {
                onclick="AChecker.popup(\'{BASE_HREF}checker/suggestion.php?id={CHECK_ID}\'); return false;" 
                target="_new">{ERROR}</a>
          </span>
-         <pre><code class="input">{HTML_CODE}</code></pre>
+         <div class="cdx-code-wrapper">
+            <pre><code class="input">{HTML_CODE}</code></pre>
+            <button type="button" class="cdx-button cdx-button--weight-quiet cdx-code-toggle" style="display: none;" onclick="AChecker.output.toggleCode(this)">
+                Show more
+            </button>
+         </div>
          {IMAGE}
          <p class="helpwanted">
          </p>

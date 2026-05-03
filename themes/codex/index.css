@@ -596,9 +596,37 @@ pre code.input {
     display: block !important;
     padding: 12px !important;
     white-space: pre-wrap !important; /* Wrap long HTML snippets */
-    overflow-x: hidden !important;
+    overflow-y: hidden !important;
     word-break: break-all !important;
     max-width: 100% !important;
+    transition: max-height 0.3s ease-out !important;
+}
+
+.cdx-code-wrapper {
+    position: relative !important;
+    margin: 12px 0 !important;
+}
+
+.cdx-code-wrapper.collapsed pre code.input {
+    max-height: 120px !important; /* Fixed height for collapsed state */
+    overflow-y: hidden !important;
+    mask-image: linear-gradient(to bottom, black 70%, transparent 100%) !important;
+    -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%) !important;
+}
+
+.cdx-code-toggle {
+    margin-top: -10px !important;
+    width: 100% !important;
+    border-top: none !important;
+    border-radius: 0 0 var(--cdx-border-radius) var(--cdx-border-radius) !important;
+    background: var(--cdx-background-color-neutral) !important;
+    font-size: 12px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.cdx-code-toggle:hover {
+    background: var(--cdx-background-color-interactive--hover) !important;
 }
 
 /* Line numbers color */

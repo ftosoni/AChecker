@@ -131,6 +131,9 @@ AChecker.output = AChecker.output || {};
 
             // hide button "make decision" as tab "errors" are selected
             $("#" + AChecker.output.makeDecisionButtonId).hide();
+            
+            // Initialize code block toggles
+            AChecker.output.initCodeToggles(div_errors_id);
         } else { // no output yet, set focus on default input box
             if (tab === "AC_by_mediawiki") {
                 var projectInput = document.getElementById("mw_project_input");
@@ -292,7 +295,47 @@ AChecker.output = AChecker.output || {};
             $("#" + AChecker.output.makeDecisionButtonId).show();
         }
         
+        // Initialize code block toggles for the newly visible tab
+        AChecker.output.initCodeToggles(divId);
+        
         return false;
+    };
+
+    /**
+     * Toggles the collapsed/expanded state of a code block
+     */
+    AChecker.output.toggleCode = function (button) {
+        var wrapper = $(button).closest('.cdx-code-wrapper');
+        if (wrapper.hasClass('collapsed')) {
+            wrapper.removeClass('collapsed');
+            $(button).text('Show less');
+        } else {
+            wrapper.addClass('collapsed');
+            $(button).text('Show more');
+        }
+    };
+
+    /**
+     * Initializes 'Show more' buttons only for code blocks that exceed the max-height
+     */
+    AChecker.output.initCodeToggles = function (parentDivId) {
+        $('#' + parentDivId + ' .cdx-code-wrapper').each(function () {
+            var wrapper = $(this);
+            var code = wrapper.find('code.input');
+            
+            // If already initialized, skip
+            if (wrapper.data('code-init')) return;
+
+            // Use a temporary non-collapsed state to measure the real height
+            var realHeight = code[0].scrollHeight;
+            
+            if (realHeight > 130) { // 120px limit + 10px buffer
+                wrapper.addClass('collapsed');
+                wrapper.find('.cdx-code-toggle').show();
+            }
+            
+            wrapper.data('code-init', true);
+        });
     };
     
     /**
