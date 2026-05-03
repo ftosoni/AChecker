@@ -84,43 +84,12 @@ class acheckerTFPDF extends tFPDF {
 	*/
 	function Header()
 	{
-	    // new logo
-	    $img_path = AC_BASE_PATH.'images/Indic_MediaWiki_Developers_UG_logo_variation_2.svg.png';
-	    
-	    // tFPDF doesn't support alpha channel in PNG. We flatten it to a temporary JPG if needed.
-	    $final_img = $img_path;
-	    if (function_exists('imagecreatefrompng') && function_exists('imagejpeg')) {
-	        $temp_dir = AC_EXPORT_RPT_DIR;
-	        if (!is_dir($temp_dir)) {
-	            @mkdir($temp_dir, 0777, true);
-	        }
-	        
-	        // If the project temp dir isn't writable, fallback to system temp
-	        if (!is_writable($temp_dir)) {
-	            $temp_dir = sys_get_temp_dir() . DIRECTORY_SEPARATOR;
-	        }
-	        
-	        $temp_img = $temp_dir . 'logo_flattened.jpg';
-	        
-	        // Only recreate if it doesn't exist or is older than 1 hour
-	        if (!file_exists($temp_img) || (time() - filemtime($temp_img) > 3600)) {
-	            $im = @imagecreatefrompng($img_path);
-	            if ($im) {
-	                $w = imagesx($im);
-	                $h = imagesy($im);
-	                $canvas = imagecreatetruecolor($w, $h);
-	                $white = imagecolorallocate($canvas, 255, 255, 255);
-	                imagefill($canvas, 0, 0, $white);
-	                imagecopy($canvas, $im, 0, 0, 0, 0, $w, $h);
-	                if (@imagejpeg($canvas, $temp_img, 95)) {
-	                    $final_img = $temp_img;
-	                }
-	                imagedestroy($im);
-	                imagedestroy($canvas);
-	            }
-	        } else {
-	            $final_img = $temp_img;
-	        }
+	    // use pre-processed logo without alpha channel to avoid tFPDF errors
+	    $final_img = AC_BASE_PATH.'images/logo_pdf.jpg';
+	    if (!file_exists($final_img)) {
+	        // Fallback to original if for some reason the JPG is missing, 
+	        // though it will likely fail in tFPDF if it has alpha.
+	        $final_img = AC_BASE_PATH.'images/Indic_MediaWiki_Developers_UG_logo_variation_2.svg.png';
 	    }
 
 	    $this->Image($final_img, 12, 10, 60);
