@@ -85,6 +85,19 @@ class BasicChecks {
 		return false;
 	}
 
+	private static $search_str_cache = array();
+
+	/**
+	 * Pre-populates the search string cache
+	 */
+	public static function preloadSearchStrings($checks_data) {
+		foreach ($checks_data as $check_id => $row) {
+			if (isset($row['search_str'])) {
+				self::$search_str_cache[$check_id] = explode(',', strtolower(_AC($row['search_str'])));
+			}
+		}
+	}
+
 	/**
 	* check if the inner text is in one of the search string defined in checks.search_str
 	* return true if in, otherwise, return false
@@ -93,12 +106,19 @@ class BasicChecks {
 	{
 		$text = strtolower(trim($text));
 
-		$checksDAO = new ChecksDAO();
-		$row = $checksDAO->getCheckByID($check_id);
+		if (!isset(self::$search_str_cache[$check_id])) {
+			$checksDAO = new ChecksDAO();
+			$row = $checksDAO->getCheckByID($check_id);
+			if ($row && isset($row['search_str'])) {
+				self::$search_str_cache[$check_id] = explode(',', strtolower(_AC($row['search_str'])));
+			} else {
+				self::$search_str_cache[$check_id] = array();
+			}
+		}
 
-		$search_strings = explode(',', strtolower(_AC($row['search_str'])));
+		$search_strings = self::$search_str_cache[$check_id];
 
-		if (!is_array($search_strings)) return true;
+		if (empty($search_strings)) return true;
 		else
 		{
 			return BasicChecks::inSearchString($text, $search_strings);
@@ -111,18 +131,22 @@ class BasicChecks {
 	*/
 	public static function isDataTable($e)
 	{
-		global $is_data_table;
-
-		// "table" element containing <th> is considered a data table
-		if ($is_data_table) return;
-
+		if (isset($e->_cache_is_data_table)) return $e->_cache_is_data_table;
+		
+		$is_data = false;
 		foreach ($e->children() as $child)
 		{
-			if ($child->tag == "th")
-				$is_data_table = true;
-			else
-				BasicChecks::isDataTable($child);
+			if ($child->tag == "th") {
+				$is_data = true;
+				break;
+			}
+			if (BasicChecks::isDataTable($child)) {
+				$is_data = true;
+				break;
+			}
 		}
+		$e->_cache_is_data_table = $is_data;
+		return $is_data;
 	}
 
 	/**
@@ -131,12 +155,12 @@ class BasicChecks {
 	*/
 	public static function hasParent($e, $parent_tag)
 	{
-		if ($e->parent() == NULL) return false;
-
-		if ($e->parent()->tag == $parent_tag)
-			return true;
-		else
-			return BasicChecks::hasParent($e->parent(), $parent_tag);
+		$curr = $e;
+		while ($curr && $curr->parent()) {
+			$curr = $curr->parent();
+			if ($curr->tag == $parent_tag) return true;
+		}
+		return false;
 	}
 
 	/**

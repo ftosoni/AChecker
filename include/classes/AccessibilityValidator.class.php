@@ -59,6 +59,7 @@ class AccessibilityValidator {
 	                                     // partial html. Fully private, cannot be set or get from outside
 	public $is_mediawiki = false;
 	public $check_func_array = array();
+	private $all_elements_cache = array();
 	
 	/**
 	 * public
@@ -80,27 +81,91 @@ class AccessibilityValidator {
 	public function validate()
 	{
 		// dom of the content to be validated
-		$this->content_dom = $this->get_simple_html_dom($this->validate_content);
-		
-		// prepare gobal vars used in BasicFunctions.class.php to fasten the validation
-		$this->prepare_global_vars();
+		$this->content_dom = new simple_html_dom();
+		$this->content_dom->load($this->validate_content);
 		
 		// set arrays of check_id, prerequisite check_id, next check_id
 		$this->prepare_check_arrays($this->guidelines);
+		
+		// Pre-compile checks into closures
+		$this->initialize_compiled_checks();
 
-		error_log("AChecker Debug: Starting element validation");
-		$this->validate_element($this->content_dom->find('html'));
+		// Single-pass global var preparation and element collection
+		$this->prepare_global_vars();
+
+		error_log("AChecker Debug: Starting flattened element validation");
+		
+		foreach ($this->all_elements_cache as $e) {
+			// Use pre-calculated merged check array
+			$tag_checks = isset($this->merged_check_cache[$e->tag]) ? $this->merged_check_cache[$e->tag] : ($this->merged_check_cache['__default__'] ?? array());
+				
+			foreach ($tag_checks as $check_id)
+			{
+				// check prerequisite ids first, if fails, report failure and don't need to proceed with $check_id
+				$prerequisite_failed = false;
+
+				if (isset($this->prerequisite_check_array[$check_id]))
+				{
+					foreach ($this->prerequisite_check_array[$check_id] as $prerequisite_check_id)
+					{
+						if ($this->check($e, $prerequisite_check_id) == FAIL_RESULT)
+						{
+							$prerequisite_failed = true;
+							break;
+						}
+					}
+				}
+
+				// if prerequisite check passes, proceed with current check_id
+				if (!$prerequisite_failed)
+				{
+					$this->check($e, $check_id);
+				}
+			}
+		}
+
 		error_log("AChecker Debug: Element validation complete");
 		
 		$this->finalize();
 
-		// Release memory from DOM object
+		// Release memory from DOM object and cache
 		if (is_object($this->content_dom)) {
 			$this->content_dom->clear();
 			unset($this->content_dom);
 		}
+		$this->all_elements_cache = array();
 
-		// end of validation process
+		return true;
+	}
+
+	/** private
+	 * Pre-compile checks into closures and preload search strings
+	 */
+	private function initialize_compiled_checks()
+	{
+		$checksDAO = new ChecksDAO();
+		$rows = $checksDAO->getAllOpenChecks();
+		
+		if (is_array($rows))
+		{
+			foreach ($rows as $row) {
+				$code = CheckFuncUtility::convertCode($row['func']);
+				// Pre-compile the check into a closure for performance
+				try {
+					$func = eval("return function(\$e, \$check_id) { $code \n};");
+					if (is_callable($func)) {
+						$this->check_func_array[$row['check_id']] = $func->bindTo($this, get_class($this));
+					} else {
+						$this->check_func_array[$row['check_id']] = $code; // Fallback to raw code
+					}
+				} catch (Throwable $t) {
+					error_log("AChecker Error compiling check " . $row['check_id'] . ": " . $t->getMessage());
+					$this->check_func_array[$row['check_id']] = $code; // Fallback
+				}
+				$this->checks_data[$row['check_id']] = $row; // Cache the whole row
+			}
+			BasicChecks::preloadSearchStrings($this->checks_data);
+		}
 	}
 	
 	/** private
@@ -110,16 +175,20 @@ class AccessibilityValidator {
 	 */
 	private function prepare_global_vars()
 	{
-		global $header_array, $base_href, $has_duplicate_attribute, $is_data_table, $is_radio_buttons_grouped, $label_array, $label_for_map, $duplicate_id_map;
+		global $header_array, $base_href, $has_duplicate_attribute, $is_data_table, $is_radio_buttons_grouped, $label_array, $label_for_map, $duplicate_id_map, $label_for_text_map;
 
-		$all_elements = $this->content_dom->find("*");
+		$this->all_elements_cache = array();
+		$all_nodes = $this->content_dom->nodes; // Use all nodes for single pass
 		$header_array = array();
 		$label_array = array();
 		$label_for_map = array();
+		$label_for_text_map = array();
 		$id_counts = array();
 		$duplicate_id_map = array();
 
-		foreach ($all_elements as $e) {
+		foreach ($all_nodes as $e) {
+			if ($e->nodetype !== HDOM_TYPE_ELEMENT) continue;
+
 			// Headers
 			if (strlen($e->tag) == 2 && $e->tag[0] == 'h' && is_numeric($e->tag[1])) {
 				$header_array[] = $e;
@@ -128,7 +197,22 @@ class AccessibilityValidator {
 			if ($e->tag == 'label') {
 				$label_array[] = $e;
 				if (isset($e->attr['for'])) {
-					$label_for_map[strtolower(trim($e->attr['for']))] = true;
+					$for_id = strtolower(trim($e->attr['for']));
+					$label_for_map[$for_id] = true;
+					
+					// Pre-calculate if this label has text or accessible content
+					$has_content = (trim($e->plaintext) !== "");
+					if (!$has_content) {
+						foreach ($e->children as $child) {
+							if ($child->tag == 'img' && trim((string)($child->attr['alt'] ?? '')) !== "") {
+								$has_content = true;
+								break;
+							}
+						}
+					}
+					if ($has_content) {
+						$label_for_text_map[$for_id] = true;
+					}
 				}
 			}
 			// Duplicate IDs
@@ -139,6 +223,13 @@ class AccessibilityValidator {
 				}
 				$id_counts[$id] = true;
 			}
+			
+			// Table pre-calculation (is it a data table?)
+			if ($e->tag == 'table') {
+				BasicChecks::isDataTable($e); // This will trigger and cache the result
+			}
+			
+			$this->all_elements_cache[] = $e;
 		}
 
 		$base_href = '';
@@ -177,6 +268,7 @@ class AccessibilityValidator {
 				}
 				$this->checks_data[$row['check_id']] = $row; // Cache the whole row
 			}
+			BasicChecks::preloadSearchStrings($this->checks_data);
 		}
 	}
 	
@@ -322,47 +414,6 @@ class AccessibilityValidator {
 		}
 	}
 
-	/**
-	 * private
-	 * Recursive function to validate html elements
-	 */
-	private function validate_element($element_array)
-	{
-		foreach($element_array as $e)
-		{
-			// Use pre-calculated merged check array
-			$tag_checks = isset($this->merged_check_cache[$e->tag]) ? $this->merged_check_cache[$e->tag] : $this->merged_check_cache['__default__'];
-				
-			foreach ($tag_checks as $check_id)
-			{
-				// check prerequisite ids first, if fails, report failure and don't need to proceed with $check_id
-				$prerequisite_failed = false;
-
-				if (isset($this->prerequisite_check_array[$check_id]))
-				{
-					foreach ($this->prerequisite_check_array[$check_id] as $prerequisite_check_id)
-					{
-						if ($this->check($e, $prerequisite_check_id) == FAIL_RESULT)
-						{
-							$prerequisite_failed = true;
-							break;
-						}
-					}
-				}
-
-				// if prerequisite check passes, proceed with current check_id
-				if (!$prerequisite_failed)
-				{
-					$this->check($e, $check_id);
-				}
-			}
-			
-			$children = $e->children();
-			if (!empty($children)) {
-				$this->validate_element($children);
-			}
-		}
-	}
 
 	/**
 	 * private

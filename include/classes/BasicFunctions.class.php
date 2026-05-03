@@ -54,25 +54,15 @@ class BasicFunctions {
 		}
 
 		// 3. The element $global_e has an "id" attribute value that matches the "for" attribute value of a "label" element
-		$input_id = is_array($global_e->attr) && isset($global_e->attr["id"]) ? (string)$global_e->attr["id"] : '';
+		$input_id = is_array($global_e->attr) && isset($global_e->attr["id"]) ? strtolower(trim((string)$global_e->attr["id"])) : '';
 
 		if ($input_id == "") return false;  // attribute "id" must exist
 
-		if (is_array($label_array)) {
-			foreach ($label_array as $e_label)
-			{
-				if ((is_array($e_label->attr) && isset($e_label->attr["for"]) ? (string)$e_label->attr["for"] : '') == $input_id)
-				{
-					// label contains text
-					if (trim($e_label->plaintext) <> "") return true;
-
-					// label contains an image with alt text
-					foreach ($e_label->children as $e_label_child)
-						if ($e_label_child->tag == "img" && strlen(trim(is_array($e_label_child->attr) && isset($e_label_child->attr["alt"]) ? (string)$e_label_child->attr["alt"] : '')) > 0)
-							return true;
-				}
-			}
+		global $label_for_text_map;
+		if (isset($label_for_text_map[$input_id])) {
+			return true;
 		}
+
 		return false;
 	}
 
@@ -992,21 +982,29 @@ class BasicFunctions {
 	{
 		global $global_e;
 
-		$radio_buttons = array();
+		$radio_buttons_by_name = array();
 
+		// Use iterative children traversal instead of find("*") if possible, 
+		// but since find("input") is already optimized in simple_html_dom (it's not, actually it's O(N)),
+		// we should be careful. 
+		// Actually, let's just collect all inputs once.
 		foreach ($global_e->find("input") as $e_input)
 		{
-			if (strtolower(trim(is_array($e_input->attr) && isset($e_input->attr["type"]) ? (string)$e_input->attr["type"] : '')) == "radio")
-				array_push($radio_buttons, $e_input);
+			$type = strtolower(trim((string)($e_input->attr["type"] ?? '')));
+			if ($type == "radio") {
+				$name = strtolower(trim((string)($e_input->attr["name"] ?? '')));
+				if ($name !== "") {
+					$radio_buttons_by_name[$name][] = $e_input;
+				}
+			}
 		}
 
-		for ($i=0; $i < count($radio_buttons); $i++)
-		{
-			for ($j=0; $j < count($radio_buttons); $j++)
-			{
-				if ($i <> $j && strtolower(trim(is_array($radio_buttons[$i]->attr) && isset($radio_buttons[$i]->attr["name"]) ? (string)$radio_buttons[$i]->attr["name"] : '')) == strtolower(trim(is_array($radio_buttons[$j]->attr) && isset($radio_buttons[$j]->attr["name"]) ? (string)$radio_buttons[$j]->attr["name"] : ''))
-				    && !BasicChecks::hasParent($radio_buttons[$i], "fieldset") && !BasicChecks::hasParent($radio_buttons[$i], "legend")) {
-					return false;
+		foreach ($radio_buttons_by_name as $name => $group) {
+			if (count($group) > 1) {
+				foreach ($group as $radio) {
+					if (!BasicChecks::hasParent($radio, "fieldset") && !BasicChecks::hasParent($radio, "legend")) {
+						return false;
+					}
 				}
 			}
 		}
