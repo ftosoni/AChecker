@@ -5,17 +5,18 @@
 [![CI](https://github.com/ftosoni/mediawiki-accessibility-checker/actions/workflows/php-ci.yml/badge.svg?branch=main&style=flat-square)](https://github.com/ftosoni/mediawiki-accessibility-checker/actions/workflows/php-ci.yml)
 [![License](https://img.shields.io/github/license/ftosoni/mediawiki-accessibility-checker?style=flat-square)](./LICENSE)
 
-AChecker is an automated accessibility checker used to evaluate the accessibility of HTML pages, and help ensure they can be accessed by all individuals, including those with disabilities, using assistive technologies to navigate the Internet.
+**MediaWiki Accessibility Checker** is a specialized tool designed to evaluate the accessibility of MediaWiki pages. It is powered by [AChecker](https://achecker.achecks.ca), an automated accessibility checker that helps ensure web content is accessible to all individuals, including those with disabilities.
 
-AChecker live site: https://achecker.achecks.ca
+This repository adapts AChecker for the MediaWiki ecosystem, providing tailored guidelines and integration for Wikimedia projects.
 
-What sets AChecker apart from other automated accessibility checkers?
+What sets this tool apart:
 
-- Reviewers can interact with the system to make decisions on potential barriers that automated checkers can not determine with certainty.
-- Choose from a range of accessibility standards to review conformance with various international accessibility requirements.
-- Design custom accessibility guidelines tailored specifically to your organization
-- View existing guidelines in AChecker to see exactly what it is reviewing.
-- Design new accessibility checks and have them added to AChecker.
+- **Reviewer Interaction**: Reviewers can interact with the system to make decisions on potential barriers that automated checkers cannot determine with certainty.
+- **Accessibility Standards**: Choose from a range of international standards to review conformance.
+- **Custom Guidelines**: Design custom accessibility guidelines tailored specifically to your organization.
+- **Transparency**: View exactly what each guideline is reviewing.
+- **Extensibility**: Design and add new accessibility checks.
+
 
 ## Requirements
 
