@@ -159,18 +159,7 @@ class AccessibilityValidator {
 		{
 			foreach ($rows as $row) {
 				$code = CheckFuncUtility::convertCode($row['func']);
-				// Pre-compile the check into a closure for performance
-				try {
-					$func = eval("return function(\$e, \$check_id) { $code \n};");
-					if (is_callable($func)) {
-						$this->check_func_array[$row['check_id']] = $func->bindTo($this, get_class($this));
-					} else {
-						$this->check_func_array[$row['check_id']] = $code; // Fallback to raw code
-					}
-				} catch (Throwable $t) {
-					error_log("AChecker Error compiling check " . $row['check_id'] . ": " . $t->getMessage());
-					$this->check_func_array[$row['check_id']] = $code; // Fallback
-				}
+				$this->check_func_array[$row['check_id']] = $code;
 				$this->checks_data[$row['check_id']] = $row; // Cache the whole row
 			}
 			BasicChecks::preloadSearchStrings($this->checks_data);
@@ -254,20 +243,6 @@ class AccessibilityValidator {
 		
 		global $global_array_image_sizes;
 		$global_array_image_sizes = array();
-
-		// set all check functions
-		$checksDAO = new ChecksDAO();
-		$rows = $checksDAO->getAllOpenChecks();
-		
-		if (is_array($rows))
-		{
-			foreach ($rows as $row) {
-				$code = CheckFuncUtility::convertCode($row['func']);
-				$this->check_func_array[$row['check_id']] = $code;
-				$this->checks_data[$row['check_id']] = $row; // Cache the whole row
-			}
-			BasicChecks::preloadSearchStrings($this->checks_data);
-		}
 	}
 	
 	/** private
