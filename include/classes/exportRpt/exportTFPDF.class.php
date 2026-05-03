@@ -89,8 +89,20 @@ class acheckerTFPDF extends tFPDF {
 	    
 	    // tFPDF doesn't support alpha channel in PNG. We flatten it to a temporary JPG if needed.
 	    $final_img = $img_path;
-	    if (function_exists('imagecreatefrompng')) {
-	        $temp_img = AC_EXPORT_RPT_DIR . 'logo_flattened.jpg';
+	    if (function_exists('imagecreatefrompng') && function_exists('imagejpeg')) {
+	        $temp_dir = AC_EXPORT_RPT_DIR;
+	        if (!is_dir($temp_dir)) {
+	            @mkdir($temp_dir, 0777, true);
+	        }
+	        
+	        // If the project temp dir isn't writable, fallback to system temp
+	        if (!is_writable($temp_dir)) {
+	            $temp_dir = sys_get_temp_dir() . DIRECTORY_SEPARATOR;
+	        }
+	        
+	        $temp_img = $temp_dir . 'logo_flattened.jpg';
+	        
+	        // Only recreate if it doesn't exist or is older than 1 hour
 	        if (!file_exists($temp_img) || (time() - filemtime($temp_img) > 3600)) {
 	            $im = @imagecreatefrompng($img_path);
 	            if ($im) {
@@ -100,12 +112,13 @@ class acheckerTFPDF extends tFPDF {
 	                $white = imagecolorallocate($canvas, 255, 255, 255);
 	                imagefill($canvas, 0, 0, $white);
 	                imagecopy($canvas, $im, 0, 0, 0, 0, $w, $h);
-	                imagejpeg($canvas, $temp_img, 95);
+	                if (@imagejpeg($canvas, $temp_img, 95)) {
+	                    $final_img = $temp_img;
+	                }
 	                imagedestroy($im);
 	                imagedestroy($canvas);
 	            }
-	        }
-	        if (file_exists($temp_img)) {
+	        } else {
 	            $final_img = $temp_img;
 	        }
 	    }
@@ -172,6 +185,81 @@ class acheckerTFPDF extends tFPDF {
 	    $this->SetFont('DejaVu','',8);
 	    $this->SetTextColor(120);
 	    $this->Cell(0,10,'Page '.$this->PageNo().'/{nb}',0,0,'C');
+	}
+
+	/**
+	* private
+	* draws a status icon (circle with symbol)
+	*/
+	private function drawStatusIcon($type, $x, $y) {
+	    $this->SetLineWidth(0.1);
+	    $size = 3.6;
+	    $radius = $size / 2;
+	    $cx = $x + $radius;
+	    $cy = $y + $radius;
+	    
+	    if ($type == 'error') {
+	        $this->SetFillColor(204, 0, 0);
+	        $this->SetDrawColor(153, 0, 0);
+	        $symbol = 'X';
+	    } else if ($type == 'warning') {
+	        $this->SetFillColor(237, 131, 0);
+	        $this->SetDrawColor(180, 100, 0);
+	        $symbol = '!';
+	    } else if ($type == 'success') {
+	        $this->SetFillColor(0, 128, 0);
+	        $this->SetDrawColor(0, 100, 0);
+	        $symbol = 'V';
+	    } else {
+	        $this->SetFillColor(0, 51, 153);
+	        $this->SetDrawColor(0, 30, 100);
+	        $symbol = '?';
+	    }
+	    
+	    $this->Circle($cx, $cy, $radius, 'DF');
+	    
+	    $this->SetTextColor(255, 255, 255);
+	    $this->SetFont('DejaVu', 'B', 6);
+	    $this->SetXY($x, $y);
+	    $this->Cell($size, $size + 0.2, $symbol, 0, 0, 'C');
+	    $this->SetTextColor(0); // reset
+	}
+
+	function Circle($x, $y, $r, $style='D')
+	{
+		$this->Ellipse($x, $y, $r, $r, $style);
+	}
+
+	function Ellipse($x, $y, $rx, $ry, $style='D')
+	{
+		if($style=='F')
+			$op='f';
+		elseif($style=='FD' || $style=='DF')
+			$op='B';
+		else
+			$op='S';
+		$lx=4/3*(M_SQRT2-1)*$rx;
+		$ly=4/3*(M_SQRT2-1)*$ry;
+		$k=$this->k;
+		$h=$this->h;
+		$this->_out(sprintf('%.2F %.2F m %.2F %.2F %.2F %.2F %.2F %.2F c',
+			($x+$rx)*$k,($h-$y)*$k,
+			($x+$rx)*$k,($h-($y-$ly))*$k,
+			($x+$lx)*$k,($h-($y-$ry))*$k,
+			$x*$k,($h-($y-$ry))*$k));
+		$this->_out(sprintf('%.2F %.2F %.2F %.2F %.2F %.2F c',
+			($x-$lx)*$k,($h-($y-$ry))*$k,
+			($x-$rx)*$k,($h-($y-$ly))*$k,
+			($x-$rx)*$k,($h-$y)*$k));
+		$this->_out(sprintf('%.2F %.2F %.2F %.2F %.2F %.2F c',
+			($x-$rx)*$k,($h-($y+$ly))*$k,
+			($x-$lx)*$k,($h-($y+$ry))*$k,
+			$x*$k,($h-($y+$ry))*$k));
+		$this->_out(sprintf('%.2F %.2F %.2F %.2F %.2F %.2F c %s',
+			($x+$lx)*$k,($h-($y+$ry))*$k,
+			($x+$rx)*$k,($h-($y+$ly))*$k,
+			($x+$rx)*$k,($h-$y)*$k,
+			$op));
 	}
 
 	/**
@@ -261,15 +349,13 @@ class acheckerTFPDF extends tFPDF {
 		if ($nr == 0) {
 			$this->Ln(3);
 			$this->SetTextColor(0, 128, 0);
-			$path = AC_BASE_PATH."images/jpg/feedback.jpg";
 			$this->SetX(11);
-			$this->Image($path, $this->GetX(), $this->GetY(), 4, 4);
+			$this->drawStatusIcon('success', $this->GetX(), $this->GetY());
 			$this->SetX(17);
 			$this->SetFont('DejaVu', 'B', 12);
 			$this->Write(5, _AC('congrats_no_'.$problem_type));
 			$this->Ln(3);
 		} 
-
 		// Display the list of problems, including the problems that the user has made pass decisions on.
 		if (is_array($array) && count($array) > 0) { // make report on errors
 			// group level output
@@ -308,9 +394,9 @@ class acheckerTFPDF extends tFPDF {
 						// one error output
 						foreach($check_group['errors'] as $error) {
 							// error icon img, line, column, error text
-							$img_data = explode(".", $error['img_src']);		
-							$path = AC_BASE_PATH."images/jpg/".$img_data[0].".jpg";
-							$this->Image($path, $this->GetX()+18, $this->GetY(), 4, 4);
+							$img_data = explode(".", $error['img_src']);
+							$type = ($img_data[0] == 'known') ? 'error' : (($img_data[0] == 'likely') ? 'warning' : 'info');
+							$this->drawStatusIcon($type, $this->GetX()+18, $this->GetY());
 							$this->SetX(32);
 							$this->SetFont('DejaVu', 'BI', 9);
 							$this->SetTextColor(0);
@@ -399,8 +485,8 @@ class acheckerTFPDF extends tFPDF {
 		if ($nr == 0) {
 			$this->Ln(3);
 			$this->SetTextColor(0, 128, 0);
-			$path = AC_BASE_PATH."images/jpg/feedback.jpg";
-			$this->Image($path, $this->GetX(), $this->GetY(), 4, 4);
+			$this->SetX(10);
+			$this->drawStatusIcon('success', $this->GetX(), $this->GetY());
 			$this->SetX(14);
 			$this->SetFont('DejaVu', 'B', 12);
 			$this->Write(5, _AC('congrats_no_'.$problem_type));
@@ -410,9 +496,7 @@ class acheckerTFPDF extends tFPDF {
 			if ($problem_type == 'known') {
 				foreach($array as $error) {
 					// error icon img, line, column, error text
-					$img_data = explode(".", $error['img_src']);		
-					$path = AC_BASE_PATH."images/jpg/".$img_data[0].".jpg";
-					$this->Image($path, $this->GetX()+7, $this->GetY(), 4, 4);
+					$this->drawStatusIcon('error', $this->GetX()+7, $this->GetY());
 					$this->SetX(21);
 					$this->SetTextColor(0);
 					$this->SetFont('DejaVu', 'BI', 9);
@@ -461,9 +545,9 @@ class acheckerTFPDF extends tFPDF {
 				foreach($array as $category) {
 					foreach($category as $error) {
 						// error icon img, line, column, error text
-						$img_data = explode(".", $error['img_src']);		
-						$path = AC_BASE_PATH."images/jpg/".$img_data[0].".jpg";
-						$this->Image($path, $this->GetX()+7, $this->GetY(), 4, 4);
+						$img_data = explode(".", $error['img_src']);
+						$type = ($img_data[0] == 'known') ? 'error' : (($img_data[0] == 'likely') ? 'warning' : 'info');
+						$this->drawStatusIcon($type, $this->GetX()+7, $this->GetY());
 						$this->SetX(21);
 						$this->SetTextColor(0);
 						$this->SetFont('DejaVu', 'BI', 9);
@@ -533,8 +617,7 @@ class acheckerTFPDF extends tFPDF {
 		// str with error type and nr of errors
 		if ($this->error_nr_html == -1) {
 			$this->SetTextColor(0, 0, 255);
-			$path = AC_BASE_PATH."images/jpg/info.jpg";
-			$this->Image($path, $this->GetX(), $this->GetY(), 4, 4);
+			$this->drawStatusIcon('info', $this->GetX(), $this->GetY());
 			$this->SetX(14);
 			$this->SetFont('DejaVu', 'B', 12);			
 			$this->Write(5,_AC("html_validator_disabled"));
@@ -553,8 +636,7 @@ class acheckerTFPDF extends tFPDF {
 				// no html validation errors, passed
 				$this->Ln(3);
 				$this->SetTextColor(0, 128, 0);
-				$path = AC_BASE_PATH."images/jpg/feedback.jpg";
-				$this->Image($path, $this->GetX(), $this->GetY(), 4, 4);
+				$this->drawStatusIcon('success', $this->GetX(), $this->GetY());
 				$this->SetX(14);
 				$this->SetFont('DejaVu', 'B', 12);
 				$this->Write(5, _AC("congrats_html_validation"));
@@ -567,9 +649,7 @@ class acheckerTFPDF extends tFPDF {
 			} else { // else make report on errors
 				foreach($this->html as $error) {
 					// error icon img, line, column, error text
-					$img_data = explode(".", $error['img_src']);		
-					$path = AC_BASE_PATH."images/jpg/".$img_data[0].".jpg";
-					$this->Image($path, $this->GetX()+7, $this->GetY(), 4, 4);
+					$this->drawStatusIcon('error', $this->GetX()+7, $this->GetY());
 					$this->SetX(21);
 					if ($error['line'] != '' && $error['col'] != '') {
 						$this->SetTextColor(0);
@@ -629,8 +709,7 @@ class acheckerTFPDF extends tFPDF {
 		} else if ($this->css_error == '' && $this->error_nr_css == -1) {
 			// css validator is disabled
 			$this->SetTextColor(0, 0, 255);
-			$path = AC_BASE_PATH."images/jpg/info.jpg";
-			$this->Image($path, $this->GetX(), $this->GetY(), 4, 4);
+			$this->drawStatusIcon('info', $this->GetX(), $this->GetY());
 			$this->SetX(14);
 			$this->SetFont('DejaVu', 'B', 12);			
 			$this->Write(5,_AC("css_validator_disabled"));
@@ -641,8 +720,7 @@ class acheckerTFPDF extends tFPDF {
 			// css validator is only available at validating url, not at validating a uploaded file or pasted html
 			$this->Ln(3);
 			$this->SetTextColor(0, 0, 255);
-			$path = AC_BASE_PATH."images/jpg/info.jpg";
-			$this->Image($path, $this->GetX(), $this->GetY(), 4, 4);
+			$this->drawStatusIcon('info', $this->GetX(), $this->GetY());
 			$this->SetX(14);
 			$this->SetFont('DejaVu', 'B', 12);
 			$this->Write(5, $this->css_error);
@@ -651,8 +729,7 @@ class acheckerTFPDF extends tFPDF {
 				// show congratulations if no errors found
 				$this->Ln(3);
 				$this->SetTextColor(0, 128, 0);
-				$path = AC_BASE_PATH."images/jpg/feedback.jpg";
-				$this->Image($path, $this->GetX(), $this->GetY(), 4, 4);
+				$this->drawStatusIcon('success', $this->GetX(), $this->GetY());
 				$this->SetX(14);
 				$this->SetFont('DejaVu', 'B', 12);
 				$this->Write(5, _AC("congrats_css_validation"));
