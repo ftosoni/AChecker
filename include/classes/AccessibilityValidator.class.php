@@ -263,18 +263,7 @@ class AccessibilityValidator {
 		{
 			foreach ($rows as $row) {
 				$code = CheckFuncUtility::convertCode($row['func']);
-				// Pre-compile the check into a closure for performance
-				try {
-					$func = eval("return function(\$e, \$check_id) { $code \n};");
-					if (is_callable($func)) {
-						$this->check_func_array[$row['check_id']] = $func->bindTo($this, get_class($this));
-					} else {
-						$this->check_func_array[$row['check_id']] = $code; // Fallback to raw code
-					}
-				} catch (Throwable $t) {
-					error_log("AChecker Error compiling check " . $row['check_id'] . ": " . $t->getMessage());
-					$this->check_func_array[$row['check_id']] = $code; // Fallback
-				}
+				$this->check_func_array[$row['check_id']] = $code;
 				$this->checks_data[$row['check_id']] = $row; // Cache the whole row
 			}
 			BasicChecks::preloadSearchStrings($this->checks_data);
@@ -447,18 +436,14 @@ class AccessibilityValidator {
 		
 		$line_number = $e->linenumber-$this->line_offset;
 		
-		$result = $this->get_check_result($line_number, $col_number, $check_id);
+		$result = $this->get_check_result($e, $check_id);
 
 		// has not been checked
 		if (!$result)
 		{
 			try {
-				$func = $this->check_func_array[$check_id];
-				if (is_callable($func)) {
-					$check_result = $func($e, $check_id);
-				} else {
-					$check_result = eval($func);
-				}
+				$code = $this->check_func_array[$check_id];
+				$check_result = eval($code);
 			} catch (Throwable $e_eval) {
 				error_log("AChecker Error in check $check_id: " . $e_eval->getMessage());
 				$check_result = null;
@@ -484,7 +469,7 @@ class AccessibilityValidator {
 					$this->num_success[$check_id]=1;
 				
 				// CRITICAL: Cache success results too!
-				$this->save_result($line_number, $col_number, '', $check_id, $result, '', '', $css_code);
+				$this->save_result($e, $line_number, $col_number, '', $check_id, $result, '', '', $css_code);
 			}
 			
 			if ($result == FAIL_RESULT)
@@ -520,7 +505,7 @@ class AccessibilityValidator {
 					$line_number = $has_duplicate_attribute[0];
 					$html_code .= "(".$has_duplicate_attribute[1].")";
 				}
-				$this->save_result($line_number, $col_number, $html_code, $check_id, $result, $image, $image_alt, $css_code);
+				$this->save_result($e, $line_number, $col_number, $html_code, $check_id, $result, $image, $image_alt, $css_code);
 			}
 		}
 		
@@ -544,9 +529,9 @@ class AccessibilityValidator {
 	 * $line_number: line number in the content for this check
 	 * $check_id: check id
 	 */
-	private function get_check_result($line_number, $col_number, $check_id)
+	private function get_check_result($e, $check_id)
 	{
-		$key = "{$line_number}_{$col_number}_{$check_id}";
+		$key = spl_object_hash($e) . "_{$check_id}";
 		if (isset($this->result_map[$key])) {
 			return $this->result_map[$key];
 		}
@@ -562,9 +547,9 @@ class AccessibilityValidator {
 	 * $check_id: check id
 	 * $result: result to save
 	 */
-	private function save_result($line_number, $col_number, $html_code, $check_id, $result, $image, $image_alt, $css_code)
+	private function save_result($e, $line_number, $col_number, $html_code, $check_id, $result, $image, $image_alt, $css_code)
 	{
-		$key = "{$line_number}_{$col_number}_{$check_id}";
+		$key = spl_object_hash($e) . "_{$check_id}";
 		
 		// Strict duplicate check
 		if (isset($this->result_map[$key])) {
