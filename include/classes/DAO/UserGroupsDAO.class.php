@@ -65,7 +65,7 @@ class UserGroupsDAO extends DAO {
 			               )
 			       VALUES ('".$title."',
 			               '".$description."',
-			               now()
+			               CURRENT_TIMESTAMP
 			              )";
 
 			if (!$this->execute($sql))
@@ -122,7 +122,7 @@ class UserGroupsDAO extends DAO {
 			$sql = "UPDATE ".TABLE_PREFIX."user_groups
 			           SET title = '".$title."',
 			               description = '".$description."',
-			               last_update = now()
+			               last_update = CURRENT_TIMESTAMP
 			         WHERE user_group_id = ".$user_group_id;
 
 			return $this->execute($sql);

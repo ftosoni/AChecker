@@ -434,10 +434,6 @@ function get_guideline_div($guideline_rows, $num_of_guidelines_per_row, $format 
             console.log("AChecker: Event triggered on #mw_project_input");
             renderMenu($(this).val());
         });
-        
-        $input.bind('focus', function() {
-            renderMenu($(this).val());
-        });
 
         $input.bind('blur', function() {
             setTimeout(function() { $menu.hide(); }, 200);

@@ -163,7 +163,7 @@ class RESTWebServiceOutput {
 				$result_type = _AC('error');
 
 				$repair = str_replace('{REPAIR}',
-				                      htmlentities(_AC($row_check["how_to_repair"])),
+				                      htmlspecialchars(_AC($row_check["how_to_repair"])),
 				                      $this->rest_repair);
 			}
 			else
@@ -178,7 +178,7 @@ class RESTWebServiceOutput {
 
 					$decision_made = str_replace(array('{DECISIONMADE}',
 					                                   '{DECISIONMADEDATE}'),
-					                             array(htmlentities($decision_text),
+					                             array(htmlspecialchars($decision_text),
 					                                   $row_userDecision['last_update']),
 					                             $this->rest_decision_made);
 				}
@@ -202,7 +202,7 @@ class RESTWebServiceOutput {
 				}
 
 				$decision_questions = str_replace(array('{SEQUENCEID}', '{DECISIONPASS}', '{DECISIONFAIL}'),
-				                                  array($error['line_number'].'_'.$error['col_number'].'_'.$error['check_id'], htmlentities(_AC($row_check['decision_pass'])), htmlentities(_AC($row_check['decision_fail']))),
+				                                  array($error['line_number'].'_'.$error['col_number'].'_'.$error['check_id'], htmlspecialchars(_AC($row_check['decision_pass'])), htmlspecialchars(_AC($row_check['decision_fail']))),
 				                                  $this->rest_decision_questions);
 
 				$decision = $decision_questions . $decision_made;
@@ -222,11 +222,11 @@ class RESTWebServiceOutput {
 			                      array($result_type,
 			                            $error["line_number"],
 			                            $error["col_number"],
-			                            htmlentities(AC_BASE_HREF),
+			                            htmlspecialchars(AC_BASE_HREF),
 			                            $error['check_id'],
-			                            htmlentities(_AC("suggest_improvements")),
-			                            htmlentities(_AC($row_check['err'])),
-			                            htmlentities($error["html_code"], ENT_QUOTES, "UTF-8"),
+			                            htmlspecialchars(_AC("suggest_improvements")),
+			                            htmlspecialchars(_AC($row_check['err'])),
+			                            htmlspecialchars($error["html_code"], ENT_QUOTES, "UTF-8"),
 			                            $repair,
 			                            $decision),
 			                      $this->rest_result);
@@ -243,7 +243,7 @@ class RESTWebServiceOutput {
 		foreach ($this->guidelineArray as $gid)
 		{
 			$row_guideline = $guidelinesDAO->getGuidelineByIDs($gid);
-			$guidelines .= str_replace('{GUIDELINE}', htmlentities($row_guideline[0]['title']), $this->rest_guideline);
+			$guidelines .= str_replace('{GUIDELINE}', htmlspecialchars($row_guideline[0]['title']), $this->rest_guideline);
 		}
 
 		// find out result status: pass, fail, conditional pass
@@ -323,7 +323,7 @@ class RESTWebServiceOutput {
 		foreach ($errors as $err)
 		{
 			$error_detail .= str_replace(array("{ERROR_CODE}", "{MESSAGE}"),
-			                             array($errorCodes[$err], htmlentities(_AC($err))),
+			                             array($errorCodes[$err], htmlspecialchars(_AC($err))),
 			                             $rest_error_detail);
 		}
 

@@ -168,7 +168,7 @@ class UserDecisionsDAO extends DAO {
 		               ".$col_num.",
 		               ".$check_id.",
 		               '".$decision."',
-		               now())";
+		               CURRENT_TIMESTAMP)";
 				return $this->execute($sql);
 			} else if ($row['decision'] != $decision) {
 		        $sql = "UPDATE ".TABLE_PREFIX."user_decisions 

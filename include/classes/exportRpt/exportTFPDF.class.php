@@ -60,7 +60,7 @@ class acheckerTFPDF extends tFPDF {
 	function __construct($known, $likely, $potential, $html, $css, 
 		$error_nr_known, $error_nr_likely, $error_nr_potential, $error_nr_html, $error_nr_css, $css_error, $html_error)
 	{
-		//Call parent constructor
+		// die("DEBUG: acheckerTFPDF is being used");
 		parent::__construct('P','mm','A4');
 	
 		$this->known = $known;
@@ -77,6 +77,15 @@ class acheckerTFPDF extends tFPDF {
 		
 		$this->css_error = $css_error;
 		$this->html_error = $html_error;
+	}
+
+	// Override Error to prevent fatal crashes on images
+	function Error($msg) {
+		if (strpos($msg, 'image') !== false || strpos($msg, 'Can\'t open') !== false) {
+			error_log("tFPDF Image Error Ignored: " . $msg);
+			return;
+		}
+		parent::Error($msg);
 	}
 	
 	/**
@@ -168,20 +177,20 @@ class acheckerTFPDF extends tFPDF {
 	    $cy = $y + $radius;
 	    
 	    if ($type == 'error') {
-	        $this->SetFillColor(204, 0, 0);
-	        $this->SetDrawColor(153, 0, 0);
+	        $this->SetFillColor(245, 71, 57); // color-icon-error
+	        $this->SetDrawColor(191, 60, 44); // color-error
 	        $symbol = 'X';
 	    } else if ($type == 'warning') {
-	        $this->SetFillColor(237, 131, 0);
-	        $this->SetDrawColor(180, 100, 0);
+	        $this->SetFillColor(171, 127, 42); // color-icon-warning
+	        $this->SetDrawColor(136, 100, 37); // color-warning
 	        $symbol = '!';
 	    } else if ($type == 'success') {
-	        $this->SetFillColor(0, 128, 0);
-	        $this->SetDrawColor(0, 100, 0);
+	        $this->SetFillColor(9, 153, 121); // color-icon-success
+	        $this->SetDrawColor(23, 120, 96); // color-success
 	        $symbol = 'V';
 	    } else {
-	        $this->SetFillColor(0, 51, 153);
-	        $this->SetDrawColor(0, 30, 100);
+	        $this->SetFillColor(51, 102, 204); // color-icon-progressive
+	        $this->SetDrawColor(51, 102, 204); // color-progressive
 	        $symbol = '?';
 	    }
 	    
@@ -189,8 +198,8 @@ class acheckerTFPDF extends tFPDF {
 	    
 	    $this->SetTextColor(255, 255, 255);
 	    $this->SetFont('DejaVu', 'B', 6);
-	    $this->SetXY($x, $y);
-	    $this->Cell($size, $size + 0.2, $symbol, 0, 0, 'C');
+	    $this->SetXY($x, $y + 0.3); // Vertical adjustment for symbol
+	    $this->Cell($size, $size, $symbol, 0, 0, 'C');
 	    $this->SetTextColor(0); // reset
 	}
 
@@ -249,6 +258,7 @@ class acheckerTFPDF extends tFPDF {
 		$this->AddFont('DejaVu', 'B',  'DejaVuSansCondensed-Bold.ttf', true);
 		$this->AddFont('DejaVu', 'I',  'DejaVuSansCondensed-Oblique.ttf', true);
 		$this->AddFont('DejaVu', 'BI', 'DejaVuSansCondensed-BoldOblique.ttf', true);
+		$this->AddFont('DejaVuMono', '', 'DejaVuSansMono.ttf', true);
 		
 		// add a page
 		$this->AddPage();
@@ -310,14 +320,14 @@ class acheckerTFPDF extends tFPDF {
 	
 		// str with error type and nr of errors
 		$this->SetFont('DejaVu', 'B', 14);
-		$this->SetTextColor(0);
+		$this->SetTextColor(32, 33, 34); // color-base
 		$this->Write(5, _AC('file_report_'.$problem_type).' ('.$nr.' '._AC('file_report_found').'):');		
 		$this->Ln(10);
 		
 		// show congratulations if no errors found
 		if ($nr == 0) {
 			$this->Ln(3);
-			$this->SetTextColor(0, 128, 0);
+			$this->SetTextColor(23, 120, 96); // color-success
 			$this->SetX(11);
 			$this->drawStatusIcon('success', $this->GetX(), $this->GetY());
 			$this->SetX(17);
@@ -330,7 +340,7 @@ class acheckerTFPDF extends tFPDF {
 			// group level output
 			foreach($array as $group_title => $group_content) {
 				$this->Ln(3);						
-				$this->SetTextColor(165,7,7);
+				$this->SetTextColor(16, 20, 24); // color-emphasized
 				$this->SetX(10);
 				$this->SetFont('DejaVu', 'B', 12);	
 				$this->Write(5, $group_title);
@@ -339,8 +349,8 @@ class acheckerTFPDF extends tFPDF {
 				// subgroup level output
 				foreach($group_content as $subgroup_title => $subgroup_content) {
 					$this->SetFont('DejaVu', 'B', 10);
-					$this->SetTextColor(165,7,7);
-					$this->SetX(17);
+					$this->SetTextColor(16, 20, 24); // color-emphasized
+					$this->SetX(20);
 					$this->Write(5, $subgroup_title);
 					$this->Ln(8);
 	
@@ -348,14 +358,14 @@ class acheckerTFPDF extends tFPDF {
 					foreach($subgroup_content as $check_group) {
 						$this->SetTextColor(0);	
 						$this->SetFont('DejaVu', 'B', 10);
-						$this->SetX(21);
+						$this->SetX(24);
 						$check = ($check_group['check_label'] ?? "")." ".($check_group['check_id'] ?? "").": ".strip_tags($check_group['error'] ?? "");
 						$this->Write(5, $check);				
 						$this->SetTextColor(0);
 						$this->SetFont('DejaVu', '', 10);
 						$this->Ln(8);					
 						if (is_array($check_group['repair'])) {
-							$this->SetX(28);
+							$this->SetX(31);
 							$this->Write(5, ($check_group['repair']['label'] ?? "" ).": ".strip_tags($check_group['repair']['detail'] ?? ""));
 							$this->Ln(8);
 						}
@@ -364,9 +374,9 @@ class acheckerTFPDF extends tFPDF {
 						foreach($check_group['errors'] as $error) {
 							// error icon img, line, column, error text
 							$img_data = explode(".", $error['img_src']);
-							$type = ($img_data[0] == 'known') ? 'error' : (($img_data[0] == 'likely') ? 'warning' : 'info');
-							$this->drawStatusIcon($type, $this->GetX()+18, $this->GetY());
-							$this->SetX(32);
+							$type = ($img_data[0] == 'error' || $img_data[0] == 'known') ? 'error' : (($img_data[0] == 'warning' || $img_data[0] == 'likely') ? 'warning' : 'info');
+							$this->drawStatusIcon($type, 26, $this->GetY());
+							$this->SetX(34);
 							$this->SetFont('DejaVu', 'BI', 9);
 							$this->SetTextColor(0);
 							$location = " ".($error['line_text'] ?? "")." ".($error['line_nr'] ?? "").", ".($error['col_text'] ?? "")." ".($error['col_nr'] ?? "").":";
@@ -385,16 +395,39 @@ class acheckerTFPDF extends tFPDF {
 								}
 							}
 							$str = str_replace("\t", "    ", html_entity_decode($error['html_code'] ?? ""));
-							$this->Write(5, $str);
-							$this->Ln(8);
+							$this->SetFont('DejaVuMono', '', 9);
+							$this->SetFillColor(248, 249, 250); // background-color-neutral-subtle
+							$this->SetX(31);
+							$this->MultiCell(160, 5, $str, 0, 'L', true);
+							$this->Ln(3);
+
+							// output the actual image if available
+							if (is_array($error['error_img'] ?? '') && ($error['error_img']['img_src'] ?? '') != '') {
+							    $img_url = $error['error_img']['img_src'];
+							    if (strpos($img_url, '//') === 0) $img_url = 'https:' . $img_url;
+							    $ext = strtolower(pathinfo($img_url, PATHINFO_EXTENSION));
+							    // Simple check for supported formats and valid URL
+							    if (in_array($ext, array('jpg', 'jpeg', 'png', 'gif')) && (strpos($img_url, 'http') === 0 || strpos($img_url, '//') === 0)) {
+							        $this->SetX(28);
+							        // Pre-verify image accessibility to avoid tFPDF fatal errors
+							        $context = stream_context_create(array("ssl" => array("verify_peer" => false, "verify_peer_name" => false)));
+							        $f = @fopen($img_url, 'rb', false, $context);
+							        if ($f) {
+							            fclose($f);
+							            @$this->Image($img_url, $this->GetX(), $this->GetY(), 0, 10);
+							            $this->Ln(12);
+							        }
+							    }
+							}
 							
 							// css code
 							if ($error['css_code'] != '') {
 								$pattern = "/CSS.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s/";
 								if (preg_match($pattern, strip_tags($error['css_code']), $matches)) {
-									$this->SetFont('Helvetica', '', 8);
+									$this->SetFont('DejaVuMono', '', 8);
+									$this->SetFillColor(245, 245, 245);
 									$this->SetX(28);
-									$this->MultiCell(0, 5, $matches[0], 0, 'L', false);	
+									$this->MultiCell(160, 5, $matches[0], 0, 'L', true);	
 									$this->Ln(3);
 								}							
 							}	
@@ -446,14 +479,14 @@ class acheckerTFPDF extends tFPDF {
 		
 		// str with error type and nr of errors
 		$this->SetFont('DejaVu', 'B', 14);
-		$this->SetTextColor(0);
+		$this->SetTextColor(32, 33, 34); // color-base
 		$this->Write(5, _AC('file_report_'.$problem_type).' ('.$nr.' '._AC('file_report_found').'):');		
 		$this->Ln(10);
 		
 		// show congratulations if no errors found
 		if ($nr == 0) {
 			$this->Ln(3);
-			$this->SetTextColor(0, 128, 0);
+			$this->SetTextColor(23, 120, 96); // color-success
 			$this->SetX(10);
 			$this->drawStatusIcon('success', $this->GetX(), $this->GetY());
 			$this->SetX(14);
@@ -465,8 +498,8 @@ class acheckerTFPDF extends tFPDF {
 			if ($problem_type == 'known') {
 				foreach($array as $error) {
 					// error icon img, line, column, error text
-					$this->drawStatusIcon('error', $this->GetX()+7, $this->GetY());
-					$this->SetX(21);
+					$this->drawStatusIcon('error', 21, $this->GetY());
+					$this->SetX(29);
 					$this->SetTextColor(0);
 					$this->SetFont('DejaVu', 'BI', 9);
 					$location = " ".$error['line_text']." ".$error['line_nr'].", ".$error['col_text']." ".$error['col_nr'].":  ";
@@ -488,16 +521,38 @@ class acheckerTFPDF extends tFPDF {
 						}
 					}
 					$str = str_replace("\t", "    ", html_entity_decode($error['html_code']));
-					$this->Write(5, $str);
-					$this->Ln(8);
+					$this->SetFont('DejaVuMono', '', 9);
+					$this->SetFillColor(248, 249, 250); // background-color-neutral-subtle
+					$this->SetX(22);
+					$this->MultiCell(175, 5, $str, 0, 'L', true);
+					$this->Ln(3);
+
+					// output the actual image if available
+					if (is_array($error['image'] ?? '') && ($error['image']['src'] ?? '') != '') {
+					    $img_url = $error['image']['src'];
+					    if (strpos($img_url, '//') === 0) $img_url = 'https:' . $img_url;
+					    $ext = strtolower(pathinfo($img_url, PATHINFO_EXTENSION));
+					    if (in_array($ext, array('jpg', 'jpeg', 'png', 'gif')) && (strpos($img_url, 'http') === 0 || strpos($img_url, '//') === 0)) {
+					        $this->SetX(17);
+					        // Pre-verify image accessibility to avoid tFPDF fatal errors
+					        $context = stream_context_create(array("ssl" => array("verify_peer" => false, "verify_peer_name" => false)));
+					        $f = @fopen($img_url, 'rb', false, $context);
+					        if ($f) {
+					            fclose($f);
+					            @$this->Image($img_url, $this->GetX(), $this->GetY(), 0, 10);
+					            $this->Ln(12);
+					        }
+					    }
+					}
 					
 					// css code
 					if ($error['css_code'] != '') {
 						$pattern = "/CSS.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s/";
 						if (preg_match($pattern, strip_tags($error['css_code']), $matches)) {
-							$this->SetFont('Helvetica', '', 8);
+							$this->SetFont('DejaVuMono', '', 8);
+							$this->SetFillColor(245, 245, 245);
 							$this->SetX(17);
-							$this->MultiCell(0, 5, $matches[0], 0, 'L', false);	
+							$this->MultiCell(175, 5, $matches[0], 0, 'L', true);	
 							$this->Ln(3);
 						}							
 					}
@@ -516,8 +571,8 @@ class acheckerTFPDF extends tFPDF {
 						// error icon img, line, column, error text
 						$img_data = explode(".", $error['img_src']);
 						$type = ($img_data[0] == 'known') ? 'error' : (($img_data[0] == 'likely') ? 'warning' : 'info');
-						$this->drawStatusIcon($type, $this->GetX()+7, $this->GetY());
-						$this->SetX(21);
+						$this->drawStatusIcon($type, 21, $this->GetY());
+						$this->SetX(29);
 						$this->SetTextColor(0);
 						$this->SetFont('DejaVu', 'BI', 9);
 						$location = " ".$error['line_text']." ".$error['line_nr'].", ".$error['col_text']." ".$error['col_nr'].":  ";
@@ -539,16 +594,38 @@ class acheckerTFPDF extends tFPDF {
 							}
 						}
 						$str = str_replace("\t", "    ", html_entity_decode($error['html_code'] ?? ""));
-						$this->Write(5, $str);
-						$this->Ln(8);
+						$this->SetFont('DejaVuMono', '', 9);
+						$this->SetFillColor(248, 249, 250); // background-color-neutral-subtle
+						$this->SetX(22);
+						$this->MultiCell(175, 5, $str, 0, 'L', true);
+						$this->Ln(3);
+
+						// output the actual image if available
+						if (is_array($error['image'] ?? '') && ($error['image']['src'] ?? '') != '') {
+						    $img_url = $error['image']['src'];
+						    if (strpos($img_url, '//') === 0) $img_url = 'https:' . $img_url;
+						    $ext = strtolower(pathinfo($img_url, PATHINFO_EXTENSION));
+						    if (in_array($ext, array('jpg', 'jpeg', 'png', 'gif')) && (strpos($img_url, 'http') === 0 || strpos($img_url, '//') === 0)) {
+						        $this->SetX(17);
+						        // Pre-verify image accessibility to avoid tFPDF fatal errors
+						        $context = stream_context_create(array("ssl" => array("verify_peer" => false, "verify_peer_name" => false)));
+						        $f = @fopen($img_url, 'rb', false, $context);
+						        if ($f) {
+						            fclose($f);
+						            @$this->Image($img_url, $this->GetX(), $this->GetY(), 0, 10);
+						            $this->Ln(12);
+						        }
+						    }
+						}
 
 						// css code
 						if ($error['css_code'] != '') {
 							$pattern = "/CSS.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s/";
 							if (preg_match($pattern, strip_tags($error['css_code']), $matches)) {
-								$this->SetFont('Helvetica', '', 8);
+								$this->SetFont('DejaVuMono', '', 8);
+								$this->SetFillColor(245, 245, 245);
 								$this->SetX(17);
-								$this->MultiCell(0, 5, $matches[0], 0, 'L', false);	
+								$this->MultiCell(175, 5, $matches[0], 0, 'L', true);	
 								$this->Ln(3);
 							}							
 						}

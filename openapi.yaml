@@ -1,0 +1,329 @@
+openapi: 3.0.0
+info:
+  title: AChecker Web Service API
+  description: Interface applications with AChecker through its experimental API for accessibility validation and manual decisions.
+  version: 0.1.0
+servers:
+  - url: /
+    description: Current server
+paths:
+  /check.php:
+    get:
+      summary: Accessibility Validation
+      description: Validate a URI for accessibility based on selected guidelines.
+      parameters:
+        - name: uri
+          in: query
+          required: true
+          description: "The encoded URL of the document to validate. Example: https://it.wikipedia.org/wiki/Pagina_principale"
+          schema:
+            type: string
+            format: uri
+            example: "https://it.wikipedia.org/wiki/Pagina_principale"
+        - name: id
+          in: query
+          required: false
+          description: "Your 40-character Web Service ID. Optional for anonymous validation."
+          schema:
+            type: string
+            default: ""
+            minLength: 40
+            maxLength: 40
+            example: "7563f695922096734c31168f14120969547d337d"
+        - name: guide
+          in: query
+          description: "The guidelines to validate against, separated by commas. Default is WCAG2-AA."
+          schema:
+            type: string
+            default: WCAG2-AA
+            example: "WCAG2-AA,508"
+            enum:
+              - BITV1
+              - 508
+              - STANCA
+              - WCAG1-A
+              - WCAG1-AA
+              - WCAG1-AAA
+              - WCAG2-A
+              - WCAG2-AA
+              - WCAG2-AAA
+        - name: output
+          in: query
+          description: "The output format. Default is html."
+          schema:
+            type: string
+            default: pdf
+            enum:
+              - html
+              - rest
+              - pdf
+              - csv
+              - earl
+              - wikitext
+        - name: offset
+          in: query
+          description: "The line offset to begin validation on."
+          schema:
+            type: integer
+            default: 0
+        - name: html
+          in: query
+          description: "Enable HTML validation."
+          schema:
+            type: integer
+            enum: [0, 1]
+            default: 0
+        - name: css
+          in: query
+          description: "Enable CSS validation."
+          schema:
+            type: integer
+            enum: [0, 1]
+            default: 0
+        - name: show_source
+          in: query
+          description: "Show the source code of the validated page."
+          schema:
+            type: integer
+            enum: [0, 1]
+            default: 0
+        - name: mode
+          in: query
+          description: "The layout mode of the report."
+          schema:
+            type: string
+            enum: [line, guideline]
+            default: guideline
+        - name: report
+          in: query
+          description: "Specific part of the report to export. Default is all."
+          schema:
+            type: string
+            enum: [all, known, likely, potential, html, css]
+            default: all
+      responses:
+        '200':
+          description: Successful validation response.
+          content:
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+            text/html:
+              schema:
+                type: string
+                description: HTML snippet of the validation report.
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Malformed request or validation errors.
+          content:
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                emptyUri:
+                  summary: Empty URI Error
+                  value:
+                    totalCount: 1
+                    error:
+                      - code: "401"
+                        message: "Empty URI."
+                invalidId:
+                  summary: Invalid Web Service ID Error
+                  value:
+                    totalCount: 1
+                    error:
+                      - code: "404"
+                        message: "Invalid web service ID."
+
+  /decisions.php:
+    get:
+      summary: Make or Reverse Decisions
+      description: |
+        Save or reverse decisions made on accessibility checks that require human review.
+        Decisions are passed as dynamic query parameters in the format `sequenceID=decision`.
+        Example: `204_1_1=P` where `204_1_1` is the sequenceID and `P` (Pass) is the decision.
+      parameters:
+        - name: uri
+          in: query
+          required: true
+          description: The encoded URL of the document.
+          schema:
+            type: string
+            format: uri
+        - name: id
+          in: query
+          required: false
+          description: "Your 40-character Web Service ID. Optional for anonymous sessions."
+          schema:
+            type: string
+        - name: session
+          in: query
+          required: true
+          description: "The sessionID returned from a previous validation response (e.g. from /check.php?output=rest)."
+          schema:
+            type: string
+        - name: output
+          in: query
+          description: The output format.
+          schema:
+            type: string
+            default: html
+            enum:
+              - html
+              - rest
+        - name: reverse
+          in: query
+          description: Set to true to reverse decisions on the provided sequence IDs.
+          schema:
+            type: string
+            enum:
+              - "true"
+      responses:
+        '200':
+          description: Decision operation response.
+          content:
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/DecisionResult'
+            text/html:
+              schema:
+                type: string
+                description: HTML snippet (e.g., "Success").
+        '400':
+          description: Malformed request or decision errors.
+          content:
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingSequence:
+                  summary: Missing Sequence ID Error
+                  value:
+                    totalCount: 1
+                    error:
+                      - code: "405"
+                        message: "No sequence id is given."
+
+  /projects.php:
+    get:
+      summary: "MediaWiki Projects List"
+      description: "Retrieve a list of all supported MediaWiki projects and their base URLs. This can be used to populate project lookups in third-party tools."
+      responses:
+        '200':
+          description: "A JSON array of project objects."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    url:
+                      type: string
+                    code:
+                      type: string
+                    aliases:
+                      type: array
+                      items:
+                        type: string
+
+components:
+  schemas:
+    ValidationResult:
+      type: object
+      xml:
+        name: resultset
+      properties:
+        summary:
+          type: object
+          properties:
+            status:
+              type: string
+              enum: [FAIL, CONDITIONAL PASS, PASS]
+            sessionID:
+              type: string
+            NumOfErrors:
+              type: integer
+            NumOfLikelyProblems:
+              type: integer
+            NumOfPotentialProblems:
+              type: integer
+            guidelines:
+              type: array
+              items:
+                type: string
+                xml:
+                  name: guideline
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResultItem'
+          xml:
+            name: results
+    ResultItem:
+      type: object
+      xml:
+        name: result
+      properties:
+        resultType:
+          type: string
+          enum: [Error, Likely Problem, Potential Problem]
+        lineNum:
+          type: integer
+        columnNum:
+          type: integer
+        errorMsg:
+          type: string
+        errorSourceCode:
+          type: string
+        repair:
+          type: string
+        decisionPass:
+          type: string
+        decisionFail:
+          type: string
+        decisionMade:
+          type: string
+        decisionMadeDate:
+          type: string
+    DecisionResult:
+      type: object
+      xml:
+        name: summary
+      properties:
+        status:
+          type: string
+          example: success
+    ErrorResponse:
+      type: object
+      xml:
+        name: errors
+      properties:
+        totalCount:
+          type: integer
+        error:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorDetail'
+    ErrorDetail:
+      type: object
+      xml:
+        name: error
+      properties:
+        code:
+          type: string
+          xml:
+            attribute: true
+        message:
+          type: string

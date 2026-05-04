@@ -67,7 +67,7 @@ if ($uri == '')
 
 if ($web_service_id == '')
 {
-	$errors[] = 'AC_ERROR_EMPTY_WEB_SERVICE_ID';
+	$user_id = 0;
 }
 else
 { // validate web service id

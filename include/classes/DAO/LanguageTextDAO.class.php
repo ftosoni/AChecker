@@ -45,7 +45,7 @@ class LanguageTextDAO extends DAO {
 		         '".$this->addSlashes($variable)."', 
 		         '".$this->addSlashes($term)."', 
 		         '".$this->addSlashes($text)."', 
-		         now(), 
+		         CURRENT_TIMESTAMP, 
 		         '".$this->addSlashes($context)."')";
 
 		return $this->execute($sql);
@@ -73,7 +73,7 @@ class LanguageTextDAO extends DAO {
 		         '".$this->addSlashes($variable)."', 
 		         '".$this->addSlashes($term)."', 
 		         '".$this->addSlashes($text)."', 
-		         now(), 
+		         CURRENT_TIMESTAMP, 
 		         '".$this->addSlashes($context)."')";
 		        
 		return $this->execute($sql);
@@ -226,7 +226,7 @@ class LanguageTextDAO extends DAO {
 		
 		$sql = "UPDATE ".TABLE_PREFIX."language_text 
 		           SET text='".$text."',
-		               revised_date = now()
+		               revised_date = CURRENT_TIMESTAMP
 		         WHERE language_code = '".$languageCode."' 
 		           AND variable='".$variable."' 
 		           AND term = '".$term."'";

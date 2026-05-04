@@ -152,7 +152,7 @@ define('SITE_NAME',                 $_config['site_name']);
 
 	
 	// Create new Plates instance
-	$plates = new League\Plates\Engine(AC_INCLUDE_PATH . '../themes/' . $_SESSION['prefs']['PREF_THEME'] . '/', null);
+	$plates = new League\Plates\Engine(AC_INCLUDE_PATH . '../themes/' . $_SESSION['prefs']['PREF_THEME'], null);
 
 	require(AC_INCLUDE_PATH . '../themes/' . $_SESSION['prefs']['PREF_THEME'] . '/theme.cfg.php');
 

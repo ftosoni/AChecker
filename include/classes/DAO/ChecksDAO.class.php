@@ -70,7 +70,7 @@ class ChecksDAO extends DAO {
 				(`user_id`, `html_tag`, `confidence`, `open_to_public`, `create_date`) 
 				VALUES
 				(".$userID.",'".$html_tag."', '".$confidence."', ".
-		           $open_to_public.", now())";
+		           $open_to_public.", CURRENT_TIMESTAMP)";
 
 		if (!$this->execute($sql))
 		{

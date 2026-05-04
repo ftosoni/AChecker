@@ -53,7 +53,7 @@ class UserLinksDAO extends DAO {
 			       VALUES (".$user_id.",
 			               '".$guideline_ids."',
 			               '".$URI."',
-			               now())";
+			               CURRENT_TIMESTAMP)";
 
 			if (!$this->execute($sql))
 			{
@@ -96,7 +96,7 @@ class UserLinksDAO extends DAO {
 			           SET user_id = ".$user_id.",
 			               last_guideline_ids = '".$guideline_ids."',
 			               URI = '".$URI."',
-			               last_update = now()
+			               last_update = CURRENT_TIMESTAMP
 			         WHERE user_link_id = ".$user_link_id;
 
 			return $this->execute($sql);

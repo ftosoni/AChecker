@@ -113,7 +113,7 @@ class UsersDAO extends DAO {
 			               '".$email."',
 			               '".Utility::getSessionID()."',
 			               ".$status.",
-			               now()
+			               CURRENT_TIMESTAMP
 										)";
 
 			if (!$this->execute($sql))
@@ -403,7 +403,7 @@ class UsersDAO extends DAO {
 	}
 
 	/**
-	 * Update user's last login time to now()
+	 * Update user's last login time to CURRENT_TIMESTAMP
 	 * @access  public
 	 * @param   user id
 	 * @return  true    if update successfully
@@ -415,7 +415,7 @@ class UsersDAO extends DAO {
 	    // Satinize the input parameters
 	    $userID = intval($userID);
 
-	    $sql = "Update ".TABLE_PREFIX."users SET last_login=now() WHERE user_id='".$userID."'";
+	    $sql = "Update ".TABLE_PREFIX."users SET last_login=CURRENT_TIMESTAMP WHERE user_id='".$userID."'";
 		return $this->execute($sql);
 	}
 

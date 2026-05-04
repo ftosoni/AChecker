@@ -20,6 +20,7 @@ include(AC_INCLUDE_PATH.'header.inc.php');
 
 <h1>AChecker Web Service API</h1>
 <p>Interface applications with the AChecker through its experimental API. This is version 0.1, dated Mar 2009.</p>
+<p><strong>Interactive Documentation:</strong> You can now explore and test the API using our <a href="<?php echo AC_BASE_HREF; ?>docs/" target="_blank">Swagger UI</a>.</p>
 <p>Two types AChecker web service API are provided:</p>
   <ul style="list-style:decimal;">
     <li>Accessibility validation review;</li>
@@ -61,7 +62,7 @@ include(AC_INCLUDE_PATH.'header.inc.php');
 <p>Below is a table of the parameter you can use to send a request to AChecker for validating URI.</p>
 
 <p>If you want to use AChecker public validation server, use the parameters below in conjunction with the following base URI:<br />
-<kbd><?php echo AC_BASE_HREF; ?>checkacc.php</kbd> <br />
+<kbd><?php echo AC_BASE_HREF; ?>check.php</kbd> <br />
 (replace with the address of your own server if you want to call a private instance of the validator)</p>
 
 <table class="data" rules="all">
@@ -79,7 +80,7 @@ include(AC_INCLUDE_PATH.'header.inc.php');
   <th>id</th>
   <td>The "Web Service ID" generated once successfully registering into AChecker. 
   This ID is a 40 characters long string. It can always be retrieved from user's "Profile" page.</td>
-  <td>None, must be given.</td>
+  <td>Optional. If not provided, the request will be processed as an anonymous user.</td>
 </tr>
 
 <tr>
@@ -103,7 +104,7 @@ include(AC_INCLUDE_PATH.'header.inc.php');
   <a href="<?php echo AC_BASE_HREF.'documentation/web_service_api.php'; ?>#html_sample_response_validation">HTML format</a> 
   will be sent. If set to rest, <a href="<?php echo AC_BASE_HREF.'documentation/web_service_api.php'; ?>#rest_sample_response_validation">
   the REST interface</a> will be triggered.</td>
-  <td>html. Or either one of these values: html or rest</td>
+  <td>html. Or any of these values: html, rest, pdf, csv, earl, wikitext</td>
 </tr>
 
 <tr>
@@ -115,7 +116,7 @@ include(AC_INCLUDE_PATH.'header.inc.php');
 <br />
 
 <span style="font-weight: bold">Sample validation request</span>
-<p><?php echo AC_BASE_HREF; ?>checkacc.php?uri=http%3A%2F%2Fatutor.ca&
+<p><?php echo AC_BASE_HREF; ?>check.php?uri=http%3A%2F%2Fatutor.ca&
 id=888ca9e3f856baa0120755ecd8ffae6be3142029&output=html&guide=STANCA,WCAG2-AA&offset=10</p>
 <p>Goal: Validate URI <code>http://atutor.ca</code> against guidelines "Stanca Act" and "Wcag 2.0 L2". 
 Ignore the first 10 lines of html content from http://atutor.ca. Returns validation report
@@ -485,7 +486,7 @@ span.err_type{ padding: .1em .5em; font-size: smaller;}
 <p>Below is a table of the parameter you can use to send a request to AChecker for making decisions on likely or potential problems.</p>
 
 <p>As said, if you want to use AChecker public validation server, use the parameters below in conjunction with the following base URI:<br />
-<kbd><?php echo AC_BASE_HREF; ?>checkacc.php</kbd> <br />
+<kbd><?php echo AC_BASE_HREF; ?>check.php</kbd> <br />
 (replace with the address of your own server if you want to call a private instance of the validator)</p>
 
 <table class="data" rules="all">

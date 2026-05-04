@@ -27,27 +27,47 @@ class HTMLWebServiceOutput {
 '<?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE style PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <style type="text/css">
-ul {font-family: Arial; margin-bottom: 0px; margin-top: 0px; margin-right: 0px;}
-li.msg_err, li.msg_info { font-family: Arial; margin-bottom: 20px;list-style: none;}
-span.msg{font-family: Arial; line-height: 150%;}
-code.input { margin-bottom: 2ex; background-color: #F8F8F8; line-height: 130%;}
-span.err_type{ padding: .1em .5em; font-size: smaller;}
+@import url("https://tools-static.wmflabs.org/fontcdn/css?family=Ubuntu|JetBrains+Mono");
+body { font-family: "Ubuntu", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; color: #202122; background-color: #fff; margin: 20px; }
+h3 { color: #202122; font-size: 26px; margin-top: 36px; border-bottom: 2px solid #eaecf0; padding-bottom: 10px; }
+h4 { color: #202122; font-size: 22px; margin-top: 30px; }
+p, strong { font-size: 15px; }
+ul { list-style: none; padding: 0; }
+li.msg_err, li.msg_info { background: #fff; border: 1px solid #c8ccd1; border-radius: 12px; margin-bottom: 20px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+li.msg_err { border-left: 6px solid #bf3c2c; }
+li.msg_info { border-left: 6px solid #36c; }
+span.msg { display: block; font-size: 17px; font-weight: 500; margin-bottom: 12px; }
+span.msg a { color: #36c; text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.2s; }
+span.msg a:hover { border-bottom-color: #36c; }
+pre { background-color: #f8f9fa; border: 1px solid #c8ccd1; border-radius: 6px; padding: 16px; overflow-x: auto; margin: 16px 0; }
+code.input { font-family: "JetBrains Mono", Consolas, monospace; font-size: 14px; color: #202122; background: transparent; }
+.gd_msg { font-size: 19px; font-weight: 600; margin-top: 0; margin-bottom: 16px; color: #202122; }
+span.err_type { margin-right: 12px; }
+.cdx-report-marker { font-style: normal; font-size: 18px; }
+.helpwanted, .repair { font-size: 14px; color: #54595d; margin-top: 12px; padding: 8px 12px; background: #eaecf0; border-radius: 4px; }
+.summary-badge { display: inline-block; padding: 8px 20px; border-radius: 24px; font-weight: 700; text-transform: uppercase; font-size: 16px; letter-spacing: 1px; margin-right: 15px; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.badge-fail { background-color: #bf3c2c; }
+.badge-pass { background-color: #177860; }
+.badge-warning { background-color: #886425; }
 </style>
 <input value="{SESSIONID}" type="hidden" name="sessionid" />
-<p>
-<strong>Result: </strong>
-{SUMMARY}
-<strong><br />
-<strong>Guides: </strong>
-{GUIDELINE}
-</p>
+<div style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #dadce0;">
+    <p>
+        <strong>Status: </strong>
+        {SUMMARY}
+    </p>
+    <p>
+        <strong>Guides: </strong>
+        {GUIDELINE}
+    </p>
+</div>
 {DETAIL}
 {BUTTON_MAKE_DECISION}
 ';
 
 	var $html_summary =
-'<span style="background-color: {COLOR}; border: solid green; padding-right: 1em; padding-left: 1em">{SUMMARY}</span>&nbsp;&nbsp;
-<span style="color:red">{SUMMARY_DETAIL}</span>';
+'<span class="summary-badge {BADGE_CLASS}">{SUMMARY}</span>
+<span style="color: #5f6368; font-weight: 500;">{SUMMARY_DETAIL}</span>';
 
 	var $html_a =
 '<a title="{TITLE}" target="_new" href="{HREF}">{TITLE}</a>';
@@ -87,13 +107,18 @@ span.err_type{ padding: .1em .5em; font-size: smaller;}
 	* @return  web service html output
 	* @author  Cindy Qi Li
 	*/
-	function __construct($aValidator, $userLinkID, $guidelineIDs)
+	function __construct($aValidator, $userLinkID, $guidelineIDs, $mode = 'line')
 	{
 		$this->aValidator = $aValidator;
 		$this->guidelineIDs = $guidelineIDs;
 		$this->userLinkID = $userLinkID;
 
-		$this->htmlRpt = new HTMLRpt($aValidator->getValidationErrorRpt(), $userLinkID);
+		if ($mode == 'guideline') {
+			include_once(AC_INCLUDE_PATH.'classes/HTMLByGuidelineRpt.class.php');
+			$this->htmlRpt = new HTMLByGuidelineRpt($aValidator->getValidationErrorRpt(), $userLinkID);
+		} else {
+			$this->htmlRpt = new HTMLRpt($aValidator->getValidationErrorRpt(), $userLinkID);
+		}
 		$this->htmlRpt->setAllowSetDecisions('true');
 		$this->htmlRpt->generateRpt();
 
@@ -152,17 +177,17 @@ span.err_type{ padding: .1em .5em; font-size: smaller;}
 		if ($this->numOfErrors > 0)
 		{
 			$summary = _AC('fail');
-			$color = 'red';
+			$badge_class = 'badge-fail';
 		}
 		else if ($this->numOfFailLikelyProblems + $this->numOfFailPotentialProblems > 0)
 		{
 			$summary = _AC('conditional_pass');
-			$color = 'yellow';
+			$badge_class = 'badge-warning';
 		}
 		else
 		{
 			$summary = _AC('pass');
-			$color = 'green';
+			$badge_class = 'badge-pass';
 		}
 
 		// generate $html_summary.{SUMMARY_DETAIL}
@@ -178,8 +203,8 @@ span.err_type{ padding: .1em .5em; font-size: smaller;}
 		}
 		$summary_detail .= '</span>';
 
-		$this->summaryStr = str_replace(array('{COLOR}', '{SUMMARY}', '{SUMMARY_DETAIL}'),
-		                                array($color, $summary, $summary_detail),
+		$this->summaryStr = str_replace(array('{BADGE_CLASS}', '{SUMMARY}', '{SUMMARY_DETAIL}'),
+		                                array($badge_class, $summary, $summary_detail),
 		                                $this->html_summary);
 	}
 

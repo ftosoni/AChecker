@@ -117,7 +117,7 @@ define('AC_DECISION_FAIL', 'F');
 define('AC_NO_DECISION', 'N');
 
 // default output format on web service
-define('DEFAULT_WEB_SERVICE_OUTPUT', 'html');
+define('DEFAULT_WEB_SERVICE_OUTPUT', 'pdf');
 
 // default guideline to validate against
 define('DEFAULT_GUIDELINE', 8);

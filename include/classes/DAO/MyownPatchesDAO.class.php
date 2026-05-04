@@ -48,7 +48,7 @@ class MyownPatchesDAO extends DAO {
 		                '".$description."',
 		                '".$sql_statement."',
 		                'Created',
-		                now())";
+		                CURRENT_TIMESTAMP)";
 
 		if (!$this->execute($sql))
 		{
@@ -78,7 +78,7 @@ class MyownPatchesDAO extends DAO {
 		               description = '". $description ."',
 		               sql_statement = '". $sql_statement ."',
 		               status = 'Created',
-		               last_modified = now()
+		               last_modified = CURRENT_TIMESTAMP
 		         WHERE myown_patch_id = ". $myown_patch_id;
 
 		return $this->execute($sql);

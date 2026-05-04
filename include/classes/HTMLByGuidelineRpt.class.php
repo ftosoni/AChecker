@@ -54,11 +54,11 @@ class HTMLByGuidelineRpt extends AccessibilityRpt {
 
 	var $html_checks_table =
 '        <div class="gd_one_check">
-           <span class="gd_msg">{CHECK_LABEL} {CHECK_ID}:
+           <h5 class="gd_msg">{CHECK_LABEL} {CHECK_ID}:
               <a href="{BASE_HREF}checker/suggestion.php?id={CHECK_ID}"
                  onclick="AChecker.popup(\'{BASE_HREF}checker/suggestion.php?id={CHECK_ID}\'); return false;"
                  target="_new">{ERROR}</a>
-           </span>
+           </h5>
 
            <div class="gd_question_section">
            {REPAIR}

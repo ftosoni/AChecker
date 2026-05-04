@@ -74,7 +74,7 @@ class PatchesDAO extends DAO {
 					   '".$this->addSlashes($backup_files)."',
 					   '".$this->addSlashes($patch_files)."',
 					   '".$this->addSlashes($author)."',
-					   now()
+					   CURRENT_TIMESTAMP
 					   )";
 
 		if (!$this->execute($sql))
