@@ -64,7 +64,7 @@ class BasicChecks {
 
 			if ($prefix == '%' && $suffix == '%')
 			{  // match '%match%'
-				if (stripos($text, substr($str, 1, -1)) > 0) return true;
+				if (stripos((string)$text, substr((string)$str, 1, -1)) > 0) return true;
 			}
 			else if ($prefix == '%')
 			{  // match '%match'
@@ -763,12 +763,12 @@ class BasicChecks {
 	public static function getSiteUri($uri){
 
 
-			if(stripos($uri,".php")!==false || stripos($uri,".html")!==false || stripos($uri,".asp")!==false || stripos($uri,".htm")!==false || stripos($uri,".xhtml")!==false || stripos($uri,".xhtm")!==false)
+			if(stripos((string)$uri,".php")!==false || stripos((string)$uri,".html")!==false || stripos((string)$uri,".asp")!==false || stripos((string)$uri,".htm")!==false || stripos((string)$uri,".xhtml")!==false || stripos((string)$uri,".xhtm")!==false)
 			{
 				// must remove part after finished
 				//devo eliminare la parte dopo l'ultimo /
 				$uri=strrev($uri);
-				$posizione= stripos($uri,"/");
+				$posizione= stripos((string)$uri,"/");
 				$uri=strrev($uri);
 				$uri=substr($uri,0,-$posizione);
 			}
@@ -819,7 +819,7 @@ class BasicChecks {
 		if (is_array($e->attr) && isset ( $e->attr ["style"] )) {
 			$inline = BasicChecks::GetElementStyleInline ( (string)$e->attr ["style"], $p );
 			//verifico "!important"
-			$posizione = stripos ( $inline, "!important" );
+			$posizione = stripos ( (string)$inline, "!important" );
 			if ($posizione !== false) {
 				//tolgo "!important" e ritorno il valore della proprietà
 				//echo str_ireplace("!important", "", $inlinea_inline);
@@ -1149,7 +1149,7 @@ class BasicChecks {
 			if ($prop === '') continue;
 
 			if (isset ( $array_val [$prop] ) && is_array($array_val[$prop]) && isset($array_val[$prop]["val"]) && stripos ( (string)$array_val [$prop] ["val"], "!important" ) !== false) {
-				if (stripos ( $valore, "!important" ) !== false) {
+				if (stripos ( (string)$valore, "!important" ) !== false) {
 					$array_val [$prop] ["val"] = $valore;
 					$array_val [$prop] ["pos"] = trim ( (string)$i );
 				}
@@ -1240,12 +1240,12 @@ class BasicChecks {
 		//$array_valori = split ( " ", $stringa_valori );
 		$array_valori = explode ( " ", $stringa_valori );
 		foreach ( $array_valori as $val ) {
-			if (stripos ( $val, "#" ) !== false || stripos ( $val, "rgb(" ) !== false) {
+			if (stripos ( (string)$val, "#" ) !== false || stripos ( (string)$val, "rgb(" ) !== false) {
 				return $val;
 			} else // controllo i nomi dei colori
 {
 				foreach ( $nomi_colori as $colore )
-					if (stripos ( $val, $colore ) !== false)
+					if (stripos ( (string)$val, (string)$colore ) !== false)
 						return $colore;
 			}
 		}
@@ -1255,7 +1255,7 @@ class BasicChecks {
 	//riceve il contenuto della proprieta' margin/padding e restituisce il valore del margin/padding sinistro
 	public static function getLeft($stringa_valori) {
 
-		$has_important = stripos ( $stringa_valori, "!important" );
+		$has_important = stripos ( (string)$stringa_valori, "!important" );
 		// remove if there is! important and attach at the end
 		//se c'è rimuovo !important e lo attacco alla fine
 		if ($has_important !== false) {
@@ -1280,7 +1280,7 @@ class BasicChecks {
 	// gets the contents of the property margin / padding and returns the value of the margin / padding right
 	//riceve il contenuto della proprieta' margin/padding e restituisce il valore del margin/padding destro
 	public static function getRight($stringa_valori) {
-		$has_important = stripos ( $stringa_valori, "!important" );
+		$has_important = stripos ( (string)$stringa_valori, "!important" );
 		// if there is !important, remove it
 		//se c'è rimuovo !important
 		if ($has_important !== false) {
@@ -1311,7 +1311,7 @@ class BasicChecks {
 	//riceve il contenuto della proprietà margin/padding e restituisce il valore del margin/padding alto
 	public static function getTop($stringa_valori) {
 
-		$has_important = stripos ( $stringa_valori, "!important" );
+		$has_important = stripos ( (string)$stringa_valori, "!important" );
 		//if there 'remove !important - se c'e' rimuovo !important
 		if ($has_important !== false) {
 			$stringa_valori = str_ireplace ( "!important", "", $stringa_valori );
@@ -1336,7 +1336,7 @@ class BasicChecks {
 	//riceve il contenuto della proprietà margin/padding e restituisce il valore del margin/padding basso
 	public static function getBottom($stringa_valori) {
 
-		$has_important = stripos ( $stringa_valori, "!important" );
+		$has_important = stripos ( (string)$stringa_valori, "!important" );
 		//if there 'remove !important - se c'e' rimuovo !important
 		if ($has_important !== false) {
 			$stringa_valori = str_ireplace ( "!important", "", $stringa_valori );
