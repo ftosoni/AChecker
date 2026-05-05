@@ -95,7 +95,7 @@ class acheckerTFPDF extends tFPDF
 	// Override Error to prevent fatal crashes on images
 	function Error($msg)
 	{
-		if (strpos($msg, 'image') !== false || strpos($msg, 'Can\'t open') !== false) {
+		if (strpos($msg, 'image') !== false || strpos($msg, 'Can\'t open') !== false || strpos($msg, 'Alpha channel not supported') !== false) {
 			error_log("tFPDF Image Error Ignored: " . $msg);
 			return;
 		}

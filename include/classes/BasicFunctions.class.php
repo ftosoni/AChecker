@@ -912,16 +912,13 @@ class BasicFunctions {
 
 	/**
 	* Makes a guess about the table type.
-	* Returns true if this should be a data table, false if layout table.
+	* Returns true if this should be a data table, false if it's a layout table.
 	*/
 	public static function isDataTable()
 	{
-		global $is_data_table, $global_e;
+		global $global_e;
 
-		$is_data_table = array();
-		BasicChecks::isDataTable($global_e);
-
-		return $is_data_table;
+		return BasicChecks::isDataTable($global_e);
 	}
 
 	/**
@@ -1199,18 +1196,15 @@ class BasicFunctions {
 			$background = BasicChecks::getBackground ( $e );
 			$foreground = BasicChecks::getForeground ( $e );
 
-			if ($foreground == "" || $foreground == null || $background == "undetermined") {
+			// If background is -1 (image), we can't reliably check contrast.
+			if ($background == "-1") {
 				return true;
 			}
 
-			if ($background == "" || $background == null || $background == "-1" || $background == "undetermined") {
-				return true;
-			}
+			$background_hex = BasicChecks::convert_color_to_hex ( $background );
+			$foreground_hex = BasicChecks::convert_color_to_hex ( $foreground );
 
-			$background = BasicChecks::convert_color_to_hex ( $background );
-			$foreground = BasicChecks::convert_color_to_hex ( $foreground );
-
-			$ris = BasicChecks::ContrastRatio ( strtolower ( $background ), strtolower ( $foreground ) );
+			$ris = BasicChecks::ContrastRatio ( strtolower ( $background_hex ), strtolower ( $foreground_hex ) );
 			//echo "tag->"; echo $e->tag; echo " bg->"; echo $background; echo " fr->"; echo $foreground; echo " ris="; echo $ris; echo "<br>";
 
 			$size = BasicChecks::fontSizeToPt ( $e );
@@ -1277,14 +1271,14 @@ class BasicFunctions {
 
 		$background = '';
 		$foreground = '';
-		//elementi testuali
-		if (($e->tag == "div" || $e->tag == "p" || $e->tag == "span" || $e->tag == "strong" || $e->tag == "em" || $e->tag == "q" || $e->tag == "cite" || $e->tag == "blockquote" || $e->tag == "li" || $e->tag == "dd" || $e->tag == "dt" || $e->tag == "td" || $e->tag == "th" || $e->tag == "h1" || $e->tag == "h2" || $e->tag == "h3" || $e->tag == "h4" || $e->tag == "h5" || $e->tag == "h6" || $e->tag == "label" || $e->tag == "acronym" || $e->tag == "abbr" || $e->tag == "code" || $e->tag == "pre") && BasicChecks::isElementVisible ( $e )) {
+		// Textual elements
+		if (($e->tag == "div" || $e->tag == "p" || $e->tag == "span" || $e->tag == "strong" || $e->tag == "em" || $e->tag == "q" || $e->tag == "cite" || $e->tag == "blockquote" || $e->tag == "li" || $e->tag == "dd" || $e->tag == "dt" || $e->tag == "td" || $e->tag == "th" || $e->tag == "h1" || $e->tag == "h2" || $e->tag == "h3" || $e->tag == "h4" || $e->tag == "h5" || $e->tag == "h6" || $e->tag == "label" || $e->tag == "acronym" || $e->tag == "abbr" || $e->tag == "code" || $e->tag == "pre") && BasicChecks::isElementVisible($e)) {
 
-			if (trim ( BasicChecks::remove_children ( $e ) ) == "" || trim ( BasicChecks::remove_children ( $e ) ) == "&nbsp;") //l'elemento non contiene testo "visibile": non eseguo il controllo del contrasto
+			if (trim(BasicChecks::remove_children($e)) == "" || trim(BasicChecks::remove_children($e)) == "&nbsp;") // the element contains no "visible" text: do not perform contrast check
 				return true;
 
-			$background = BasicChecks::getBackground ( $e );
-			$foreground = BasicChecks::getForeground ( $e );
+			$background = BasicChecks::getBackground($e);
+			$foreground = BasicChecks::getForeground($e);
 
 			if ($foreground == "" || $foreground == null || $background == "undetermined")
 				return true;
@@ -1292,36 +1286,27 @@ class BasicFunctions {
 			if ($background == "" || $background == null || $background == "-1" || $background == "undetermined")
 				return true;
 
-			$background = BasicChecks::convert_color_to_hex ( $background );
-			$foreground = BasicChecks::convert_color_to_hex ( $foreground );
+			$background = BasicChecks::convert_color_to_hex($background);
+			$foreground = BasicChecks::convert_color_to_hex($foreground);
 
-			$ris = '';
-			$ris = BasicChecks::ContrastRatio ( strtolower ( $background ), strtolower ( $foreground ) );
-			//echo "tag->"; echo $e->tag; echo " bg->"; echo $background; echo " fr->"; echo $foreground; echo " ris="; echo $ris; echo "<br>";
+			$ratio = BasicChecks::ContrastRatio(strtolower($background), strtolower($foreground));
 
-
-			$size = BasicChecks::fontSizeToPt ( $e );
-			$bold = BasicChecks::get_p_css ( $e, "font-weight" );
+			$size = BasicChecks::fontSizeToPt($e);
+			$bold = BasicChecks::get_p_css($e, "font-weight");
 			if ($e->tag == "h1" || $e->tag == "h2" || $e->tag == "h3" || $e->tag == "h4" || $e->tag == "h5" || $e->tag == "h6")
 				$bold = "bold";
 
 
-			if ($size < 0) //formato non supportato
+			if ($size < 0) // format not supported
 				return true;
 			elseif ($size >= 18 || ($bold == "bold" && $size >= 14))
-				$threashold = 4.5;
+				$threshold = 4.5;
 			else
-				$threashold = 7;
+				$threshold = 7;
 
-			$stringa_testo_prova = '';
-
-			$stringa_testo_prova = "<p>ris: " . $ris . " threashold: " . $threashold . "</p>";
-
-			if ($ris < $threashold) {
-
+			if ($ratio < $threshold) {
 				return false;
 			} else {
-
 				return true;
 			}
 

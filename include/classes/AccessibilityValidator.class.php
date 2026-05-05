@@ -80,9 +80,11 @@ class AccessibilityValidator {
 	 */
 	public function validate()
 	{
+		global $global_content_dom;
 		// dom of the content to be validated
 		$this->content_dom = new simple_html_dom();
 		$this->content_dom->load($this->validate_content);
+		$global_content_dom = $this->content_dom;
 		
 		// set arrays of check_id, prerequisite check_id, next check_id
 		$this->prepare_check_arrays($this->guidelines);
@@ -93,7 +95,8 @@ class AccessibilityValidator {
 		// Single-pass global var preparation and element collection
 		$this->prepare_global_vars();
 
-		error_log("AChecker Debug: Starting flattened element validation");
+		$count = count($this->all_elements_cache);
+		error_log("AChecker Debug: Starting flattened element validation of $count elements");
 		
 		foreach ($this->all_elements_cache as $e) {
 			// Use pre-calculated merged check array
@@ -426,9 +429,15 @@ class AccessibilityValidator {
 	 */
 	private function check($e, $check_id)
 	{
-		global $msg, $base_href, $tag_size;
+		global $msg, $base_href, $tag_size, $global_e;
+		$global_e = $e;
 		// don't check the lines before $line_offset
 		if ($e->linenumber <= $this->line_offset) return;
+
+		// DEBUG
+		if ($check_id >= 301 && $check_id <= 310) {
+			error_log("AChecker: Running contrast check $check_id on element <" . $e->tag . "> at line " . $e->linenumber);
+		}
 
 		if ($e->linenumber == 1 && $this->col_offset > 0) {
 		    $col_number = $e->colnumber - $this->col_offset;
