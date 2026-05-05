@@ -776,6 +776,7 @@ class BasicChecks
 	 */
 	public static function get_p_css($e, $p)
 	{
+		if ($e === null) return null;
 
 		$inline = "";
 
@@ -1656,14 +1657,17 @@ class BasicChecks
 
 				if ($result == true) { // analyze and apply the new rule
 					// check if the priority of the new greater than previous
-					if (stripos($new_property_value, "!important") !== false && stripos($property_value, "!important") === false) {
+					$new_important = stripos((string)$new_property_value, "!important") !== false;
+					$old_important = stripos((string)$property_value, "!important") !== false;
+
+					if ($new_important && !$old_important) {
 						// $property_value is not !important while $new_property_value is, then override $property_value
 						$property_value = $new_property_value;
 						$id_count = $new_id_count;
 						$class_count = $new_class_count;
 						$tag_count = $new_tag_count;
 						$best_rule_index = $rule_count;
-					} elseif (stripos($new_property_value, "!important") === false && stripos($property_value, "!important") === false || stripos($new_property_value, "!important") !== false && stripos($property_value, "!important") !== false)
+					} elseif ((!$new_important && !$old_important) || ($new_important && $old_important))
 
 					// have both are !important or niether is, then check the id
 					{
@@ -2741,6 +2745,7 @@ class BasicChecks
 		global $tag_size;
 		global $css_list;
 		global $css_array;
+		global $global_e;
 		global $background, $foreground;
 		$background_color = $background;
 		$foreground_color = $foreground;
@@ -2795,14 +2800,20 @@ class BasicChecks
 				}
 				$temp_css_code = $temp_css_code . "      }\n\t\n\t";
 
-				if ($rule["idcss"] == $size_of_css_list) // last position, internal style
+				$rule_idcss = isset($rule["idcss"]) ? $rule["idcss"] : null;
+
+				if ($rule_idcss === null || $rule_idcss == $size_of_css_list) // last position, internal style
 					$int_css .= $temp_css_code;
 				else {
-					$url = $css_list[$rule["idcss"]];
-					if (!isset($ext_css[$url])) {
-						$ext_css[$url] = '';
+					$url = isset($css_list[$rule_idcss]) ? (string)$css_list[$rule_idcss] : '';
+					if ($url !== '') {
+						if (!isset($ext_css[$url])) {
+							$ext_css[$url] = '';
+						}
+						$ext_css[$url] .= $temp_css_code;
+					} else {
+						$int_css .= $temp_css_code; // Fallback
 					}
-					$ext_css[$url] .= $temp_css_code;
 				}
 			}
 			if ($int_css != '')
