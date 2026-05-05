@@ -2329,6 +2329,7 @@ class BasicChecks
 						break;
 					default:
 						// format not supported
+						$tag_size = -1;
 						return -1;
 				}
 			}
@@ -2749,7 +2750,9 @@ class BasicChecks
 		$css_code = "";
 		if (isset($css_array) && $css_array != null) {
 
-			$tag_size = round($tag_size, 2);
+			if (is_numeric($tag_size)) {
+				$tag_size = round($tag_size, 2);
+			}
 			$css_code = $css_code .
 				"<p>" . _AC("fixed_size_example_text") . ": <span style='font-size:20px;background-color:#" .
 				$background_color . ";color:#" . $foreground_color . "'>" . _AC("color_contrast_example") . "</span></p>";
