@@ -873,6 +873,10 @@ class acheckerTFPDF extends tFPDF
 	 */
 	public function getPDF($title, $uri, $problem, $mode, $_gids)
 	{
+		$date = AC_date('%Y-%m-%d');
+		$time = AC_date('%H-%i-%s');
+		$rand_str = '_' . substr(md5(uniqid(rand(), true)), 0, 5);
+
 		// Generate a more specific filename based on URI or Title
 		$safe_name = 'report';
 		if ($uri && $uri != '') {
