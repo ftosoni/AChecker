@@ -96,7 +96,7 @@ else
 }
 
 // return errors
-if (is_array($errors))
+if (!empty($errors))
 {
 	if ($output == 'rest') {
 		header('Content-type: text/xml');
@@ -122,7 +122,7 @@ foreach ($guides as $abbr)
 }
 
 // set to default guideline if no input guidelines
-if (!is_array($gids)) $gids[] = DEFAULT_GUIDELINE;
+if (empty($gids)) $gids[] = DEFAULT_GUIDELINE;
 
 // retrieve user link ID
 $userLinksDAO = new UserLinksDAO();
