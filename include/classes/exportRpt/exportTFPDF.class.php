@@ -95,9 +95,8 @@ class acheckerTFPDF extends tFPDF
 	// Override Error to prevent fatal crashes on images
 	function Error($msg)
 	{
-		if (strpos($msg, 'image') !== false || strpos($msg, 'Can\'t open') !== false || strpos($msg, 'Alpha channel not supported') !== false) {
-			error_log("tFPDF Image Error Ignored: " . $msg);
-			return;
+		if (strpos($msg, 'image') !== false || strpos($msg, 'Can\'t open') !== false || strpos($msg, 'Alpha channel not supported') !== false || strpos($msg, 'Unsupported image type') !== false) {
+			throw new Exception("tFPDF Image Error: " . $msg);
 		}
 		parent::Error($msg);
 	}
@@ -457,17 +456,26 @@ class acheckerTFPDF extends tFPDF
 									$f = @fopen($img_url, 'rb', false, $context);
 									if ($f) {
 										fclose($f);
-										@$this->Image($img_url, $this->GetX(), $this->GetY(), 0, 10);
-										$this->Ln(12);
-										$attempted_images[$img_url] = true;
+										try {
+											@$this->Image($img_url, $this->GetX(), $this->GetY(), 0, 10);
+											$this->Ln(12);
+											$attempted_images[$img_url] = true;
+										} catch (Exception $e) {
+											error_log($e->getMessage());
+											$attempted_images[$img_url] = false;
+										}
 									} else {
 										$attempted_images[$img_url] = false;
 									}
 								} elseif ($attempted_images[$img_url] === true) {
 									// Already succeeded once, just draw it again (tFPDF might cache it internally)
 									$this->SetX(28);
-									@$this->Image($img_url, $this->GetX(), $this->GetY(), 0, 10);
-									$this->Ln(12);
+									try {
+										@$this->Image($img_url, $this->GetX(), $this->GetY(), 0, 10);
+										$this->Ln(12);
+									} catch (Exception $e) {
+										error_log($e->getMessage());
+									}
 								}
 							}
 
@@ -597,16 +605,25 @@ class acheckerTFPDF extends tFPDF
 								$f = @fopen($img_url, 'rb', false, $context);
 								if ($f) {
 									fclose($f);
-									@$this->Image($img_url, $this->GetX(), $this->GetY(), 0, 10);
-									$this->Ln(12);
-									$attempted_images_line[$img_url] = true;
+									try {
+										@$this->Image($img_url, $this->GetX(), $this->GetY(), 0, 10);
+										$this->Ln(12);
+										$attempted_images_line[$img_url] = true;
+									} catch (Exception $e) {
+										error_log($e->getMessage());
+										$attempted_images_line[$img_url] = false;
+									}
 								} else {
 									$attempted_images_line[$img_url] = false;
 								}
 							} elseif ($attempted_images_line[$img_url] === true) {
 								$this->SetX(17);
-								@$this->Image($img_url, $this->GetX(), $this->GetY(), 0, 10);
-								$this->Ln(12);
+								try {
+									@$this->Image($img_url, $this->GetX(), $this->GetY(), 0, 10);
+									$this->Ln(12);
+								} catch (Exception $e) {
+									error_log($e->getMessage());
+								}
 							}
 						}
 					}

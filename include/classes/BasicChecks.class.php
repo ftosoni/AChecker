@@ -319,9 +319,12 @@ class BasicChecks
 				}
 
 				if (isset($prefix_uri) && $prefix_uri <> '') {
-					preg_match('/^(.*\:\/\/)(.*)/', $uri, $matches);
-					$root_uri = $matches[1] . substr($matches[2], 0, strpos($matches[2], '/'));
-					$file = $root_uri . $src_file;
+					if (preg_match('/^(.*\:\/\/)([^\/]*)/', (string) $uri, $matches)) {
+						$root_uri = $matches[1] . $matches[2];
+						$file = $root_uri . $src_file;
+					} else {
+						$file = $prefix_uri . $src_file;
+					}
 				}
 			} else // relative path
 			{
