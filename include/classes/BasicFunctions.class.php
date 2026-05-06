@@ -298,16 +298,16 @@ class BasicFunctions {
 			return true;
 
 		$linearR1 = $color1->getRed()/255;
-		$linearG1 = $color1->getRed()/255;
-		$linearB1 = $color1->getRed()/255;
+		$linearG1 = $color1->getGreen()/255;
+		$linearB1 = $color1->getBlue()/255;
 
 		$lum1 = (pow ($linearR1, 2.2) * 0.2126) +
 			(pow ($linearG1, 2.2) * 0.7152) +
 			(pow ($linearB1, 2.2) * 0.0722) + .05;
 
 		$linearR2 = $color2->getRed()/255;
-		$linearG2 = $color2->getRed()/255;
-		$linearB2 = $color2->getRed()/255;
+		$linearG2 = $color2->getGreen()/255;
+		$linearB2 = $color2->getBlue()/255;
 
 		$lum2 = (pow ($linearR2, 2.2) * 0.2126) +
 			(pow ($linearG2, 2.2) * 0.7152) +

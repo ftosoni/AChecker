@@ -435,9 +435,11 @@ class AccessibilityValidator {
 		if ($e->linenumber <= $this->line_offset) return;
 
 		// DEBUG
+		/*
 		if ($check_id >= 301 && $check_id <= 310) {
 			error_log("AChecker: Running contrast check $check_id on element <" . $e->tag . "> at line " . $e->linenumber);
 		}
+		*/
 
 		if ($e->linenumber == 1 && $this->col_offset > 0) {
 		    $col_number = $e->colnumber - $this->col_offset;

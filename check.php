@@ -25,6 +25,7 @@
 define('AC_INCLUDE_PATH', 'include/');
 
 include(AC_INCLUDE_PATH.'vitals.inc.php');
+@set_time_limit(300);
 include_once(AC_INCLUDE_PATH. 'classes/HTMLRpt.class.php');
 include_once(AC_INCLUDE_PATH. 'classes/Utility.class.php');
 include_once(AC_INCLUDE_PATH. 'classes/DAO/UsersDAO.class.php');
