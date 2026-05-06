@@ -17,33 +17,44 @@ define('AC_INCLUDE_PATH', '../include/');
 require (AC_INCLUDE_PATH.'config.inc.php');
 require (AC_INCLUDE_PATH.'constants.inc.php');
 
-	$path = $_GET['path'];
-	$pattern_csv = '/achecker_(.*?)\.csv/';
-	$pattern_rdf = '/achecker_(.*?)\.rdf/';
-	$pattern_pdf = '/achecker_(.*?)\.pdf/';
-	$pattern_html = '/achecker_(.*?)\.html/';
-	$pattern_txt = '/achecker_(.*?)\.txt/';
-	if (preg_match($pattern_csv, $path, $match)) {
-		$filename = $match[0];
-	} else if (preg_match($pattern_rdf, $path, $match)) {
-		$filename = $match[0];
-	} else if (preg_match($pattern_pdf, $path, $match)) {
-		$filename = $match[0];
-	} else if (preg_match($pattern_html, $path, $match)) {
-		$filename = $match[0];
-	} else if (preg_match($pattern_txt, $path, $match)) {
-		$filename = $match[0];
-	}
+if (session_id() == "") {
+    session_start();
+}
 
-	$path = str_replace('\\', '/', trim($_GET['path']));
-	$export_dir = str_replace('\\', '/', AC_EXPORT_RPT_DIR);
+if (isset($_GET['id']) && isset($_SESSION['last_export']) && $_SESSION['last_export']['id'] === $_GET['id']) {
+	$filename = $_SESSION['last_export']['filename'];
+	$mime = $_SESSION['last_export']['mime'];
+	$content = $_SESSION['last_export']['content'];
+	
+	header('Content-Type: ' . $mime);
+	header('Content-Disposition: attachment; filename="'.$filename.'"');
+	header('Content-Length: ' . strlen($content));
+	echo $content;
+	exit;
+}
 
-	if(strstr($path, $export_dir)){
-        header('Content-Type: application/force-download');
-        header('Content-transfer-encoding: binary');
-        header('Content-Disposition: attachment; filename='.$filename);
-        readfile($path);
-	} else {
-	    echo "nothing to download";
+$path = $_GET['path'] ?? '';
+
+if ($path != '') {
+	$export_dir = realpath(AC_EXPORT_RPT_DIR);
+	$real_path = realpath($path);
+
+	// security check: ensure the path is within the export directory
+	if ($real_path && strpos($real_path, $export_dir) === 0 && file_exists($real_path)) {
+		$filename = basename($real_path);
+		header('Content-Description: File Transfer');
+		header('Content-Type: application/octet-stream');
+		header('Content-Disposition: attachment; filename="'.$filename.'"');
+		header('Content-Transfer-Encoding: binary');
+		header('Expires: 0');
+		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+		header('Pragma: public');
+		header('Content-Length: ' . filesize($real_path));
+		readfile($real_path);
+		exit;
 	}
+}
+
+echo "nothing to download";
+exit;
 ?>

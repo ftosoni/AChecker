@@ -212,33 +212,33 @@ if (isset($validate_content))
 			include_once(AC_INCLUDE_PATH. 'classes/exportRpt/exportTFPDF.class.php');
 			$pdf = new acheckerTFPDF($known, $likely, $potential, $html_val, $css_val, 
 				$error_nr_known, $error_nr_likely, $error_nr_potential, $error_nr_html, $error_nr_css, $css_error, $html_error);
-			$path = $pdf->getPDF($title, $uri, $report, $mode, $gids);
 			header('Content-Type: application/pdf');
 			header('Content-Disposition: attachment; filename="achecker_report.pdf"');
-			readfile($path);
+			echo $pdf->getPDF($title, $uri, $report, $mode, $gids, false);
+			exit;
 		} else if ($output == 'csv') {
 			include_once(AC_INCLUDE_PATH. 'classes/exportRpt/exportCSV.class.php');
 			$csv = new acheckerCSV($known, $likely, $potential, $html_val, $css_val, 
 				$error_nr_known, $error_nr_likely, $error_nr_potential, $error_nr_html, $error_nr_css, $css_error, $html_error);
-			$path = $csv->getCSV($report, $uri, $title, $gids);
 			header('Content-Type: text/csv');
 			header('Content-Disposition: attachment; filename="achecker_report.csv"');
-			readfile($path);
+			echo $csv->getCSV($report, $uri, $title, $gids, false);
+			exit;
 		} else if ($output == 'earl') {
 			include_once(AC_INCLUDE_PATH. 'classes/exportRpt/exportEARL.class.php');
 			$earl = new acheckerEARL($known, $likely, $potential, $html_val, $css_val, 
 				$error_nr_known, $error_nr_likely, $error_nr_potential, $error_nr_html, $error_nr_css, $css_error, $html_error);
-			$path = $earl->getEARL($report, $uri, $title, $gids);
 			header('Content-Type: text/xml');
 			header('Content-Disposition: attachment; filename="achecker_report.xml"');
-			readfile($path);
+			echo $earl->getEARL($report, $uri, $title, $gids, false);
+			exit;
 		} else if ($output == 'wikitext') {
 			include_once(AC_INCLUDE_PATH. 'classes/exportRpt/exportWikitext.class.php');
 			$wikitext = new acheckerWikitext($known, $likely, $potential, $html_val, $css_val, 
 				$error_nr_known, $error_nr_likely, $error_nr_potential, $error_nr_html, $error_nr_css, $css_error, $html_error);
-			$path = $wikitext->getWikitext($report, $uri, $title, $gids);
 			header('Content-Type: text/plain');
-			echo file_get_contents($path);
+			echo $wikitext->getWikitext($report, $uri, $title, $gids, false);
+			exit;
 		}
 	}
 }

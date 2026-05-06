@@ -914,7 +914,7 @@ class acheckerTFPDF extends tFPDF
 	 * $mode: 'guideline' or 'line'; pdf document may have different layout (for known, likely, potential) depending on this var
 	 * $_gids: array of guidelines that were used as testing criteria
 	 */
-	public function getPDF($title, $uri, $problem, $mode, $_gids)
+	public function getPDF($title, $uri, $problem, $mode, $_gids, $output_to_file = true)
 	{
 		$date = AC_date('%Y-%m-%d');
 		$time = AC_date('%H-%i-%s');
@@ -1005,10 +1005,13 @@ class acheckerTFPDF extends tFPDF
 		}
 
 		// close and save PDF document		
-		$path = AC_EXPORT_RPT_DIR . $filename . '.pdf';
-		$this->Output($path, 'F');
-
-		return $path;
+		if ($output_to_file) {
+			$path = AC_EXPORT_RPT_DIR . $filename . '.pdf';
+			$this->Output($path, 'F');
+			return $path;
+		} else {
+			return $this->Output($filename . '.pdf', 'S');
+		}
 	}
 
 

@@ -94,7 +94,7 @@ class acheckerCSV {
 	* $problem: problem type on which to create report (can be: known, likely, potential, html, css or all)
 	* $_gids: array of guidelines that were used as testing criteria
 	*/
-	public function	getCSV($problem, $input_content_type, $title, $_gids) 
+	public function	getCSV($problem, $input_content_type, $title, $_gids, $output_to_file = true) 
 	{	
 		// set filename
 		$date = AC_date('%Y-%m-%d');
@@ -117,13 +117,16 @@ class acheckerCSV {
 			$file_content .= $this->getResultSection($problem);
 		}	
 
-		$path = AC_EXPORT_RPT_DIR.$filename.'.csv';  
-		$handle = fopen($path, 'w');	
-		fwrite($handle, pack("CCC",0xef,0xbb,0xbf));	
-		fwrite($handle, $file_content); 
-		fclose($handle);
-		
-		return $path;		
+		if ($output_to_file) {
+			$path = AC_EXPORT_RPT_DIR.$filename.'.csv';  
+			$handle = fopen($path, 'w');	
+			fwrite($handle, pack("CCC",0xef,0xbb,0xbf));	
+			fwrite($handle, $file_content); 
+			fclose($handle);
+			return $path;
+		} else {
+			return pack("CCC",0xef,0xbb,0xbf) . $file_content;
+		}
 	}
 	
 	/**

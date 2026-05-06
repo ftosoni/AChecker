@@ -262,11 +262,14 @@ AChecker.output = AChecker.output || {};
                 enableClickablesAndHideSpinner(exportSpinnerID);
             
                 // change src and start downloading
-                if (returned_data.indexOf('achecker_') === -1) {
-                    alert(returned_data);
-                } else {
-                    var ifrm = document.getElementById("downloadFrame");
+                var ifrm = document.getElementById("downloadFrame");
+                if (returned_data.indexOf('session:') === 0) {
+                    var export_id = returned_data.split(':')[1];
+                    ifrm.src = "download.php?id=" + encodeURIComponent(export_id);
+                } else if (returned_data.indexOf('achecker_') !== -1) {
                     ifrm.src = "download.php?path=" + encodeURIComponent(returned_data);
+                } else {
+                    alert(returned_data);
                 }
             },
         

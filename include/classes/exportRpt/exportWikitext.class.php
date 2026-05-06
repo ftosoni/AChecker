@@ -54,7 +54,7 @@ class acheckerWikitext {
 		$this->html_error = $html_error;
 	}
 	
-	public function	getWikitext($problem, $input_content_type, $title, $_gids) 
+	public function	getWikitext($problem, $input_content_type, $title, $_gids, $output_to_file = true) 
 	{	
 		$date = AC_date('%Y-%m-%d');
 		$time = AC_date('%H-%i-%s');
@@ -92,12 +92,15 @@ class acheckerWikitext {
 			$content .= $this->getResultSection($problem);
 		}	
 
-		$path = AC_EXPORT_RPT_DIR.$filename.'.txt';  
-		$handle = fopen($path, 'w');	
-		fwrite($handle, $content); 
-		fclose($handle);
-		
-		return $path;		
+		if ($output_to_file) {
+			$path = AC_EXPORT_RPT_DIR.$filename.'.txt';  
+			$handle = fopen($path, 'w');	
+			fwrite($handle, $content); 
+			fclose($handle);
+			return $path;
+		} else {
+			return $content;
+		}
 	}
 	
 	private function getResultSection($problem_type) 

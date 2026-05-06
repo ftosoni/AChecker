@@ -22,24 +22,9 @@ ob_start();
 define('AC_INCLUDE_PATH', '../include/');
 include(AC_INCLUDE_PATH.'vitals.inc.php');
 
-// ensure export directory exists
+// ensure export directory exists (no longer fatal since we use sessions)
 if (!is_dir(AC_EXPORT_RPT_DIR)) {
-	if (!@mkdir(AC_EXPORT_RPT_DIR, 0775, true)) {
-		$error_msg = "AChecker Error: Could not create export directory: " . AC_EXPORT_RPT_DIR;
-		error_log($error_msg);
-		// If we can't create it, we should probably stop and inform the user
-		header("HTTP/1.1 500 Internal Server Error");
-		echo "Export Error: Unable to create temporary directory for report generation. Please check permissions for " . AC_EXPORT_RPT_DIR;
-		exit;
-	}
-}
-
-if (!is_writable(AC_EXPORT_RPT_DIR)) {
-	$error_msg = "AChecker Error: Export directory is not writable: " . AC_EXPORT_RPT_DIR;
-	error_log($error_msg);
-	header("HTTP/1.1 500 Internal Server Error");
-	echo "Export Error: Temporary directory is not writable. Please check permissions for " . AC_EXPORT_RPT_DIR;
-	exit;
+	@mkdir(AC_EXPORT_RPT_DIR, 0775, true);
 }
 
 // time constants in seconds
@@ -48,21 +33,23 @@ if (!defined('HOUR'))   define('HOUR', 3600);
 if (!defined('DAY'))    define('DAY', 86400);
 if (!defined('WEEK'))   define('WEEK', 604800);
 
-if ($handle = @opendir(AC_EXPORT_RPT_DIR)) {
-    while (false !== ($file = readdir($handle))) { 
-        $file_delete_pattern = '/achecker_(.*)/';
-        if(preg_match($file_delete_pattern, $file, $match)) {
-			// delete files older than 1 hour
-        	if (time() - HOUR > filectime(AC_EXPORT_RPT_DIR.$file)) {
-        		unlink(AC_EXPORT_RPT_DIR.$file);
-        	}
-        }
-    }    
-    closedir($handle); 
+if (is_dir(AC_EXPORT_RPT_DIR) && is_writable(AC_EXPORT_RPT_DIR)) {
+	if ($handle = @opendir(AC_EXPORT_RPT_DIR)) {
+		while (false !== ($file_name = readdir($handle))) { 
+			$file_delete_pattern = '/achecker_(.*)/';
+			if(preg_match($file_delete_pattern, $file_name, $match)) {
+				// delete files older than 1 hour
+				if (time() - HOUR > filectime(AC_EXPORT_RPT_DIR.$file_name)) {
+					@unlink(AC_EXPORT_RPT_DIR.$file_name);
+				}
+			}
+		}    
+		closedir($handle); 
+	}
 }
 
 // get user choice on file format
-$file    = $_POST['file'] ?? 'pdf';
+$file_format = $_POST['file'] ?? 'pdf';
 $problem = $_POST['problem'] ?? 'all';
 	
 // content to validate	
@@ -95,7 +82,7 @@ $mode = $_SESSION['input_form']['mode'] ?? 'guideline';
 // user link id
 $user_link_id = $_SESSION['input_form']['user_link_id'] ?? 0;
 
-$html = '';
+$html_val = '';
 $error_nr_html = -1;
 $html_error = '';
 
@@ -104,21 +91,21 @@ if (($_SESSION['input_form']['enable_html_validation'] ?? false) == true) {
 	include(AC_INCLUDE_PATH. "classes/HTMLValidator.class.php");
 
 	if ($input_content_type == 'file' || $input_content_type == 'paste') {
-		if ($file == 'html') {
+		if ($file_format == 'html') {
 			$htmlValidator = new HTMLValidator("fragment", $validate_content);
-			$html = $htmlValidator->getValidationRpt();
+			$html_val = $htmlValidator->getValidationRpt();
 		} else {
 			$htmlValidator = new HTMLValidator("fragment", $validate_content, true);
-			$html = $htmlValidator->getValidationRptArray();
+			$html_val = $htmlValidator->getValidationRptArray();
 		}
 		
 	} else {
-		if ($file == 'html') {
+		if ($file_format == 'html') {
 			$htmlValidator = new HTMLValidator("uri", $input_content_type);
-			$html = $htmlValidator->getValidationRpt();
+			$html_val = $htmlValidator->getValidationRpt();
 		} else {
 			$htmlValidator = new HTMLValidator("uri", $uri, true);
-			$html = $htmlValidator->getValidationRptArray();
+			$html_val = $htmlValidator->getValidationRptArray();
 		}
 	}
 	
@@ -129,7 +116,7 @@ if (($_SESSION['input_form']['enable_html_validation'] ?? false) == true) {
 	$error_nr_html = $htmlValidator->getNumOfValidateError();
 }
 
-$css = '';
+$css_val = '';
 $error_nr_css = -1;
 $css_error = '';
 
@@ -139,8 +126,8 @@ if (($_SESSION['input_form']['enable_css_validation'] ?? false) == true) {
 
 	if ($input_content_type == $uri) {
 		$cssValidator = new CSSValidator("uri", $input_content_type, true);
-		if ($file == 'html') $css = $cssValidator->getValidationRpt();
-		else $css = $cssValidator->getValidationRptArray();
+		if ($file_format == 'html') $css_val = $cssValidator->getValidationRpt();
+		else $css_val = $cssValidator->getValidationRptArray();
 		$error_nr_css = $cssValidator->getNumOfValidateError();
 		
 		if ($cssValidator->containErrors())
@@ -172,83 +159,92 @@ $error_nr_known = 0;
 $error_nr_likely = 0;
 $error_nr_potential = 0;
 
+$export_content = '';
+$export_filename = '';
+$export_mime = '';
+
 // create file depending on user choice
-if ($file == 'pdf') {	
-	if ($problem != 'html' && $problem != 'css') {
-		$a_rpt = null;
-		if ($mode == 'guideline') $a_rpt = new FileExportRptGuideline($errors, $_gids[0], $user_link_id);
-		else if ($mode == 'line') $a_rpt = new FileExportRptLine($errors, $user_link_id);
-	
-		if ($a_rpt) {
+try {
+	if ($file_format == 'pdf') {	
+		if ($problem != 'html' && $problem != 'css') {
+			$a_rpt = null;
+			if ($mode == 'guideline') $a_rpt = new FileExportRptGuideline($errors, $_gids[0], $user_link_id);
+			else if ($mode == 'line') $a_rpt = new FileExportRptLine($errors, $user_link_id);
+		
+			if ($a_rpt) {
+				list($known, $likely, $potential) = $a_rpt->generateRpt();
+				list($error_nr_known, $error_nr_likely, $error_nr_potential) = $a_rpt->getErrorNr();
+			}
+		}
+		include_once(AC_INCLUDE_PATH. 'classes/exportRpt/exportTFPDF.class.php');
+		
+		$pdf = new acheckerTFPDF($known, $likely, $potential, $html_val, $css_val, 
+			$error_nr_known, $error_nr_likely, $error_nr_potential, $error_nr_html, $error_nr_css, $css_error, $html_error);
+		$export_content = $pdf->getPDF($title, $uri, $problem, $mode, $_gids, false);
+		$export_filename = 'achecker_report.pdf';
+		$export_mime = 'application/pdf';
+				
+	} else {	
+		if ($problem != 'html' && $problem != 'css') {
+			$a_rpt = new FileExportRptLine($errors, $user_link_id);
 			list($known, $likely, $potential) = $a_rpt->generateRpt();
 			list($error_nr_known, $error_nr_likely, $error_nr_potential) = $a_rpt->getErrorNr();
 		}
-	}
-	include_once(AC_INCLUDE_PATH. 'classes/exportRpt/exportTFPDF.class.php');
-	
-	try {
-		$pdf = new acheckerTFPDF($known, $likely, $potential, $html, $css, 
-			$error_nr_known, $error_nr_likely, $error_nr_potential, $error_nr_html, $error_nr_css, $css_error, $html_error);
-		$path = $pdf->getPDF($title, $uri, $problem, $mode, $_gids);
-
-		if (!$path || $path == '') {
-			throw new Exception("PDF path is empty");
-		}
-	} catch (Throwable $e) {
-		error_log("AChecker Error: PDF generation failed: " . $e->getMessage() . "\n" . $e->getTraceAsString());
-		header("HTTP/1.1 500 Internal Server Error");
-		echo "PDF Generation Error: " . $e->getMessage();
-		exit;
-	}
-			
-} else {	
-	if ($problem != 'html' && $problem != 'css') {
-		$a_rpt = new FileExportRptLine($errors, $user_link_id);
-		list($known, $likely, $potential) = $a_rpt->generateRpt();
-		list($error_nr_known, $error_nr_likely, $error_nr_potential) = $a_rpt->getErrorNr();
-	}
-	
-	try {
-		if ($file == 'earl') {
+		
+		if ($file_format == 'earl') {
 			include_once(AC_INCLUDE_PATH. 'classes/exportRpt/exportEARL.class.php');
-			
-			$earl = new acheckerEARL($known, $likely, $potential, $html, $css, 
+			$earl = new acheckerEARL($known, $likely, $potential, $html_val, $css_val, 
 				$error_nr_known, $error_nr_likely, $error_nr_potential, $error_nr_html, $error_nr_css, $css_error, $html_error);
-			$path = $earl->getEARL($problem, $input_content_type, $title, $_gids);
+			$export_content = $earl->getEARL($problem, $input_content_type, $title, $_gids, false);
+			$export_filename = 'achecker_report.rdf';
+			$export_mime = 'application/rdf+xml';
 			
-		} else if ($file == 'csv') {	
+		} else if ($file_format == 'csv') {	
 			include_once(AC_INCLUDE_PATH. 'classes/exportRpt/exportCSV.class.php');		
-			
-			$csv = new acheckerCSV($known, $likely, $potential, $html, $css, 
+			$csv = new acheckerCSV($known, $likely, $potential, $html_val, $css_val, 
 				$error_nr_known, $error_nr_likely, $error_nr_potential, $error_nr_html, $error_nr_css, $css_error, $html_error);
-			$path = $csv->getCSV($problem, $input_content_type, $title, $_gids);
+			$export_content = $csv->getCSV($problem, $input_content_type, $title, $_gids, false);
+			$export_filename = 'achecker_report.csv';
+			$export_mime = 'text/csv';
 			
-		} else if ($file == 'html') {	
+		} else if ($file_format == 'html') {	
 			include_once(AC_INCLUDE_PATH. 'classes/exportRpt/exportHTML.class.php');		
-			$html_file = new acheckerHTML($known, $likely, $potential, $html, $css, 
+			$html_file = new acheckerHTML($known, $likely, $potential, $html_val, $css_val, 
 				$error_nr_known, $error_nr_likely, $error_nr_potential, $error_nr_html, $error_nr_css, $css_error, $html_error);
-			$path = $html_file->getHTMLfile($problem, $_gids, $errors, $user_link_id);
+			$export_content = $html_file->getHTMLfile($problem, $_gids, $errors, $user_link_id, false);
+			$export_filename = 'achecker_report.html';
+			$export_mime = 'text/html';
 
-		} else if ($file == 'wikitext') {
+		} else if ($file_format == 'wikitext') {
 			include_once(AC_INCLUDE_PATH. 'classes/exportRpt/exportWikitext.class.php');
-			
-			$wikitext = new acheckerWikitext($known, $likely, $potential, $html, $css, 
+			$wikitext = new acheckerWikitext($known, $likely, $potential, $html_val, $css_val, 
 				$error_nr_known, $error_nr_likely, $error_nr_potential, $error_nr_html, $error_nr_css, $css_error, $html_error);
-			$path = $wikitext->getWikitext($problem, $input_content_type, $title, $_gids);
+			$export_content = $wikitext->getWikitext($problem, $input_content_type, $title, $_gids, false);
+			$export_filename = 'achecker_report.txt';
+			$export_mime = 'text/plain';
 		}
-
-		if (!$path || $path == '') {
-			throw new Exception("Export path is empty for format: $file");
-		}
-	} catch (Throwable $e) {
-		error_log("AChecker Error: $file export failed: " . $e->getMessage() . "\n" . $e->getTraceAsString());
-		header("HTTP/1.1 500 Internal Server Error");
-		echo "Export Error ($file): " . $e->getMessage();
-		exit;
 	}
-} 
 
-ob_clean();
-echo $path;
-exit();	
+	if (empty($export_content)) {
+		throw new Exception("Export content is empty for format: $file_format");
+	}
+
+	$export_id = md5(uniqid(rand(), true));
+	$_SESSION['last_export'] = array(
+		'id' => $export_id,
+		'content' => $export_content,
+		'filename' => $export_filename,
+		'mime' => $export_mime
+	);
+
+	ob_clean();
+	echo "session:" . $export_id;
+	exit();
+
+} catch (Throwable $e) {
+	error_log("AChecker Error: $file_format export failed: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+	header("HTTP/1.1 500 Internal Server Error");
+	echo "Export Error ($file_format): " . $e->getMessage();
+	exit;
+}
 ?>

@@ -132,7 +132,7 @@ span.congrats_msg { line-height: 120%; color: green; padding: 1em 1em; font-size
 	* $problem: problem type on which to create report (can be: known, likely, potential, html, css or all)
 	* $_gids: array of guidelines that were used as testing criteria
 	*/
-	public function	getHTMLfile($problem, $_gids, $errors, $user_link_id) 
+	public function	getHTMLfile($problem, $_gids, $errors, $user_link_id, $output_to_file = true) 
 	{
 		// set filename
 		$date = AC_date('%Y-%m-%d');
@@ -168,19 +168,22 @@ span.congrats_msg { line-height: 120%; color: green; padding: 1em 1em; font-size
 		$file_content = str_replace(array( '{SUMMARY}', 
 		                                   '{GUIDELINE}',
 		                                   '{DETAIL}', 
-										   '{VALIDATION}'),
+ 										   '{VALIDATION}'),
 			                        array( $this->getSummaryStr($problem),
 			                               $this->getGuidelineStr($_gids, $problem),
 			                               $detail,
 			                               $validation),
 			                        $this->html_main);                        
 			                        
-		$path = AC_EXPORT_RPT_DIR.$filename.'.html';  
-		$handle = fopen($path, 'w');	
-		fwrite($handle, $file_content); 
-		fclose($handle);
-		
-		return $path;		
+		if ($output_to_file) {
+			$path = AC_EXPORT_RPT_DIR.$filename.'.html';  
+			$handle = fopen($path, 'w');	
+			fwrite($handle, $file_content); 
+			fclose($handle);
+			return $path;
+		} else {
+			return $file_content;
+		}
 	}
 	
 	/**
