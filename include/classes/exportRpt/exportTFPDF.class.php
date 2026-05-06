@@ -445,16 +445,29 @@ class acheckerTFPDF extends tFPDF
 									$img_url = 'https:' . $img_url;
 								$ext = strtolower(pathinfo($img_url, PATHINFO_EXTENSION));
 								// Simple check for supported formats and valid URL
-								if (in_array($ext, array('jpg', 'jpeg', 'png', 'gif')) && (strpos($img_url, 'http') === 0 || strpos($img_url, '//') === 0)) {
+								// Optimized image fetching: use a short timeout and avoid re-downloading
+								static $attempted_images = array();
+								if (!isset($attempted_images[$img_url])) {
 									$this->SetX(28);
-									// Pre-verify image accessibility to avoid tFPDF fatal errors
-									$context = stream_context_create(array("ssl" => array("verify_peer" => false, "verify_peer_name" => false)));
+									$context = stream_context_create(array(
+										"http" => array("timeout" => 2),
+										"ssl" => array("verify_peer" => false, "verify_peer_name" => false)
+									));
+									// We use @ to suppress warnings, and our Error() override handles fatal tFPDF image errors
 									$f = @fopen($img_url, 'rb', false, $context);
 									if ($f) {
 										fclose($f);
 										@$this->Image($img_url, $this->GetX(), $this->GetY(), 0, 10);
 										$this->Ln(12);
+										$attempted_images[$img_url] = true;
+									} else {
+										$attempted_images[$img_url] = false;
 									}
+								} elseif ($attempted_images[$img_url] === true) {
+									// Already succeeded once, just draw it again (tFPDF might cache it internally)
+									$this->SetX(28);
+									@$this->Image($img_url, $this->GetX(), $this->GetY(), 0, 10);
+									$this->Ln(12);
 								}
 							}
 
@@ -573,12 +586,25 @@ class acheckerTFPDF extends tFPDF
 							$img_url = 'https:' . $img_url;
 						$ext = strtolower(pathinfo($img_url, PATHINFO_EXTENSION));
 						if (in_array($ext, array('jpg', 'jpeg', 'png', 'gif')) && (strpos($img_url, 'http') === 0 || strpos($img_url, '//') === 0)) {
-							$this->SetX(17);
-							// Pre-verify image accessibility to avoid tFPDF fatal errors
-							$context = stream_context_create(array("ssl" => array("verify_peer" => false, "verify_peer_name" => false)));
-							$f = @fopen($img_url, 'rb', false, $context);
-							if ($f) {
-								fclose($f);
+							// Optimized image fetching
+							static $attempted_images_line = array();
+							if (!isset($attempted_images_line[$img_url])) {
+								$this->SetX(17);
+								$context = stream_context_create(array(
+									"http" => array("timeout" => 2),
+									"ssl" => array("verify_peer" => false, "verify_peer_name" => false)
+								));
+								$f = @fopen($img_url, 'rb', false, $context);
+								if ($f) {
+									fclose($f);
+									@$this->Image($img_url, $this->GetX(), $this->GetY(), 0, 10);
+									$this->Ln(12);
+									$attempted_images_line[$img_url] = true;
+								} else {
+									$attempted_images_line[$img_url] = false;
+								}
+							} elseif ($attempted_images_line[$img_url] === true) {
+								$this->SetX(17);
 								@$this->Image($img_url, $this->GetX(), $this->GetY(), 0, 10);
 								$this->Ln(12);
 							}
