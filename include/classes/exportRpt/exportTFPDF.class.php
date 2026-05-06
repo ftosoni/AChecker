@@ -873,11 +873,23 @@ class acheckerTFPDF extends tFPDF
 	 */
 	public function getPDF($title, $uri, $problem, $mode, $_gids)
 	{
-		// set filename
-		$date = AC_date('%Y-%m-%d');
-		$time = AC_date('%H-%i-%s');
-		$rand_str = '_' . substr(md5(uniqid(rand(), true)), 0, 5);
-		$filename = 'achecker_' . $date . '_' . $time . $rand_str;
+		// Generate a more specific filename based on URI or Title
+		$safe_name = 'report';
+		if ($uri && $uri != '') {
+			$parsed = parse_url($uri);
+			$safe_name = $parsed['host'] ?? ($parsed['path'] ?? 'report');
+		} elseif ($title && $title != '') {
+			$safe_name = $title;
+		}
+		
+		$safe_name = strtolower($safe_name);
+		$safe_name = preg_replace('/[^a-z0-9]/', '_', $safe_name);
+		$safe_name = preg_replace('/_+/', '_', $safe_name);
+		$safe_name = trim($safe_name, '_');
+		if (strlen($safe_name) > 50) $safe_name = substr($safe_name, 0, 50);
+		if ($safe_name == '') $safe_name = 'report';
+
+		$filename = 'achecker_' . $safe_name . '_' . $date . '_' . $time . $rand_str;
 
 		$guidelinesDAO = new GuidelinesDAO();
 		$guideline_rows = $guidelinesDAO->getGuidelineByIDs($_gids);

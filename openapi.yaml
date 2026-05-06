@@ -49,7 +49,7 @@ paths:
               - WCAG2-AAA
         - name: output
           in: query
-          description: "The output format. Default is html."
+          description: "The output format. Default is pdf."
           schema:
             type: string
             default: pdf

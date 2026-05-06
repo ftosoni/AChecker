@@ -24,9 +24,22 @@ include(AC_INCLUDE_PATH.'vitals.inc.php');
 
 // ensure export directory exists
 if (!is_dir(AC_EXPORT_RPT_DIR)) {
-	if (!@mkdir(AC_EXPORT_RPT_DIR, 0755, true)) {
-		error_log("AChecker Error: Could not create export directory: " . AC_EXPORT_RPT_DIR);
+	if (!@mkdir(AC_EXPORT_RPT_DIR, 0775, true)) {
+		$error_msg = "AChecker Error: Could not create export directory: " . AC_EXPORT_RPT_DIR;
+		error_log($error_msg);
+		// If we can't create it, we should probably stop and inform the user
+		header("HTTP/1.1 500 Internal Server Error");
+		echo "Export Error: Unable to create temporary directory for report generation. Please check permissions for " . AC_EXPORT_RPT_DIR;
+		exit;
 	}
+}
+
+if (!is_writable(AC_EXPORT_RPT_DIR)) {
+	$error_msg = "AChecker Error: Export directory is not writable: " . AC_EXPORT_RPT_DIR;
+	error_log($error_msg);
+	header("HTTP/1.1 500 Internal Server Error");
+	echo "Export Error: Temporary directory is not writable. Please check permissions for " . AC_EXPORT_RPT_DIR;
+	exit;
 }
 
 // time constants in seconds

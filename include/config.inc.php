@@ -43,10 +43,22 @@ define('TABLE_PREFIX',                 'AC_');
 /* recommended that the temporary directory be moved outside of the web	*/
 /* accessible area.														*/
 $temp_path = realpath(dirname(__FILE__) . '/../temp/');
-if (!$temp_path) {
-    $temp_path = dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'temp';
+if (!$temp_path || !is_writable($temp_path)) {
+    $sys_temp = sys_get_temp_dir();
+    // Try to create a specific subdirectory in system temp to avoid collisions
+    $achecker_temp = $sys_temp . DIRECTORY_SEPARATOR . 'achecker_temp';
+    if (!is_dir($achecker_temp)) {
+        @mkdir($achecker_temp, 0755, true);
+    }
+    
+    // If we can write to the achecker_temp, use it; otherwise fallback to sys_temp itself
+    if (is_writable($achecker_temp)) {
+        $temp_path = $achecker_temp;
+    } else {
+        $temp_path = $sys_temp;
+    }
 }
-define('AC_TEMP_DIR', $temp_path . DIRECTORY_SEPARATOR);
+define('AC_TEMP_DIR', rtrim($temp_path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR);
 
 /* DO NOT ALTER THIS LAST LINE                                          */
 define('AC_INSTALL', TRUE);
