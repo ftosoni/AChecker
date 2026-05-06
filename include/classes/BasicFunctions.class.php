@@ -422,13 +422,11 @@ class BasicFunctions {
 	{
 		global $global_e;
 
-		$num = 0;
-
-		foreach($global_e->children() as $child)
-			if ($child->tag == $tag) $num++;
-			else $num += BasicFunctions::getNumOfTagRecursiveInChildren($child, $tag);
-
-		return $num;
+		if (!$global_e || !is_object($global_e)) return 0;
+		
+		// Use built-in find() for descendants, which is much faster
+		$matches = $global_e->find($tag);
+		return count($matches);
 	}
 
 	/**

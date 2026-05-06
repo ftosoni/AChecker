@@ -168,15 +168,9 @@ class BasicChecks
 	 */
 	public static function getNumOfTagRecursiveInChildren($e, $tag)
 	{
-		$num = 0;
-
-		foreach ($e->children() as $child)
-			if ($child->tag == $tag)
-				$num++;
-			else
-				$num += BasicChecks::getNumOfTagRecursiveInChildren($child, $tag);
-
-		return $num;
+		if (!$e || !is_object($e)) return 0;
+		$matches = $e->find($tag);
+		return count($matches);
 	}
 
 	/**
@@ -699,15 +693,9 @@ class BasicChecks
 	 */
 	public static function count_children_by_tag($e, $tag)
 	{
-		$num = 0;
-
-		foreach ($e->children() as $child)
-			if ($child->tag == $tag)
-				$num++;
-			else
-				$num += BasicChecks::count_children_by_tag($child, $tag);
-
-		return $num;
+		if (!$e || !is_object($e)) return 0;
+		$matches = $e->find($tag);
+		return count($matches);
 	}
 
 
