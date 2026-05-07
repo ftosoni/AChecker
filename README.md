@@ -1,6 +1,7 @@
+# Note: This repo is archived and substituted by [https://github.com/ftosoni/mediawiki-accessibility-checker](https://github.com/ftosoni/mediawiki-accessibility-checker) (without the 'a')
+
 # MediaWiki Accessibility Checker
 
-[![SWH](https://archive.softwareheritage.org/badge/origin/https://github.com/ftosoni/mediawiki-accessibility-checker/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/ftosoni/mediawiki-accessibility-checker)
 [![PHP](https://img.shields.io/badge/php-%5E7.4-blue.svg?style=flat-square)](https://www.php.net/)
 [![CI](https://github.com/ftosoni/mediawiki-accessibility-checker/actions/workflows/php-ci.yml/badge.svg?branch=main&style=flat-square)](https://github.com/ftosoni/mediawiki-accessibility-checker/actions/workflows/php-ci.yml)
 [![License](https://img.shields.io/github/license/ftosoni/mediawiki-accessibility-checker?style=flat-square)](./LICENSE)
